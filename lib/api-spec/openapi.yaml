@@ -3,13 +3,17 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Fleet Revenue Management API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: trips
+    description: Fleet trip records
+  - name: dashboard
+    description: Dashboard analytics
 paths:
   /healthz:
     get:
@@ -24,6 +28,296 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /trips:
+    get:
+      operationId: listTrips
+      tags: [trips]
+      summary: List trips
+      description: List all trip records with optional filters
+      parameters:
+        - name: truckId
+          in: query
+          schema:
+            type: string
+        - name: driverName
+          in: query
+          schema:
+            type: string
+        - name: customerName
+          in: query
+          schema:
+            type: string
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 1000
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: List of trips
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripListResponse"
+    post:
+      operationId: createTrip
+      tags: [trips]
+      summary: Create a trip record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+
+  /trips/bulk:
+    post:
+      operationId: bulkCreateTrips
+      tags: [trips]
+      summary: Bulk create trip records
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkTripInput"
+      responses:
+        "201":
+          description: Trips created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BulkCreateResult"
+
+  /trips/{id}:
+    get:
+      operationId: getTrip
+      tags: [trips]
+      summary: Get a single trip
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Trip record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateTrip
+      tags: [trips]
+      summary: Update a trip record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripUpdate"
+      responses:
+        "200":
+          description: Updated trip
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteTrip
+      tags: [trips]
+      summary: Delete a trip record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /trucks:
+    get:
+      operationId: listTrucks
+      tags: [trips]
+      summary: List unique trucks
+      responses:
+        "200":
+          description: List of trucks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TruckSummary"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Financial summary
+      parameters:
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Financial summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/by-truck:
+    get:
+      operationId: getRevenueByTruck
+      tags: [dashboard]
+      summary: Revenue breakdown by truck
+      parameters:
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Revenue by truck
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TruckRevenue"
+
+  /dashboard/by-period:
+    get:
+      operationId: getRevenueByPeriod
+      tags: [dashboard]
+      summary: Revenue grouped by time period
+      parameters:
+        - name: period
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [daily, weekly, monthly, quarterly, yearly]
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Revenue by period
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PeriodRevenue"
+
+  /dashboard/annual:
+    get:
+      operationId: getAnnualPerformance
+      tags: [dashboard]
+      summary: Annual performance metrics
+      parameters:
+        - name: year
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Annual performance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnualPerformance"
+
+  /dashboard/expenses-comparison:
+    get:
+      operationId: getExpensesComparison
+      tags: [dashboard]
+      summary: Monthly revenue vs expenses comparison
+      parameters:
+        - name: year
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Expenses comparison
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MonthlyComparison"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +328,285 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Trip:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+          format: date
+        truckId:
+          type: string
+        driverName:
+          type: string
+        customerName:
+          type: string
+        route:
+          type: string
+        freightDescription:
+          type: ["string", "null"]
+        revenueAmount:
+          type: number
+        fuelCost:
+          type: number
+        otherExpenses:
+          type: number
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - date
+        - truckId
+        - driverName
+        - customerName
+        - route
+        - revenueAmount
+        - fuelCost
+        - otherExpenses
+        - createdAt
+        - updatedAt
+
+    TripInput:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        truckId:
+          type: string
+        driverName:
+          type: string
+        customerName:
+          type: string
+        route:
+          type: string
+        freightDescription:
+          type: string
+        revenueAmount:
+          type: number
+        fuelCost:
+          type: number
+        otherExpenses:
+          type: number
+        notes:
+          type: string
+      required:
+        - date
+        - truckId
+        - driverName
+        - customerName
+        - route
+        - revenueAmount
+        - fuelCost
+        - otherExpenses
+
+    TripUpdate:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        truckId:
+          type: string
+        driverName:
+          type: string
+        customerName:
+          type: string
+        route:
+          type: string
+        freightDescription:
+          type: string
+        revenueAmount:
+          type: number
+        fuelCost:
+          type: number
+        otherExpenses:
+          type: number
+        notes:
+          type: string
+
+    TripListResponse:
+      type: object
+      properties:
+        trips:
+          type: array
+          items:
+            $ref: "#/components/schemas/Trip"
+        total:
+          type: integer
+      required:
+        - trips
+        - total
+
+    BulkTripInput:
+      type: object
+      properties:
+        trips:
+          type: array
+          items:
+            $ref: "#/components/schemas/TripInput"
+      required:
+        - trips
+
+    BulkCreateResult:
+      type: object
+      properties:
+        created:
+          type: integer
+        trips:
+          type: array
+          items:
+            $ref: "#/components/schemas/Trip"
+      required:
+        - created
+        - trips
+
+    TruckSummary:
+      type: object
+      properties:
+        truckId:
+          type: string
+        tripCount:
+          type: integer
+        totalRevenue:
+          type: number
+      required:
+        - truckId
+        - tripCount
+        - totalRevenue
+
+    DashboardSummary:
+      type: object
+      properties:
+        grossRevenue:
+          type: number
+        totalExpenses:
+          type: number
+        netProfit:
+          type: number
+        profitMargin:
+          type: number
+        totalTrips:
+          type: integer
+        avgRevenuePerTrip:
+          type: number
+        bestTruck:
+          type: ["string", "null"]
+        worstTruck:
+          type: ["string", "null"]
+      required:
+        - grossRevenue
+        - totalExpenses
+        - netProfit
+        - profitMargin
+        - totalTrips
+        - avgRevenuePerTrip
+
+    TruckRevenue:
+      type: object
+      properties:
+        truckId:
+          type: string
+        totalRevenue:
+          type: number
+        totalExpenses:
+          type: number
+        netProfit:
+          type: number
+        tripCount:
+          type: integer
+        avgRevenuePerTrip:
+          type: number
+        rank:
+          type: integer
+      required:
+        - truckId
+        - totalRevenue
+        - totalExpenses
+        - netProfit
+        - tripCount
+        - avgRevenuePerTrip
+        - rank
+
+    PeriodRevenue:
+      type: object
+      properties:
+        period:
+          type: string
+        revenue:
+          type: number
+        expenses:
+          type: number
+        netProfit:
+          type: number
+        tripCount:
+          type: integer
+      required:
+        - period
+        - revenue
+        - expenses
+        - netProfit
+        - tripCount
+
+    AnnualPerformance:
+      type: object
+      properties:
+        year:
+          type: integer
+        totalRevenue:
+          type: number
+        totalExpenses:
+          type: number
+        netProfit:
+          type: number
+        totalTrips:
+          type: integer
+        avgRevenuePerTrip:
+          type: number
+        monthlyTrend:
+          type: array
+          items:
+            $ref: "#/components/schemas/PeriodRevenue"
+      required:
+        - year
+        - totalRevenue
+        - totalExpenses
+        - netProfit
+        - totalTrips
+        - avgRevenuePerTrip
+        - monthlyTrend
+
+    MonthlyComparison:
+      type: object
+      properties:
+        month:
+          type: string
+        revenue:
+          type: number
+        fuelCost:
+          type: number
+        otherExpenses:
+          type: number
+        netProfit:
+          type: number
+      required:
+        - month
+        - revenue
+        - fuelCost
+        - otherExpenses
+        - netProfit

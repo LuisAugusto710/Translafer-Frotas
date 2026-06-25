@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Fleet Revenue Manager"
+version = "1.0.0"
+id = "artifacts/fleet-revenue"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25656
+
+[services.development]
+run = "pnpm --filter @workspace/fleet-revenue run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/fleet-revenue", "run", "build" ]
+publicDir = "artifacts/fleet-revenue/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25656"
+BASE_PATH = "/"

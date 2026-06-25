@@ -1,10 +1,11 @@
-# [Project name]
+# Fleet Revenue Manager
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A professional transportation fleet revenue management system for logging trip data and visualizing business performance.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
+- `pnpm --filter @workspace/fleet-revenue run dev` — run the frontend (port 25656)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
@@ -14,6 +15,7 @@ _Replace the heading above with the project's name, and this line with one sente
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
+- Frontend: React + Vite, Recharts, shadcn/ui, next-themes, xlsx
 - API: Express 5
 - DB: PostgreSQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
@@ -22,15 +24,24 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `lib/api-spec/openapi.yaml` — OpenAPI spec (source of truth for all API contracts)
+- `lib/db/src/schema/trips.ts` — Drizzle schema for the trips table
+- `artifacts/api-server/src/routes/trips.ts` — Trip CRUD routes
+- `artifacts/api-server/src/routes/dashboard.ts` — Dashboard analytics routes
+- `artifacts/fleet-revenue/src/` — React frontend (data entry table + analytics dashboard)
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- OpenAPI-first: spec drives both Zod server validation and React Query client hooks via Orval codegen
+- Date fields stored as strings in PostgreSQL date columns; Orval parses them as Date objects so explicit conversion to ISO strings is needed in routes
+- Numeric columns (revenue, fuel, expenses) stored as `numeric(12,2)` strings in Postgres, converted to `Number` in API responses
+- Dashboard aggregations use raw SQL via Drizzle's `sql` template tag for GROUP BY and date_trunc queries
+- All period-based queries use `date_trunc` with allowlisted period strings to prevent SQL injection
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- **Data Entry tab**: Spreadsheet-like table for logging trips (date, truck, driver, customer, route, revenue, costs). Add/edit/delete rows, search/filter, export to CSV and Excel.
+- **Dashboard tab**: KPI cards (gross revenue, expenses, net profit, margin), revenue charts by truck and over time, expenses vs revenue comparison, annual performance metrics.
 
 ## User preferences
 
@@ -38,7 +49,9 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- After any schema or route changes, restart the API Server workflow to rebuild (it runs esbuild before starting)
+- After OpenAPI spec changes, run codegen before touching frontend code
+- `xlsx` package is installed in `@workspace/fleet-revenue` for Excel export
 
 ## Pointers
 
