@@ -1,0 +1,203 @@
+import { useState } from "react";
+import { 
+  useListAbastecimentos, 
+  getListAbastecimentosQueryKey,
+  useDeleteAbastecimento
+} from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Plus, Download, MoreHorizontal, Pencil, Trash2, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { 
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter
+} from "@/components/ui/table";
+import { 
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatCurrency, formatNumber, formatDate } from "@/lib/utils";
+import { exportToCsv, exportToExcel } from "@/lib/export";
+import { AbastecimentoFormModal } from "@/components/abastecimento-form-modal";
+
+export function Diesel() {
+  const queryClient = useQueryClient();
+  const [search, setSearch] = useState("");
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingAbast, setEditingAbast] = useState<any>(null);
+
+  const { data, isLoading } = useListAbastecimentos({ search }, {
+    query: { queryKey: getListAbastecimentosQueryKey({ search }) }
+  });
+
+  const deleteAbast = useDeleteAbastecimento();
+
+  const handleDelete = (id: number) => {
+    if (confirm("Tem certeza que deseja excluir este abastecimento?")) {
+      deleteAbast.mutate({ id }, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListAbastecimentosQueryKey() });
+        }
+      });
+    }
+  };
+
+  const handleExportCsv = () => {
+    if (data?.abastecimentos) exportToCsv(data.abastecimentos, "diesel_export");
+  };
+
+  const handleExportExcel = () => {
+    if (data?.abastecimentos) exportToExcel(data.abastecimentos, "diesel_export");
+  };
+
+  const abasts = data?.abastecimentos || [];
+  const totalLitros = abasts.reduce((sum, a) => sum + (a.litros || 0), 0);
+  const totalPago = abasts.reduce((sum, a) => sum + (a.totalPago || 0), 0);
+  
+  // Calculate average only if there are total litros
+  const avgMedia = totalLitros > 0 ? (abasts.reduce((sum, a) => sum + (a.kmPercorrido || 0), 0) / totalLitros) : 0;
+
+  const getMediaColor = (media: number | null | undefined) => {
+    if (!media) return "";
+    if (media > 4.5) return "text-green-600 bg-green-50";
+    if (media >= 3.5) return "text-yellow-600 bg-yellow-50";
+    return "text-red-600 bg-red-50";
+  };
+
+  return (
+    <div className="space-y-4 flex flex-col h-full">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Buscar abastecimento (placa, posto)..." 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-80 pl-9"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Download className="mr-2 h-4 w-4" />
+                Exportar
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleExportCsv}>CSV</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportExcel}>Excel</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button size="sm" onClick={() => { setEditingAbast(null); setIsFormOpen(true); }} className="bg-[#0a192f] hover:bg-[#0a192f]/90 text-white">
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Abastecimento
+          </Button>
+        </div>
+      </div>
+
+      <div className="border rounded-md flex-1 overflow-hidden flex flex-col bg-card shadow-sm text-sm">
+        <div className="overflow-auto flex-1">
+          <Table>
+            <TableHeader className="bg-muted/50 sticky top-0 z-10 backdrop-blur">
+              <TableRow>
+                <TableHead className="w-[50px]">#</TableHead>
+                <TableHead>Mês</TableHead>
+                <TableHead>Ano</TableHead>
+                <TableHead>REQ</TableHead>
+                <TableHead>Posto</TableHead>
+                <TableHead>Data</TableHead>
+                <TableHead>Placa</TableHead>
+                <TableHead className="text-right">Litros</TableHead>
+                <TableHead className="text-right">R$/L</TableHead>
+                <TableHead className="text-right font-bold text-[#0a192f]">Total (R$)</TableHead>
+                <TableHead className="text-right">KM Início</TableHead>
+                <TableHead className="text-right">KM Final</TableHead>
+                <TableHead className="text-right">KM Perc.</TableHead>
+                <TableHead className="text-center">Média (km/l)</TableHead>
+                <TableHead className="w-[50px]"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    {Array.from({ length: 15 }).map((_, j) => (
+                      <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : abasts.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={15} className="text-center h-32 text-muted-foreground">
+                    Nenhum abastecimento encontrado.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                abasts.map((a, index) => (
+                  <TableRow key={a.id} className="hover:bg-muted/50 transition-colors">
+                    <TableCell className="text-muted-foreground">{index + 1}</TableCell>
+                    <TableCell>{a.mes}</TableCell>
+                    <TableCell>{a.ano}</TableCell>
+                    <TableCell>{a.requisicao || "-"}</TableCell>
+                    <TableCell className="truncate max-w-[120px]">{a.posto || "-"}</TableCell>
+                    <TableCell className="whitespace-nowrap">{formatDate(a.data)}</TableCell>
+                    <TableCell className="font-medium">{a.placa}</TableCell>
+                    <TableCell className="text-right">{formatNumber(a.litros, 2)} L</TableCell>
+                    <TableCell className="text-right">{formatCurrency(a.precoLitro)}</TableCell>
+                    <TableCell className="text-right font-bold">{formatCurrency(a.totalPago)}</TableCell>
+                    <TableCell className="text-right text-muted-foreground">{formatNumber(a.kmInicio, 0)}</TableCell>
+                    <TableCell className="text-right text-muted-foreground">{formatNumber(a.kmFinal, 0)}</TableCell>
+                    <TableCell className="text-right">{formatNumber(a.kmPercorrido, 0)}</TableCell>
+                    <TableCell className="text-center">
+                      <div className={`px-2 py-1 rounded inline-block font-bold min-w-[60px] ${getMediaColor(a.media)}`}>
+                        {formatNumber(a.media, 2)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => { setEditingAbast(a); setIsFormOpen(true); }}>
+                            <Pencil className="mr-2 h-4 w-4" /> Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(a.id)}>
+                            <Trash2 className="mr-2 h-4 w-4" /> Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+            {abasts.length > 0 && (
+              <TableFooter className="bg-[#0a192f] text-white font-bold sticky bottom-0">
+                <TableRow>
+                  <TableCell colSpan={7} className="text-right">TOTAIS:</TableCell>
+                  <TableCell className="text-right">{formatNumber(totalLitros, 2)} L</TableCell>
+                  <TableCell></TableCell>
+                  <TableCell className="text-right text-[#2ecc71]">{formatCurrency(totalPago)}</TableCell>
+                  <TableCell colSpan={3}></TableCell>
+                  <TableCell className="text-center bg-[#1a2f4c]">{formatNumber(avgMedia, 2)}</TableCell>
+                  <TableCell></TableCell>
+                </TableRow>
+              </TableFooter>
+            )}
+          </Table>
+        </div>
+      </div>
+
+      <AbastecimentoFormModal 
+        open={isFormOpen} 
+        onOpenChange={setIsFormOpen} 
+        abastecimento={editingAbast} 
+      />
+    </div>
+  );
+}

@@ -3,11 +3,11 @@
  * Do not edit manually.
  * Api
  * Fleet Revenue Management API
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 0.2.0
  */
-import type { Trip } from './trip';
+import type { Frete } from './frete';
 
-export interface TripListResponse {
-  trips: Trip[];
+export interface FreteListResponse {
+  fretes: Frete[];
   total: number;
 }

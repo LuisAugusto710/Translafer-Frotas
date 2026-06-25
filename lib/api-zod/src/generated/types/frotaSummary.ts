@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.2.0
  */
 
-export interface HealthStatus {
-  status: string;
+export interface FrotaSummary {
+  frota: string;
+  totalFretes: number;
+  totalFrete: number;
+  totalPedagio: number;
+  totalGeral: number;
 }

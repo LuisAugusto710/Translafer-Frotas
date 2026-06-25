@@ -3,7 +3,7 @@
  * Do not edit manually.
  * Api
  * Fleet Revenue Management API
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 0.2.0
  */
 import {
   useMutation,
@@ -20,26 +20,32 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  AnnualPerformance,
-  BulkCreateResult,
-  BulkTripInput,
-  DashboardSummary,
+  Abastecimento,
+  AbastecimentoInput,
+  AbastecimentoListResponse,
+  AbastecimentoUpdate,
+  BulkFreteInput,
+  BulkFreteResult,
+  DashboardResumo,
+  DieselByPlaca,
   ErrorResponse,
-  GetAnnualPerformanceParams,
-  GetDashboardSummaryParams,
-  GetExpensesComparisonParams,
-  GetRevenueByPeriodParams,
-  GetRevenueByTruckParams,
+  Frete,
+  FreteInput,
+  FreteListResponse,
+  FreteUpdate,
+  FrotaRevenue,
+  FrotaSummary,
+  GetDashboardResumoParams,
+  GetDieselByPlacaParams,
+  GetMensalComparativoParams,
+  GetRevenueByFrotaParams,
+  GetRevenueByPeriodoParams,
   HealthStatus,
-  ListTripsParams,
-  MonthlyComparison,
-  PeriodRevenue,
-  Trip,
-  TripInput,
-  TripListResponse,
-  TripUpdate,
-  TruckRevenue,
-  TruckSummary
+  ListAbastecimentosParams,
+  ListFretesParams,
+  MensalComparativo,
+  PeriodoRevenue,
+  PlacaSummary
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -78,7 +84,6 @@ export const getHealthCheckUrl = () => {
 }
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const healthCheck = async ( options?: RequestInit): Promise<HealthStatus> => {
@@ -147,7 +152,7 @@ export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, 
 
 
 
-export const getListTripsUrl = (params?: ListTripsParams,) => {
+export const getListFretesUrl = (params?: ListFretesParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -159,16 +164,15 @@ export const getListTripsUrl = (params?: ListTripsParams,) => {
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/trips?${stringifiedParams}` : `/api/trips`
+  return stringifiedParams.length > 0 ? `/api/fretes?${stringifiedParams}` : `/api/fretes`
 }
 
 /**
- * List all trip records with optional filters
- * @summary List trips
+ * @summary List freight records
  */
-export const listTrips = async (params?: ListTripsParams, options?: RequestInit): Promise<TripListResponse> => {
+export const listFretes = async (params?: ListFretesParams, options?: RequestInit): Promise<FreteListResponse> => {
 
-  return customFetch<TripListResponse>(getListTripsUrl(params),
+  return customFetch<FreteListResponse>(getListFretesUrl(params),
   {
     ...options,
     method: 'GET'
@@ -181,45 +185,45 @@ export const listTrips = async (params?: ListTripsParams, options?: RequestInit)
 
 
 
-export const getListTripsQueryKey = (params?: ListTripsParams,) => {
+export const getListFretesQueryKey = (params?: ListFretesParams,) => {
     return [
-    `/api/trips`, ...(params ? [params] : [])
+    `/api/fretes`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getListTripsQueryOptions = <TData = Awaited<ReturnType<typeof listTrips>>, TError = ErrorType<unknown>>(params?: ListTripsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTrips>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getListFretesQueryOptions = <TData = Awaited<ReturnType<typeof listFretes>>, TError = ErrorType<unknown>>(params?: ListFretesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFretes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListTripsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListFretesQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listTrips>>> = ({ signal }) => listTrips(params, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listFretes>>> = ({ signal }) => listFretes(params, { signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listTrips>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listFretes>>, TError, TData> & { queryKey: QueryKey }
 }
 
-export type ListTripsQueryResult = NonNullable<Awaited<ReturnType<typeof listTrips>>>
-export type ListTripsQueryError = ErrorType<unknown>
+export type ListFretesQueryResult = NonNullable<Awaited<ReturnType<typeof listFretes>>>
+export type ListFretesQueryError = ErrorType<unknown>
 
 
 /**
- * @summary List trips
+ * @summary List freight records
  */
 
-export function useListTrips<TData = Awaited<ReturnType<typeof listTrips>>, TError = ErrorType<unknown>>(
- params?: ListTripsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTrips>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useListFretes<TData = Awaited<ReturnType<typeof listFretes>>, TError = ErrorType<unknown>>(
+ params?: ListFretesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFretes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getListTripsQueryOptions(params,options)
+  const queryOptions = getListFretesQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -232,36 +236,33 @@ export function useListTrips<TData = Awaited<ReturnType<typeof listTrips>>, TErr
 
 
 
-export const getCreateTripUrl = () => {
+export const getCreateFreteUrl = () => {
 
 
 
 
-  return `/api/trips`
+  return `/api/fretes`
 }
 
-/**
- * @summary Create a trip record
- */
-export const createTrip = async (tripInput: TripInput, options?: RequestInit): Promise<Trip> => {
+export const createFrete = async (freteInput: FreteInput, options?: RequestInit): Promise<Frete> => {
 
-  return customFetch<Trip>(getCreateTripUrl(),
+  return customFetch<Frete>(getCreateFreteUrl(),
   {
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(tripInput)
+    body: JSON.stringify(freteInput)
   }
 );}
 
 
 
 
-export const getCreateTripMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTrip>>, TError,{data: BodyType<TripInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createTrip>>, TError,{data: BodyType<TripInput>}, TContext> => {
+export const getCreateFreteMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFrete>>, TError,{data: BodyType<FreteInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createFrete>>, TError,{data: BodyType<FreteInput>}, TContext> => {
 
-const mutationKey = ['createTrip'];
+const mutationKey = ['createFrete'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -271,10 +272,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTrip>>, {data: BodyType<TripInput>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createFrete>>, {data: BodyType<FreteInput>}> = (props) => {
           const {data} = props ?? {};
 
-          return  createTrip(data,requestOptions)
+          return  createFrete(data,requestOptions)
         }
 
 
@@ -284,54 +285,48 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateTripMutationResult = NonNullable<Awaited<ReturnType<typeof createTrip>>>
-    export type CreateTripMutationBody = BodyType<TripInput>
-    export type CreateTripMutationError = ErrorType<unknown>
+    export type CreateFreteMutationResult = NonNullable<Awaited<ReturnType<typeof createFrete>>>
+    export type CreateFreteMutationBody = BodyType<FreteInput>
+    export type CreateFreteMutationError = ErrorType<unknown>
 
-    /**
- * @summary Create a trip record
- */
-export const useCreateTrip = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTrip>>, TError,{data: BodyType<TripInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+    export const useCreateFrete = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFrete>>, TError,{data: BodyType<FreteInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
-        Awaited<ReturnType<typeof createTrip>>,
+        Awaited<ReturnType<typeof createFrete>>,
         TError,
-        {data: BodyType<TripInput>},
+        {data: BodyType<FreteInput>},
         TContext
       > => {
-      return useMutation(getCreateTripMutationOptions(options));
+      return useMutation(getCreateFreteMutationOptions(options));
     }
 
-export const getBulkCreateTripsUrl = () => {
+export const getBulkCreateFretesUrl = () => {
 
 
 
 
-  return `/api/trips/bulk`
+  return `/api/fretes/bulk`
 }
 
-/**
- * @summary Bulk create trip records
- */
-export const bulkCreateTrips = async (bulkTripInput: BulkTripInput, options?: RequestInit): Promise<BulkCreateResult> => {
+export const bulkCreateFretes = async (bulkFreteInput: BulkFreteInput, options?: RequestInit): Promise<BulkFreteResult> => {
 
-  return customFetch<BulkCreateResult>(getBulkCreateTripsUrl(),
+  return customFetch<BulkFreteResult>(getBulkCreateFretesUrl(),
   {
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(bulkTripInput)
+    body: JSON.stringify(bulkFreteInput)
   }
 );}
 
 
 
 
-export const getBulkCreateTripsMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkCreateTrips>>, TError,{data: BodyType<BulkTripInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof bulkCreateTrips>>, TError,{data: BodyType<BulkTripInput>}, TContext> => {
+export const getBulkCreateFretesMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkCreateFretes>>, TError,{data: BodyType<BulkFreteInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof bulkCreateFretes>>, TError,{data: BodyType<BulkFreteInput>}, TContext> => {
 
-const mutationKey = ['bulkCreateTrips'];
+const mutationKey = ['bulkCreateFretes'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -341,10 +336,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof bulkCreateTrips>>, {data: BodyType<BulkTripInput>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof bulkCreateFretes>>, {data: BodyType<BulkFreteInput>}> = (props) => {
           const {data} = props ?? {};
 
-          return  bulkCreateTrips(data,requestOptions)
+          return  bulkCreateFretes(data,requestOptions)
         }
 
 
@@ -354,38 +349,32 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type BulkCreateTripsMutationResult = NonNullable<Awaited<ReturnType<typeof bulkCreateTrips>>>
-    export type BulkCreateTripsMutationBody = BodyType<BulkTripInput>
-    export type BulkCreateTripsMutationError = ErrorType<unknown>
+    export type BulkCreateFretesMutationResult = NonNullable<Awaited<ReturnType<typeof bulkCreateFretes>>>
+    export type BulkCreateFretesMutationBody = BodyType<BulkFreteInput>
+    export type BulkCreateFretesMutationError = ErrorType<unknown>
 
-    /**
- * @summary Bulk create trip records
- */
-export const useBulkCreateTrips = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkCreateTrips>>, TError,{data: BodyType<BulkTripInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+    export const useBulkCreateFretes = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkCreateFretes>>, TError,{data: BodyType<BulkFreteInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
-        Awaited<ReturnType<typeof bulkCreateTrips>>,
+        Awaited<ReturnType<typeof bulkCreateFretes>>,
         TError,
-        {data: BodyType<BulkTripInput>},
+        {data: BodyType<BulkFreteInput>},
         TContext
       > => {
-      return useMutation(getBulkCreateTripsMutationOptions(options));
+      return useMutation(getBulkCreateFretesMutationOptions(options));
     }
 
-export const getGetTripUrl = (id: number,) => {
+export const getGetFreteUrl = (id: number,) => {
 
 
 
 
-  return `/api/trips/${id}`
+  return `/api/fretes/${id}`
 }
 
-/**
- * @summary Get a single trip
- */
-export const getTrip = async (id: number, options?: RequestInit): Promise<Trip> => {
+export const getFrete = async (id: number, options?: RequestInit): Promise<Frete> => {
 
-  return customFetch<Trip>(getGetTripUrl(id),
+  return customFetch<Frete>(getGetFreteUrl(id),
   {
     ...options,
     method: 'GET'
@@ -398,45 +387,42 @@ export const getTrip = async (id: number, options?: RequestInit): Promise<Trip> 
 
 
 
-export const getGetTripQueryKey = (id: number,) => {
+export const getGetFreteQueryKey = (id: number,) => {
     return [
-    `/api/trips/${id}`
+    `/api/fretes/${id}`
     ] as const;
     }
 
 
-export const getGetTripQueryOptions = <TData = Awaited<ReturnType<typeof getTrip>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTrip>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetFreteQueryOptions = <TData = Awaited<ReturnType<typeof getFrete>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFrete>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetTripQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetFreteQueryKey(id);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTrip>>> = ({ signal }) => getTrip(id, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFrete>>> = ({ signal }) => getFrete(id, { signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTrip>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFrete>>, TError, TData> & { queryKey: QueryKey }
 }
 
-export type GetTripQueryResult = NonNullable<Awaited<ReturnType<typeof getTrip>>>
-export type GetTripQueryError = ErrorType<ErrorResponse>
+export type GetFreteQueryResult = NonNullable<Awaited<ReturnType<typeof getFrete>>>
+export type GetFreteQueryError = ErrorType<ErrorResponse>
 
 
-/**
- * @summary Get a single trip
- */
 
-export function useGetTrip<TData = Awaited<ReturnType<typeof getTrip>>, TError = ErrorType<ErrorResponse>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTrip>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useGetFrete<TData = Awaited<ReturnType<typeof getFrete>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFrete>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetTripQueryOptions(id,options)
+  const queryOptions = getGetFreteQueryOptions(id,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -449,37 +435,34 @@ export function useGetTrip<TData = Awaited<ReturnType<typeof getTrip>>, TError =
 
 
 
-export const getUpdateTripUrl = (id: number,) => {
+export const getUpdateFreteUrl = (id: number,) => {
 
 
 
 
-  return `/api/trips/${id}`
+  return `/api/fretes/${id}`
 }
 
-/**
- * @summary Update a trip record
- */
-export const updateTrip = async (id: number,
-    tripUpdate: TripUpdate, options?: RequestInit): Promise<Trip> => {
+export const updateFrete = async (id: number,
+    freteUpdate: FreteUpdate, options?: RequestInit): Promise<Frete> => {
 
-  return customFetch<Trip>(getUpdateTripUrl(id),
+  return customFetch<Frete>(getUpdateFreteUrl(id),
   {
     ...options,
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(tripUpdate)
+    body: JSON.stringify(freteUpdate)
   }
 );}
 
 
 
 
-export const getUpdateTripMutationOptions = <TError = ErrorType<ErrorResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTrip>>, TError,{id: number;data: BodyType<TripUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateTrip>>, TError,{id: number;data: BodyType<TripUpdate>}, TContext> => {
+export const getUpdateFreteMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFrete>>, TError,{id: number;data: BodyType<FreteUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateFrete>>, TError,{id: number;data: BodyType<FreteUpdate>}, TContext> => {
 
-const mutationKey = ['updateTrip'];
+const mutationKey = ['updateFrete'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -489,10 +472,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTrip>>, {id: number;data: BodyType<TripUpdate>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateFrete>>, {id: number;data: BodyType<FreteUpdate>}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  updateTrip(id,data,requestOptions)
+          return  updateFrete(id,data,requestOptions)
         }
 
 
@@ -502,38 +485,32 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateTripMutationResult = NonNullable<Awaited<ReturnType<typeof updateTrip>>>
-    export type UpdateTripMutationBody = BodyType<TripUpdate>
-    export type UpdateTripMutationError = ErrorType<ErrorResponse>
+    export type UpdateFreteMutationResult = NonNullable<Awaited<ReturnType<typeof updateFrete>>>
+    export type UpdateFreteMutationBody = BodyType<FreteUpdate>
+    export type UpdateFreteMutationError = ErrorType<ErrorResponse>
 
-    /**
- * @summary Update a trip record
- */
-export const useUpdateTrip = <TError = ErrorType<ErrorResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTrip>>, TError,{id: number;data: BodyType<TripUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+    export const useUpdateFrete = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFrete>>, TError,{id: number;data: BodyType<FreteUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
-        Awaited<ReturnType<typeof updateTrip>>,
+        Awaited<ReturnType<typeof updateFrete>>,
         TError,
-        {id: number;data: BodyType<TripUpdate>},
+        {id: number;data: BodyType<FreteUpdate>},
         TContext
       > => {
-      return useMutation(getUpdateTripMutationOptions(options));
+      return useMutation(getUpdateFreteMutationOptions(options));
     }
 
-export const getDeleteTripUrl = (id: number,) => {
+export const getDeleteFreteUrl = (id: number,) => {
 
 
 
 
-  return `/api/trips/${id}`
+  return `/api/fretes/${id}`
 }
 
-/**
- * @summary Delete a trip record
- */
-export const deleteTrip = async (id: number, options?: RequestInit): Promise<void> => {
+export const deleteFrete = async (id: number, options?: RequestInit): Promise<void> => {
 
-  return customFetch<void>(getDeleteTripUrl(id),
+  return customFetch<void>(getDeleteFreteUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -545,11 +522,11 @@ export const deleteTrip = async (id: number, options?: RequestInit): Promise<voi
 
 
 
-export const getDeleteTripMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTrip>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteTrip>>, TError,{id: number}, TContext> => {
+export const getDeleteFreteMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFrete>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteFrete>>, TError,{id: number}, TContext> => {
 
-const mutationKey = ['deleteTrip'];
+const mutationKey = ['deleteFrete'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -559,10 +536,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTrip>>, {id: number}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteFrete>>, {id: number}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteTrip(id,requestOptions)
+          return  deleteFrete(id,requestOptions)
         }
 
 
@@ -572,38 +549,35 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteTripMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTrip>>>
+    export type DeleteFreteMutationResult = NonNullable<Awaited<ReturnType<typeof deleteFrete>>>
 
-    export type DeleteTripMutationError = ErrorType<unknown>
+    export type DeleteFreteMutationError = ErrorType<unknown>
 
-    /**
- * @summary Delete a trip record
- */
-export const useDeleteTrip = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTrip>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+    export const useDeleteFrete = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFrete>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
-        Awaited<ReturnType<typeof deleteTrip>>,
+        Awaited<ReturnType<typeof deleteFrete>>,
         TError,
         {id: number},
         TContext
       > => {
-      return useMutation(getDeleteTripMutationOptions(options));
+      return useMutation(getDeleteFreteMutationOptions(options));
     }
 
-export const getListTrucksUrl = () => {
+export const getListFrotasUrl = () => {
 
 
 
 
-  return `/api/trucks`
+  return `/api/frotas`
 }
 
 /**
- * @summary List unique trucks
+ * @summary List unique fleet trucks
  */
-export const listTrucks = async ( options?: RequestInit): Promise<TruckSummary[]> => {
+export const listFrotas = async ( options?: RequestInit): Promise<FrotaSummary[]> => {
 
-  return customFetch<TruckSummary[]>(getListTrucksUrl(),
+  return customFetch<FrotaSummary[]>(getListFrotasUrl(),
   {
     ...options,
     method: 'GET'
@@ -616,45 +590,45 @@ export const listTrucks = async ( options?: RequestInit): Promise<TruckSummary[]
 
 
 
-export const getListTrucksQueryKey = () => {
+export const getListFrotasQueryKey = () => {
     return [
-    `/api/trucks`
+    `/api/frotas`
     ] as const;
     }
 
 
-export const getListTrucksQueryOptions = <TData = Awaited<ReturnType<typeof listTrucks>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTrucks>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getListFrotasQueryOptions = <TData = Awaited<ReturnType<typeof listFrotas>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFrotas>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListTrucksQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListFrotasQueryKey();
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listTrucks>>> = ({ signal }) => listTrucks({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listFrotas>>> = ({ signal }) => listFrotas({ signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listTrucks>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listFrotas>>, TError, TData> & { queryKey: QueryKey }
 }
 
-export type ListTrucksQueryResult = NonNullable<Awaited<ReturnType<typeof listTrucks>>>
-export type ListTrucksQueryError = ErrorType<unknown>
+export type ListFrotasQueryResult = NonNullable<Awaited<ReturnType<typeof listFrotas>>>
+export type ListFrotasQueryError = ErrorType<unknown>
 
 
 /**
- * @summary List unique trucks
+ * @summary List unique fleet trucks
  */
 
-export function useListTrucks<TData = Awaited<ReturnType<typeof listTrucks>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTrucks>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useListFrotas<TData = Awaited<ReturnType<typeof listFrotas>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFrotas>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getListTrucksQueryOptions(options)
+  const queryOptions = getListFrotasQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -667,7 +641,7 @@ export function useListTrucks<TData = Awaited<ReturnType<typeof listTrucks>>, TE
 
 
 
-export const getGetDashboardSummaryUrl = (params?: GetDashboardSummaryParams,) => {
+export const getListAbastecimentosUrl = (params?: ListAbastecimentosParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -679,15 +653,15 @@ export const getGetDashboardSummaryUrl = (params?: GetDashboardSummaryParams,) =
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/dashboard/summary?${stringifiedParams}` : `/api/dashboard/summary`
+  return stringifiedParams.length > 0 ? `/api/abastecimentos?${stringifiedParams}` : `/api/abastecimentos`
 }
 
 /**
- * @summary Financial summary
+ * @summary List fuel records
  */
-export const getDashboardSummary = async (params?: GetDashboardSummaryParams, options?: RequestInit): Promise<DashboardSummary> => {
+export const listAbastecimentos = async (params?: ListAbastecimentosParams, options?: RequestInit): Promise<AbastecimentoListResponse> => {
 
-  return customFetch<DashboardSummary>(getGetDashboardSummaryUrl(params),
+  return customFetch<AbastecimentoListResponse>(getListAbastecimentosUrl(params),
   {
     ...options,
     method: 'GET'
@@ -700,45 +674,45 @@ export const getDashboardSummary = async (params?: GetDashboardSummaryParams, op
 
 
 
-export const getGetDashboardSummaryQueryKey = (params?: GetDashboardSummaryParams,) => {
+export const getListAbastecimentosQueryKey = (params?: ListAbastecimentosParams,) => {
     return [
-    `/api/dashboard/summary`, ...(params ? [params] : [])
+    `/api/abastecimentos`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getGetDashboardSummaryQueryOptions = <TData = Awaited<ReturnType<typeof getDashboardSummary>>, TError = ErrorType<unknown>>(params?: GetDashboardSummaryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDashboardSummary>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getListAbastecimentosQueryOptions = <TData = Awaited<ReturnType<typeof listAbastecimentos>>, TError = ErrorType<unknown>>(params?: ListAbastecimentosParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAbastecimentos>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetDashboardSummaryQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAbastecimentosQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDashboardSummary>>> = ({ signal }) => getDashboardSummary(params, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAbastecimentos>>> = ({ signal }) => listAbastecimentos(params, { signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDashboardSummary>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAbastecimentos>>, TError, TData> & { queryKey: QueryKey }
 }
 
-export type GetDashboardSummaryQueryResult = NonNullable<Awaited<ReturnType<typeof getDashboardSummary>>>
-export type GetDashboardSummaryQueryError = ErrorType<unknown>
+export type ListAbastecimentosQueryResult = NonNullable<Awaited<ReturnType<typeof listAbastecimentos>>>
+export type ListAbastecimentosQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Financial summary
+ * @summary List fuel records
  */
 
-export function useGetDashboardSummary<TData = Awaited<ReturnType<typeof getDashboardSummary>>, TError = ErrorType<unknown>>(
- params?: GetDashboardSummaryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDashboardSummary>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useListAbastecimentos<TData = Awaited<ReturnType<typeof listAbastecimentos>>, TError = ErrorType<unknown>>(
+ params?: ListAbastecimentosParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAbastecimentos>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetDashboardSummaryQueryOptions(params,options)
+  const queryOptions = getListAbastecimentosQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -751,27 +725,213 @@ export function useGetDashboardSummary<TData = Awaited<ReturnType<typeof getDash
 
 
 
-export const getGetRevenueByTruckUrl = (params?: GetRevenueByTruckParams,) => {
-  const normalizedParams = new URLSearchParams();
+export const getCreateAbastecimentoUrl = () => {
 
-  Object.entries(params || {}).forEach(([key, value]) => {
 
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : String(value))
+
+
+  return `/api/abastecimentos`
+}
+
+export const createAbastecimento = async (abastecimentoInput: AbastecimentoInput, options?: RequestInit): Promise<Abastecimento> => {
+
+  return customFetch<Abastecimento>(getCreateAbastecimentoUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(abastecimentoInput)
+  }
+);}
+
+
+
+
+export const getCreateAbastecimentoMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAbastecimento>>, TError,{data: BodyType<AbastecimentoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createAbastecimento>>, TError,{data: BodyType<AbastecimentoInput>}, TContext> => {
+
+const mutationKey = ['createAbastecimento'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAbastecimento>>, {data: BodyType<AbastecimentoInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createAbastecimento(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateAbastecimentoMutationResult = NonNullable<Awaited<ReturnType<typeof createAbastecimento>>>
+    export type CreateAbastecimentoMutationBody = BodyType<AbastecimentoInput>
+    export type CreateAbastecimentoMutationError = ErrorType<unknown>
+
+    export const useCreateAbastecimento = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAbastecimento>>, TError,{data: BodyType<AbastecimentoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createAbastecimento>>,
+        TError,
+        {data: BodyType<AbastecimentoInput>},
+        TContext
+      > => {
+      return useMutation(getCreateAbastecimentoMutationOptions(options));
     }
-  });
 
-  const stringifiedParams = normalizedParams.toString();
+export const getUpdateAbastecimentoUrl = (id: number,) => {
 
-  return stringifiedParams.length > 0 ? `/api/dashboard/by-truck?${stringifiedParams}` : `/api/dashboard/by-truck`
+
+
+
+  return `/api/abastecimentos/${id}`
+}
+
+export const updateAbastecimento = async (id: number,
+    abastecimentoUpdate: AbastecimentoUpdate, options?: RequestInit): Promise<Abastecimento> => {
+
+  return customFetch<Abastecimento>(getUpdateAbastecimentoUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(abastecimentoUpdate)
+  }
+);}
+
+
+
+
+export const getUpdateAbastecimentoMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAbastecimento>>, TError,{id: number;data: BodyType<AbastecimentoUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateAbastecimento>>, TError,{id: number;data: BodyType<AbastecimentoUpdate>}, TContext> => {
+
+const mutationKey = ['updateAbastecimento'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAbastecimento>>, {id: number;data: BodyType<AbastecimentoUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateAbastecimento(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateAbastecimentoMutationResult = NonNullable<Awaited<ReturnType<typeof updateAbastecimento>>>
+    export type UpdateAbastecimentoMutationBody = BodyType<AbastecimentoUpdate>
+    export type UpdateAbastecimentoMutationError = ErrorType<ErrorResponse>
+
+    export const useUpdateAbastecimento = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAbastecimento>>, TError,{id: number;data: BodyType<AbastecimentoUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateAbastecimento>>,
+        TError,
+        {id: number;data: BodyType<AbastecimentoUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateAbastecimentoMutationOptions(options));
+    }
+
+export const getDeleteAbastecimentoUrl = (id: number,) => {
+
+
+
+
+  return `/api/abastecimentos/${id}`
+}
+
+export const deleteAbastecimento = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteAbastecimentoUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteAbastecimentoMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAbastecimento>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAbastecimento>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteAbastecimento'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAbastecimento>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteAbastecimento(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteAbastecimentoMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAbastecimento>>>
+
+    export type DeleteAbastecimentoMutationError = ErrorType<unknown>
+
+    export const useDeleteAbastecimento = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAbastecimento>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteAbastecimento>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteAbastecimentoMutationOptions(options));
+    }
+
+export const getListPlacasUrl = () => {
+
+
+
+
+  return `/api/placas`
 }
 
 /**
- * @summary Revenue breakdown by truck
+ * @summary List unique truck plates
  */
-export const getRevenueByTruck = async (params?: GetRevenueByTruckParams, options?: RequestInit): Promise<TruckRevenue[]> => {
+export const listPlacas = async ( options?: RequestInit): Promise<PlacaSummary[]> => {
 
-  return customFetch<TruckRevenue[]>(getGetRevenueByTruckUrl(params),
+  return customFetch<PlacaSummary[]>(getListPlacasUrl(),
   {
     ...options,
     method: 'GET'
@@ -784,45 +944,45 @@ export const getRevenueByTruck = async (params?: GetRevenueByTruckParams, option
 
 
 
-export const getGetRevenueByTruckQueryKey = (params?: GetRevenueByTruckParams,) => {
+export const getListPlacasQueryKey = () => {
     return [
-    `/api/dashboard/by-truck`, ...(params ? [params] : [])
+    `/api/placas`
     ] as const;
     }
 
 
-export const getGetRevenueByTruckQueryOptions = <TData = Awaited<ReturnType<typeof getRevenueByTruck>>, TError = ErrorType<unknown>>(params?: GetRevenueByTruckParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRevenueByTruck>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getListPlacasQueryOptions = <TData = Awaited<ReturnType<typeof listPlacas>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPlacas>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetRevenueByTruckQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListPlacasQueryKey();
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRevenueByTruck>>> = ({ signal }) => getRevenueByTruck(params, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPlacas>>> = ({ signal }) => listPlacas({ signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRevenueByTruck>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPlacas>>, TError, TData> & { queryKey: QueryKey }
 }
 
-export type GetRevenueByTruckQueryResult = NonNullable<Awaited<ReturnType<typeof getRevenueByTruck>>>
-export type GetRevenueByTruckQueryError = ErrorType<unknown>
+export type ListPlacasQueryResult = NonNullable<Awaited<ReturnType<typeof listPlacas>>>
+export type ListPlacasQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Revenue breakdown by truck
+ * @summary List unique truck plates
  */
 
-export function useGetRevenueByTruck<TData = Awaited<ReturnType<typeof getRevenueByTruck>>, TError = ErrorType<unknown>>(
- params?: GetRevenueByTruckParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRevenueByTruck>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useListPlacas<TData = Awaited<ReturnType<typeof listPlacas>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPlacas>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetRevenueByTruckQueryOptions(params,options)
+  const queryOptions = getListPlacasQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -835,7 +995,7 @@ export function useGetRevenueByTruck<TData = Awaited<ReturnType<typeof getRevenu
 
 
 
-export const getGetRevenueByPeriodUrl = (params: GetRevenueByPeriodParams,) => {
+export const getGetDashboardResumoUrl = (params?: GetDashboardResumoParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -847,15 +1007,12 @@ export const getGetRevenueByPeriodUrl = (params: GetRevenueByPeriodParams,) => {
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/dashboard/by-period?${stringifiedParams}` : `/api/dashboard/by-period`
+  return stringifiedParams.length > 0 ? `/api/dashboard/resumo?${stringifiedParams}` : `/api/dashboard/resumo`
 }
 
-/**
- * @summary Revenue grouped by time period
- */
-export const getRevenueByPeriod = async (params: GetRevenueByPeriodParams, options?: RequestInit): Promise<PeriodRevenue[]> => {
+export const getDashboardResumo = async (params?: GetDashboardResumoParams, options?: RequestInit): Promise<DashboardResumo> => {
 
-  return customFetch<PeriodRevenue[]>(getGetRevenueByPeriodUrl(params),
+  return customFetch<DashboardResumo>(getGetDashboardResumoUrl(params),
   {
     ...options,
     method: 'GET'
@@ -868,45 +1025,42 @@ export const getRevenueByPeriod = async (params: GetRevenueByPeriodParams, optio
 
 
 
-export const getGetRevenueByPeriodQueryKey = (params?: GetRevenueByPeriodParams,) => {
+export const getGetDashboardResumoQueryKey = (params?: GetDashboardResumoParams,) => {
     return [
-    `/api/dashboard/by-period`, ...(params ? [params] : [])
+    `/api/dashboard/resumo`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getGetRevenueByPeriodQueryOptions = <TData = Awaited<ReturnType<typeof getRevenueByPeriod>>, TError = ErrorType<unknown>>(params: GetRevenueByPeriodParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRevenueByPeriod>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetDashboardResumoQueryOptions = <TData = Awaited<ReturnType<typeof getDashboardResumo>>, TError = ErrorType<unknown>>(params?: GetDashboardResumoParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDashboardResumo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetRevenueByPeriodQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetDashboardResumoQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRevenueByPeriod>>> = ({ signal }) => getRevenueByPeriod(params, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDashboardResumo>>> = ({ signal }) => getDashboardResumo(params, { signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRevenueByPeriod>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDashboardResumo>>, TError, TData> & { queryKey: QueryKey }
 }
 
-export type GetRevenueByPeriodQueryResult = NonNullable<Awaited<ReturnType<typeof getRevenueByPeriod>>>
-export type GetRevenueByPeriodQueryError = ErrorType<unknown>
+export type GetDashboardResumoQueryResult = NonNullable<Awaited<ReturnType<typeof getDashboardResumo>>>
+export type GetDashboardResumoQueryError = ErrorType<unknown>
 
 
-/**
- * @summary Revenue grouped by time period
- */
 
-export function useGetRevenueByPeriod<TData = Awaited<ReturnType<typeof getRevenueByPeriod>>, TError = ErrorType<unknown>>(
- params: GetRevenueByPeriodParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRevenueByPeriod>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useGetDashboardResumo<TData = Awaited<ReturnType<typeof getDashboardResumo>>, TError = ErrorType<unknown>>(
+ params?: GetDashboardResumoParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDashboardResumo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetRevenueByPeriodQueryOptions(params,options)
+  const queryOptions = getGetDashboardResumoQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -919,7 +1073,7 @@ export function useGetRevenueByPeriod<TData = Awaited<ReturnType<typeof getReven
 
 
 
-export const getGetAnnualPerformanceUrl = (params?: GetAnnualPerformanceParams,) => {
+export const getGetRevenueByFrotaUrl = (params?: GetRevenueByFrotaParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -931,15 +1085,12 @@ export const getGetAnnualPerformanceUrl = (params?: GetAnnualPerformanceParams,)
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/dashboard/annual?${stringifiedParams}` : `/api/dashboard/annual`
+  return stringifiedParams.length > 0 ? `/api/dashboard/por-frota?${stringifiedParams}` : `/api/dashboard/por-frota`
 }
 
-/**
- * @summary Annual performance metrics
- */
-export const getAnnualPerformance = async (params?: GetAnnualPerformanceParams, options?: RequestInit): Promise<AnnualPerformance> => {
+export const getRevenueByFrota = async (params?: GetRevenueByFrotaParams, options?: RequestInit): Promise<FrotaRevenue[]> => {
 
-  return customFetch<AnnualPerformance>(getGetAnnualPerformanceUrl(params),
+  return customFetch<FrotaRevenue[]>(getGetRevenueByFrotaUrl(params),
   {
     ...options,
     method: 'GET'
@@ -952,45 +1103,42 @@ export const getAnnualPerformance = async (params?: GetAnnualPerformanceParams, 
 
 
 
-export const getGetAnnualPerformanceQueryKey = (params?: GetAnnualPerformanceParams,) => {
+export const getGetRevenueByFrotaQueryKey = (params?: GetRevenueByFrotaParams,) => {
     return [
-    `/api/dashboard/annual`, ...(params ? [params] : [])
+    `/api/dashboard/por-frota`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getGetAnnualPerformanceQueryOptions = <TData = Awaited<ReturnType<typeof getAnnualPerformance>>, TError = ErrorType<unknown>>(params?: GetAnnualPerformanceParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAnnualPerformance>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetRevenueByFrotaQueryOptions = <TData = Awaited<ReturnType<typeof getRevenueByFrota>>, TError = ErrorType<unknown>>(params?: GetRevenueByFrotaParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRevenueByFrota>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAnnualPerformanceQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetRevenueByFrotaQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAnnualPerformance>>> = ({ signal }) => getAnnualPerformance(params, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRevenueByFrota>>> = ({ signal }) => getRevenueByFrota(params, { signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAnnualPerformance>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRevenueByFrota>>, TError, TData> & { queryKey: QueryKey }
 }
 
-export type GetAnnualPerformanceQueryResult = NonNullable<Awaited<ReturnType<typeof getAnnualPerformance>>>
-export type GetAnnualPerformanceQueryError = ErrorType<unknown>
+export type GetRevenueByFrotaQueryResult = NonNullable<Awaited<ReturnType<typeof getRevenueByFrota>>>
+export type GetRevenueByFrotaQueryError = ErrorType<unknown>
 
 
-/**
- * @summary Annual performance metrics
- */
 
-export function useGetAnnualPerformance<TData = Awaited<ReturnType<typeof getAnnualPerformance>>, TError = ErrorType<unknown>>(
- params?: GetAnnualPerformanceParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAnnualPerformance>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useGetRevenueByFrota<TData = Awaited<ReturnType<typeof getRevenueByFrota>>, TError = ErrorType<unknown>>(
+ params?: GetRevenueByFrotaParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRevenueByFrota>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetAnnualPerformanceQueryOptions(params,options)
+  const queryOptions = getGetRevenueByFrotaQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -1003,7 +1151,7 @@ export function useGetAnnualPerformance<TData = Awaited<ReturnType<typeof getAnn
 
 
 
-export const getGetExpensesComparisonUrl = (params?: GetExpensesComparisonParams,) => {
+export const getGetRevenueByPeriodoUrl = (params: GetRevenueByPeriodoParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -1015,15 +1163,12 @@ export const getGetExpensesComparisonUrl = (params?: GetExpensesComparisonParams
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/dashboard/expenses-comparison?${stringifiedParams}` : `/api/dashboard/expenses-comparison`
+  return stringifiedParams.length > 0 ? `/api/dashboard/por-periodo?${stringifiedParams}` : `/api/dashboard/por-periodo`
 }
 
-/**
- * @summary Monthly revenue vs expenses comparison
- */
-export const getExpensesComparison = async (params?: GetExpensesComparisonParams, options?: RequestInit): Promise<MonthlyComparison[]> => {
+export const getRevenueByPeriodo = async (params: GetRevenueByPeriodoParams, options?: RequestInit): Promise<PeriodoRevenue[]> => {
 
-  return customFetch<MonthlyComparison[]>(getGetExpensesComparisonUrl(params),
+  return customFetch<PeriodoRevenue[]>(getGetRevenueByPeriodoUrl(params),
   {
     ...options,
     method: 'GET'
@@ -1036,45 +1181,198 @@ export const getExpensesComparison = async (params?: GetExpensesComparisonParams
 
 
 
-export const getGetExpensesComparisonQueryKey = (params?: GetExpensesComparisonParams,) => {
+export const getGetRevenueByPeriodoQueryKey = (params?: GetRevenueByPeriodoParams,) => {
     return [
-    `/api/dashboard/expenses-comparison`, ...(params ? [params] : [])
+    `/api/dashboard/por-periodo`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getGetExpensesComparisonQueryOptions = <TData = Awaited<ReturnType<typeof getExpensesComparison>>, TError = ErrorType<unknown>>(params?: GetExpensesComparisonParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getExpensesComparison>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetRevenueByPeriodoQueryOptions = <TData = Awaited<ReturnType<typeof getRevenueByPeriodo>>, TError = ErrorType<unknown>>(params: GetRevenueByPeriodoParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRevenueByPeriodo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetExpensesComparisonQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetRevenueByPeriodoQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getExpensesComparison>>> = ({ signal }) => getExpensesComparison(params, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRevenueByPeriodo>>> = ({ signal }) => getRevenueByPeriodo(params, { signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getExpensesComparison>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRevenueByPeriodo>>, TError, TData> & { queryKey: QueryKey }
 }
 
-export type GetExpensesComparisonQueryResult = NonNullable<Awaited<ReturnType<typeof getExpensesComparison>>>
-export type GetExpensesComparisonQueryError = ErrorType<unknown>
+export type GetRevenueByPeriodoQueryResult = NonNullable<Awaited<ReturnType<typeof getRevenueByPeriodo>>>
+export type GetRevenueByPeriodoQueryError = ErrorType<unknown>
 
 
-/**
- * @summary Monthly revenue vs expenses comparison
- */
 
-export function useGetExpensesComparison<TData = Awaited<ReturnType<typeof getExpensesComparison>>, TError = ErrorType<unknown>>(
- params?: GetExpensesComparisonParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getExpensesComparison>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useGetRevenueByPeriodo<TData = Awaited<ReturnType<typeof getRevenueByPeriodo>>, TError = ErrorType<unknown>>(
+ params: GetRevenueByPeriodoParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRevenueByPeriodo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetExpensesComparisonQueryOptions(params,options)
+  const queryOptions = getGetRevenueByPeriodoQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetDieselByPlacaUrl = (params?: GetDieselByPlacaParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/dashboard/diesel-por-placa?${stringifiedParams}` : `/api/dashboard/diesel-por-placa`
+}
+
+export const getDieselByPlaca = async (params?: GetDieselByPlacaParams, options?: RequestInit): Promise<DieselByPlaca[]> => {
+
+  return customFetch<DieselByPlaca[]>(getGetDieselByPlacaUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDieselByPlacaQueryKey = (params?: GetDieselByPlacaParams,) => {
+    return [
+    `/api/dashboard/diesel-por-placa`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetDieselByPlacaQueryOptions = <TData = Awaited<ReturnType<typeof getDieselByPlaca>>, TError = ErrorType<unknown>>(params?: GetDieselByPlacaParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDieselByPlaca>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDieselByPlacaQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDieselByPlaca>>> = ({ signal }) => getDieselByPlaca(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDieselByPlaca>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDieselByPlacaQueryResult = NonNullable<Awaited<ReturnType<typeof getDieselByPlaca>>>
+export type GetDieselByPlacaQueryError = ErrorType<unknown>
+
+
+
+export function useGetDieselByPlaca<TData = Awaited<ReturnType<typeof getDieselByPlaca>>, TError = ErrorType<unknown>>(
+ params?: GetDieselByPlacaParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDieselByPlaca>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDieselByPlacaQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetMensalComparativoUrl = (params?: GetMensalComparativoParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/dashboard/mensal?${stringifiedParams}` : `/api/dashboard/mensal`
+}
+
+export const getMensalComparativo = async (params?: GetMensalComparativoParams, options?: RequestInit): Promise<MensalComparativo[]> => {
+
+  return customFetch<MensalComparativo[]>(getGetMensalComparativoUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMensalComparativoQueryKey = (params?: GetMensalComparativoParams,) => {
+    return [
+    `/api/dashboard/mensal`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetMensalComparativoQueryOptions = <TData = Awaited<ReturnType<typeof getMensalComparativo>>, TError = ErrorType<unknown>>(params?: GetMensalComparativoParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMensalComparativo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMensalComparativoQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMensalComparativo>>> = ({ signal }) => getMensalComparativo(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMensalComparativo>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetMensalComparativoQueryResult = NonNullable<Awaited<ReturnType<typeof getMensalComparativo>>>
+export type GetMensalComparativoQueryError = ErrorType<unknown>
+
+
+
+export function useGetMensalComparativo<TData = Awaited<ReturnType<typeof getMensalComparativo>>, TError = ErrorType<unknown>>(
+ params?: GetMensalComparativoParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMensalComparativo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetMensalComparativoQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

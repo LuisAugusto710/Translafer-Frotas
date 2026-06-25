@@ -3,9 +3,9 @@
  * Do not edit manually.
  * Api
  * Fleet Revenue Management API
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 0.2.0
  */
 
-export type GetAnnualPerformanceParams = {
-year?: number;
+export type GetDieselByPlacaParams = {
+ano?: number;
 };

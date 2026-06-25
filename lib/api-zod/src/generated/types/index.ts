@@ -3,27 +3,33 @@
  * Do not edit manually.
  * Api
  * Fleet Revenue Management API
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 0.2.0
  */
 
-export * from './annualPerformance';
-export * from './bulkCreateResult';
-export * from './bulkTripInput';
-export * from './dashboardSummary';
+export * from './abastecimento';
+export * from './abastecimentoInput';
+export * from './abastecimentoListResponse';
+export * from './abastecimentoUpdate';
+export * from './bulkFreteInput';
+export * from './bulkFreteResult';
+export * from './dashboardResumo';
+export * from './dieselByPlaca';
 export * from './errorResponse';
-export * from './getAnnualPerformanceParams';
-export * from './getDashboardSummaryParams';
-export * from './getExpensesComparisonParams';
-export * from './getRevenueByPeriodParams';
-export * from './getRevenueByPeriodPeriod';
-export * from './getRevenueByTruckParams';
+export * from './frete';
+export * from './freteInput';
+export * from './freteListResponse';
+export * from './freteUpdate';
+export * from './frotaRevenue';
+export * from './frotaSummary';
+export * from './getDashboardResumoParams';
+export * from './getDieselByPlacaParams';
+export * from './getMensalComparativoParams';
+export * from './getRevenueByFrotaParams';
+export * from './getRevenueByPeriodoParams';
+export * from './getRevenueByPeriodoPeriod';
 export * from './healthStatus';
-export * from './listTripsParams';
-export * from './monthlyComparison';
-export * from './periodRevenue';
-export * from './trip';
-export * from './tripInput';
-export * from './tripListResponse';
-export * from './tripUpdate';
-export * from './truckRevenue';
-export * from './truckSummary';
+export * from './listAbastecimentosParams';
+export * from './listFretesParams';
+export * from './mensalComparativo';
+export * from './periodoRevenue';
+export * from './placaSummary';

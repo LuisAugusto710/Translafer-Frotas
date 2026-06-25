@@ -1,1 +1,2 @@
-export * from "./trips";
+export * from "./fretes";
+export * from "./abastecimentos";

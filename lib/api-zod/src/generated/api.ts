@@ -3,13 +3,12 @@
  * Do not edit manually.
  * Api
  * Fleet Revenue Management API
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 0.2.0
  */
 import * as zod from 'zod';
 
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
@@ -18,36 +17,41 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
- * List all trip records with optional filters
- * @summary List trips
+ * @summary List freight records
  */
-export const listTripsQueryLimitDefault = 1000;
-export const listTripsQueryOffsetDefault = 0;
+export const listFretesQueryLimitDefault = 1000;
+export const listFretesQueryOffsetDefault = 0;
 
-export const ListTripsQueryParams = zod.object({
-  "truckId": zod.coerce.string().optional(),
-  "driverName": zod.coerce.string().optional(),
-  "customerName": zod.coerce.string().optional(),
+export const ListFretesQueryParams = zod.object({
+  "frota": zod.coerce.string().optional(),
+  "cliente": zod.coerce.string().optional(),
+  "origem": zod.coerce.string().optional(),
+  "placa": zod.coerce.string().optional(),
   "dateFrom": zod.date().optional(),
   "dateTo": zod.date().optional(),
   "search": zod.coerce.string().optional(),
-  "limit": zod.coerce.number().default(listTripsQueryLimitDefault),
-  "offset": zod.coerce.number().default(listTripsQueryOffsetDefault)
+  "limit": zod.coerce.number().default(listFretesQueryLimitDefault),
+  "offset": zod.coerce.number().default(listFretesQueryOffsetDefault)
 })
 
-export const ListTripsResponse = zod.object({
-  "trips": zod.array(zod.object({
+export const ListFretesResponse = zod.object({
+  "fretes": zod.array(zod.object({
   "id": zod.number(),
-  "date": zod.coerce.date(),
-  "truckId": zod.string(),
-  "driverName": zod.string(),
-  "customerName": zod.string(),
-  "route": zod.string(),
-  "freightDescription": zod.string().nullish(),
-  "revenueAmount": zod.number(),
-  "fuelCost": zod.number(),
-  "otherExpenses": zod.number(),
-  "notes": zod.string().nullish(),
+  "dataCte": zod.coerce.date(),
+  "origem": zod.string(),
+  "transporte": zod.string().nullish(),
+  "frota": zod.string(),
+  "transp": zod.string().nullish(),
+  "cliente": zod.string(),
+  "cidade": zod.string(),
+  "cteNf": zod.string().nullish(),
+  "peso": zod.number(),
+  "frete": zod.number(),
+  "pedagio": zod.number(),
+  "totalFrete": zod.number(),
+  "dtaFrete": zod.coerce.date().nullish(),
+  "vencimento": zod.coerce.date().nullish(),
+  "obs": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })),
@@ -55,256 +59,389 @@ export const ListTripsResponse = zod.object({
 })
 
 
-/**
- * @summary Create a trip record
- */
-export const CreateTripBody = zod.object({
-  "date": zod.coerce.date(),
-  "truckId": zod.string(),
-  "driverName": zod.string(),
-  "customerName": zod.string(),
-  "route": zod.string(),
-  "freightDescription": zod.string().optional(),
-  "revenueAmount": zod.number(),
-  "fuelCost": zod.number(),
-  "otherExpenses": zod.number(),
-  "notes": zod.string().optional()
+export const CreateFreteBody = zod.object({
+  "dataCte": zod.coerce.date(),
+  "origem": zod.string(),
+  "transporte": zod.string().optional(),
+  "frota": zod.string(),
+  "transp": zod.string().optional(),
+  "cliente": zod.string(),
+  "cidade": zod.string(),
+  "cteNf": zod.string().optional(),
+  "peso": zod.number().optional(),
+  "frete": zod.number(),
+  "pedagio": zod.number().optional(),
+  "dtaFrete": zod.coerce.date().optional(),
+  "vencimento": zod.coerce.date().optional(),
+  "obs": zod.string().optional()
 })
 
-export const CreateTripResponse = zod.object({
+export const CreateFreteResponse = zod.object({
   "id": zod.number(),
-  "date": zod.coerce.date(),
-  "truckId": zod.string(),
-  "driverName": zod.string(),
-  "customerName": zod.string(),
-  "route": zod.string(),
-  "freightDescription": zod.string().nullish(),
-  "revenueAmount": zod.number(),
-  "fuelCost": zod.number(),
-  "otherExpenses": zod.number(),
-  "notes": zod.string().nullish(),
+  "dataCte": zod.coerce.date(),
+  "origem": zod.string(),
+  "transporte": zod.string().nullish(),
+  "frota": zod.string(),
+  "transp": zod.string().nullish(),
+  "cliente": zod.string(),
+  "cidade": zod.string(),
+  "cteNf": zod.string().nullish(),
+  "peso": zod.number(),
+  "frete": zod.number(),
+  "pedagio": zod.number(),
+  "totalFrete": zod.number(),
+  "dtaFrete": zod.coerce.date().nullish(),
+  "vencimento": zod.coerce.date().nullish(),
+  "obs": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
 
 
-/**
- * @summary Bulk create trip records
- */
-export const BulkCreateTripsBody = zod.object({
-  "trips": zod.array(zod.object({
-  "date": zod.coerce.date(),
-  "truckId": zod.string(),
-  "driverName": zod.string(),
-  "customerName": zod.string(),
-  "route": zod.string(),
-  "freightDescription": zod.string().optional(),
-  "revenueAmount": zod.number(),
-  "fuelCost": zod.number(),
-  "otherExpenses": zod.number(),
-  "notes": zod.string().optional()
+export const BulkCreateFretesBody = zod.object({
+  "fretes": zod.array(zod.object({
+  "dataCte": zod.coerce.date(),
+  "origem": zod.string(),
+  "transporte": zod.string().optional(),
+  "frota": zod.string(),
+  "transp": zod.string().optional(),
+  "cliente": zod.string(),
+  "cidade": zod.string(),
+  "cteNf": zod.string().optional(),
+  "peso": zod.number().optional(),
+  "frete": zod.number(),
+  "pedagio": zod.number().optional(),
+  "dtaFrete": zod.coerce.date().optional(),
+  "vencimento": zod.coerce.date().optional(),
+  "obs": zod.string().optional()
 }))
 })
 
-export const BulkCreateTripsResponse = zod.object({
+export const BulkCreateFretesResponse = zod.object({
   "created": zod.number(),
-  "trips": zod.array(zod.object({
+  "fretes": zod.array(zod.object({
   "id": zod.number(),
-  "date": zod.coerce.date(),
-  "truckId": zod.string(),
-  "driverName": zod.string(),
-  "customerName": zod.string(),
-  "route": zod.string(),
-  "freightDescription": zod.string().nullish(),
-  "revenueAmount": zod.number(),
-  "fuelCost": zod.number(),
-  "otherExpenses": zod.number(),
-  "notes": zod.string().nullish(),
+  "dataCte": zod.coerce.date(),
+  "origem": zod.string(),
+  "transporte": zod.string().nullish(),
+  "frota": zod.string(),
+  "transp": zod.string().nullish(),
+  "cliente": zod.string(),
+  "cidade": zod.string(),
+  "cteNf": zod.string().nullish(),
+  "peso": zod.number(),
+  "frete": zod.number(),
+  "pedagio": zod.number(),
+  "totalFrete": zod.number(),
+  "dtaFrete": zod.coerce.date().nullish(),
+  "vencimento": zod.coerce.date().nullish(),
+  "obs": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 }))
 })
 
 
-/**
- * @summary Get a single trip
- */
-export const GetTripParams = zod.object({
+export const GetFreteParams = zod.object({
   "id": zod.coerce.number()
 })
 
-export const GetTripResponse = zod.object({
+export const GetFreteResponse = zod.object({
   "id": zod.number(),
-  "date": zod.coerce.date(),
-  "truckId": zod.string(),
-  "driverName": zod.string(),
-  "customerName": zod.string(),
-  "route": zod.string(),
-  "freightDescription": zod.string().nullish(),
-  "revenueAmount": zod.number(),
-  "fuelCost": zod.number(),
-  "otherExpenses": zod.number(),
-  "notes": zod.string().nullish(),
+  "dataCte": zod.coerce.date(),
+  "origem": zod.string(),
+  "transporte": zod.string().nullish(),
+  "frota": zod.string(),
+  "transp": zod.string().nullish(),
+  "cliente": zod.string(),
+  "cidade": zod.string(),
+  "cteNf": zod.string().nullish(),
+  "peso": zod.number(),
+  "frete": zod.number(),
+  "pedagio": zod.number(),
+  "totalFrete": zod.number(),
+  "dtaFrete": zod.coerce.date().nullish(),
+  "vencimento": zod.coerce.date().nullish(),
+  "obs": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
 
 
-/**
- * @summary Update a trip record
- */
-export const UpdateTripParams = zod.object({
+export const UpdateFreteParams = zod.object({
   "id": zod.coerce.number()
 })
 
-export const UpdateTripBody = zod.object({
-  "date": zod.coerce.date().optional(),
-  "truckId": zod.string().optional(),
-  "driverName": zod.string().optional(),
-  "customerName": zod.string().optional(),
-  "route": zod.string().optional(),
-  "freightDescription": zod.string().optional(),
-  "revenueAmount": zod.number().optional(),
-  "fuelCost": zod.number().optional(),
-  "otherExpenses": zod.number().optional(),
-  "notes": zod.string().optional()
+export const UpdateFreteBody = zod.object({
+  "dataCte": zod.coerce.date().optional(),
+  "origem": zod.string().optional(),
+  "transporte": zod.string().optional(),
+  "frota": zod.string().optional(),
+  "transp": zod.string().optional(),
+  "cliente": zod.string().optional(),
+  "cidade": zod.string().optional(),
+  "cteNf": zod.string().optional(),
+  "peso": zod.number().optional(),
+  "frete": zod.number().optional(),
+  "pedagio": zod.number().optional(),
+  "dtaFrete": zod.coerce.date().optional(),
+  "vencimento": zod.coerce.date().optional(),
+  "obs": zod.string().optional()
 })
 
-export const UpdateTripResponse = zod.object({
+export const UpdateFreteResponse = zod.object({
   "id": zod.number(),
-  "date": zod.coerce.date(),
-  "truckId": zod.string(),
-  "driverName": zod.string(),
-  "customerName": zod.string(),
-  "route": zod.string(),
-  "freightDescription": zod.string().nullish(),
-  "revenueAmount": zod.number(),
-  "fuelCost": zod.number(),
-  "otherExpenses": zod.number(),
-  "notes": zod.string().nullish(),
+  "dataCte": zod.coerce.date(),
+  "origem": zod.string(),
+  "transporte": zod.string().nullish(),
+  "frota": zod.string(),
+  "transp": zod.string().nullish(),
+  "cliente": zod.string(),
+  "cidade": zod.string(),
+  "cteNf": zod.string().nullish(),
+  "peso": zod.number(),
+  "frete": zod.number(),
+  "pedagio": zod.number(),
+  "totalFrete": zod.number(),
+  "dtaFrete": zod.coerce.date().nullish(),
+  "vencimento": zod.coerce.date().nullish(),
+  "obs": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
 
 
-/**
- * @summary Delete a trip record
- */
-export const DeleteTripParams = zod.object({
+export const DeleteFreteParams = zod.object({
   "id": zod.coerce.number()
 })
 
-export const DeleteTripResponse = zod.void()
+export const DeleteFreteResponse = zod.void()
 
 
 /**
- * @summary List unique trucks
+ * @summary List unique fleet trucks
  */
-export const ListTrucksResponseItem = zod.object({
-  "truckId": zod.string(),
-  "tripCount": zod.number(),
-  "totalRevenue": zod.number()
+export const ListFrotasResponseItem = zod.object({
+  "frota": zod.string(),
+  "totalFretes": zod.number(),
+  "totalFrete": zod.number(),
+  "totalPedagio": zod.number(),
+  "totalGeral": zod.number()
 })
-export const ListTrucksResponse = zod.array(ListTrucksResponseItem)
+export const ListFrotasResponse = zod.array(ListFrotasResponseItem)
 
 
 /**
- * @summary Financial summary
+ * @summary List fuel records
  */
-export const GetDashboardSummaryQueryParams = zod.object({
+export const listAbastecimentosQueryLimitDefault = 1000;
+export const listAbastecimentosQueryOffsetDefault = 0;
+
+export const ListAbastecimentosQueryParams = zod.object({
+  "placa": zod.coerce.string().optional(),
+  "mes": zod.coerce.string().optional(),
+  "ano": zod.coerce.number().optional(),
+  "search": zod.coerce.string().optional(),
+  "limit": zod.coerce.number().default(listAbastecimentosQueryLimitDefault),
+  "offset": zod.coerce.number().default(listAbastecimentosQueryOffsetDefault)
+})
+
+export const ListAbastecimentosResponse = zod.object({
+  "abastecimentos": zod.array(zod.object({
+  "id": zod.number(),
+  "mes": zod.string(),
+  "ano": zod.number(),
+  "requisicao": zod.string().nullish(),
+  "posto": zod.string().nullish(),
+  "data": zod.coerce.date(),
+  "placa": zod.string(),
+  "litros": zod.number(),
+  "precoLitro": zod.number(),
+  "totalPago": zod.number(),
+  "kmInicio": zod.number().nullish(),
+  "kmFinal": zod.number().nullish(),
+  "kmPercorrido": zod.number().nullish(),
+  "media": zod.number().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "total": zod.number()
+})
+
+
+export const CreateAbastecimentoBody = zod.object({
+  "mes": zod.string(),
+  "ano": zod.number(),
+  "requisicao": zod.string().optional(),
+  "posto": zod.string().optional(),
+  "data": zod.coerce.date(),
+  "placa": zod.string(),
+  "litros": zod.number(),
+  "precoLitro": zod.number(),
+  "totalPago": zod.number(),
+  "kmInicio": zod.number().optional(),
+  "kmFinal": zod.number().optional(),
+  "kmPercorrido": zod.number().optional(),
+  "media": zod.number().optional()
+})
+
+export const CreateAbastecimentoResponse = zod.object({
+  "id": zod.number(),
+  "mes": zod.string(),
+  "ano": zod.number(),
+  "requisicao": zod.string().nullish(),
+  "posto": zod.string().nullish(),
+  "data": zod.coerce.date(),
+  "placa": zod.string(),
+  "litros": zod.number(),
+  "precoLitro": zod.number(),
+  "totalPago": zod.number(),
+  "kmInicio": zod.number().nullish(),
+  "kmFinal": zod.number().nullish(),
+  "kmPercorrido": zod.number().nullish(),
+  "media": zod.number().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const UpdateAbastecimentoParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateAbastecimentoBody = zod.object({
+  "mes": zod.string().optional(),
+  "ano": zod.number().optional(),
+  "requisicao": zod.string().optional(),
+  "posto": zod.string().optional(),
+  "data": zod.coerce.date().optional(),
+  "placa": zod.string().optional(),
+  "litros": zod.number().optional(),
+  "precoLitro": zod.number().optional(),
+  "totalPago": zod.number().optional(),
+  "kmInicio": zod.number().optional(),
+  "kmFinal": zod.number().optional(),
+  "kmPercorrido": zod.number().optional(),
+  "media": zod.number().optional()
+})
+
+export const UpdateAbastecimentoResponse = zod.object({
+  "id": zod.number(),
+  "mes": zod.string(),
+  "ano": zod.number(),
+  "requisicao": zod.string().nullish(),
+  "posto": zod.string().nullish(),
+  "data": zod.coerce.date(),
+  "placa": zod.string(),
+  "litros": zod.number(),
+  "precoLitro": zod.number(),
+  "totalPago": zod.number(),
+  "kmInicio": zod.number().nullish(),
+  "kmFinal": zod.number().nullish(),
+  "kmPercorrido": zod.number().nullish(),
+  "media": zod.number().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const DeleteAbastecimentoParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteAbastecimentoResponse = zod.void()
+
+
+/**
+ * @summary List unique truck plates
+ */
+export const ListPlacasResponseItem = zod.object({
+  "placa": zod.string(),
+  "totalAbastecimentos": zod.number(),
+  "totalLitros": zod.number(),
+  "totalPago": zod.number(),
+  "mediaGeral": zod.number().nullish()
+})
+export const ListPlacasResponse = zod.array(ListPlacasResponseItem)
+
+
+export const GetDashboardResumoQueryParams = zod.object({
   "dateFrom": zod.date().optional(),
   "dateTo": zod.date().optional()
 })
 
-export const GetDashboardSummaryResponse = zod.object({
-  "grossRevenue": zod.number(),
-  "totalExpenses": zod.number(),
-  "netProfit": zod.number(),
-  "profitMargin": zod.number(),
-  "totalTrips": zod.number(),
-  "avgRevenuePerTrip": zod.number(),
-  "bestTruck": zod.string().nullish(),
-  "worstTruck": zod.string().nullish()
+export const GetDashboardResumoResponse = zod.object({
+  "totalFrete": zod.number(),
+  "totalPedagio": zod.number(),
+  "totalGeral": zod.number(),
+  "totalViagens": zod.number(),
+  "totalPeso": zod.number(),
+  "mediaPorViagem": zod.number(),
+  "melhorFrota": zod.string().nullish(),
+  "totalDiesel": zod.number(),
+  "totalLitros": zod.number()
 })
 
 
-/**
- * @summary Revenue breakdown by truck
- */
-export const GetRevenueByTruckQueryParams = zod.object({
+export const GetRevenueByFrotaQueryParams = zod.object({
   "dateFrom": zod.date().optional(),
   "dateTo": zod.date().optional()
 })
 
-export const GetRevenueByTruckResponseItem = zod.object({
-  "truckId": zod.string(),
-  "totalRevenue": zod.number(),
-  "totalExpenses": zod.number(),
-  "netProfit": zod.number(),
-  "tripCount": zod.number(),
-  "avgRevenuePerTrip": zod.number(),
+export const GetRevenueByFrotaResponseItem = zod.object({
+  "frota": zod.string(),
+  "totalFrete": zod.number(),
+  "totalPedagio": zod.number(),
+  "totalGeral": zod.number(),
+  "totalViagens": zod.number(),
   "rank": zod.number()
 })
-export const GetRevenueByTruckResponse = zod.array(GetRevenueByTruckResponseItem)
+export const GetRevenueByFrotaResponse = zod.array(GetRevenueByFrotaResponseItem)
 
 
-/**
- * @summary Revenue grouped by time period
- */
-export const GetRevenueByPeriodQueryParams = zod.object({
-  "period": zod.enum(['daily', 'weekly', 'monthly', 'quarterly', 'yearly']),
+export const GetRevenueByPeriodoQueryParams = zod.object({
+  "period": zod.enum(['diario', 'semanal', 'mensal', 'trimestral', 'anual']),
   "dateFrom": zod.date().optional(),
   "dateTo": zod.date().optional()
 })
 
-export const GetRevenueByPeriodResponseItem = zod.object({
-  "period": zod.string(),
-  "revenue": zod.number(),
-  "expenses": zod.number(),
-  "netProfit": zod.number(),
-  "tripCount": zod.number()
+export const GetRevenueByPeriodoResponseItem = zod.object({
+  "periodo": zod.string(),
+  "totalFrete": zod.number(),
+  "totalPedagio": zod.number(),
+  "totalGeral": zod.number(),
+  "totalViagens": zod.number()
 })
-export const GetRevenueByPeriodResponse = zod.array(GetRevenueByPeriodResponseItem)
+export const GetRevenueByPeriodoResponse = zod.array(GetRevenueByPeriodoResponseItem)
 
 
-/**
- * @summary Annual performance metrics
- */
-export const GetAnnualPerformanceQueryParams = zod.object({
-  "year": zod.coerce.number().optional()
+export const GetDieselByPlacaQueryParams = zod.object({
+  "ano": zod.coerce.number().optional()
 })
 
-export const GetAnnualPerformanceResponse = zod.object({
-  "year": zod.number(),
-  "totalRevenue": zod.number(),
-  "totalExpenses": zod.number(),
-  "netProfit": zod.number(),
-  "totalTrips": zod.number(),
-  "avgRevenuePerTrip": zod.number(),
-  "monthlyTrend": zod.array(zod.object({
-  "period": zod.string(),
-  "revenue": zod.number(),
-  "expenses": zod.number(),
-  "netProfit": zod.number(),
-  "tripCount": zod.number()
-}))
+export const GetDieselByPlacaResponseItem = zod.object({
+  "placa": zod.string(),
+  "totalLitros": zod.number(),
+  "totalPago": zod.number(),
+  "mediaGeral": zod.number().nullish(),
+  "kmTotal": zod.number().nullish(),
+  "totalAbastecimentos": zod.number()
 })
+export const GetDieselByPlacaResponse = zod.array(GetDieselByPlacaResponseItem)
 
 
-/**
- * @summary Monthly revenue vs expenses comparison
- */
-export const GetExpensesComparisonQueryParams = zod.object({
-  "year": zod.coerce.number().optional()
+export const GetMensalComparativoQueryParams = zod.object({
+  "ano": zod.coerce.number().optional()
 })
 
-export const GetExpensesComparisonResponseItem = zod.object({
-  "month": zod.string(),
-  "revenue": zod.number(),
-  "fuelCost": zod.number(),
-  "otherExpenses": zod.number(),
-  "netProfit": zod.number()
+export const GetMensalComparativoResponseItem = zod.object({
+  "mes": zod.string(),
+  "frete": zod.number(),
+  "pedagio": zod.number(),
+  "diesel": zod.number(),
+  "lucroLiquido": zod.number(),
+  "viagens": zod.number()
 })
-export const GetExpensesComparisonResponse = zod.array(GetExpensesComparisonResponseItem)
+export const GetMensalComparativoResponse = zod.array(GetMensalComparativoResponseItem)
 
 

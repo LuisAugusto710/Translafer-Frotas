@@ -3,9 +3,10 @@
  * Do not edit manually.
  * Api
  * Fleet Revenue Management API
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 0.2.0
  */
 
-export type GetExpensesComparisonParams = {
-year?: number;
+export type GetDashboardResumoParams = {
+dateFrom?: Date;
+dateTo?: Date;
 };

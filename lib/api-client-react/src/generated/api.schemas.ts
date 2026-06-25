@@ -3,7 +3,7 @@
  * Do not edit manually.
  * Api
  * Fleet Revenue Management API
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 0.2.0
  */
 export interface HealthStatus {
   status: string;
@@ -13,123 +13,215 @@ export interface ErrorResponse {
   error: string;
 }
 
-export interface Trip {
+export interface Frete {
   id: number;
-  date: string;
-  truckId: string;
-  driverName: string;
-  customerName: string;
-  route: string;
+  dataCte: string;
+  origem: string;
   /** @nullable */
-  freightDescription?: string | null;
-  revenueAmount: number;
-  fuelCost: number;
-  otherExpenses: number;
+  transporte?: string | null;
+  frota: string;
   /** @nullable */
-  notes?: string | null;
+  transp?: string | null;
+  cliente: string;
+  cidade: string;
+  /** @nullable */
+  cteNf?: string | null;
+  peso: number;
+  frete: number;
+  pedagio: number;
+  totalFrete: number;
+  /** @nullable */
+  dtaFrete?: string | null;
+  /** @nullable */
+  vencimento?: string | null;
+  /** @nullable */
+  obs?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface TripInput {
-  date: string;
-  truckId: string;
-  driverName: string;
-  customerName: string;
-  route: string;
-  freightDescription?: string;
-  revenueAmount: number;
-  fuelCost: number;
-  otherExpenses: number;
-  notes?: string;
+export interface FreteInput {
+  dataCte: string;
+  origem: string;
+  transporte?: string;
+  frota: string;
+  transp?: string;
+  cliente: string;
+  cidade: string;
+  cteNf?: string;
+  peso?: number;
+  frete: number;
+  pedagio?: number;
+  dtaFrete?: string;
+  vencimento?: string;
+  obs?: string;
 }
 
-export interface TripUpdate {
-  date?: string;
-  truckId?: string;
-  driverName?: string;
-  customerName?: string;
-  route?: string;
-  freightDescription?: string;
-  revenueAmount?: number;
-  fuelCost?: number;
-  otherExpenses?: number;
-  notes?: string;
+export interface FreteUpdate {
+  dataCte?: string;
+  origem?: string;
+  transporte?: string;
+  frota?: string;
+  transp?: string;
+  cliente?: string;
+  cidade?: string;
+  cteNf?: string;
+  peso?: number;
+  frete?: number;
+  pedagio?: number;
+  dtaFrete?: string;
+  vencimento?: string;
+  obs?: string;
 }
 
-export interface TripListResponse {
-  trips: Trip[];
+export interface FreteListResponse {
+  fretes: Frete[];
   total: number;
 }
 
-export interface BulkTripInput {
-  trips: TripInput[];
+export interface BulkFreteInput {
+  fretes: FreteInput[];
 }
 
-export interface BulkCreateResult {
+export interface BulkFreteResult {
   created: number;
-  trips: Trip[];
+  fretes: Frete[];
 }
 
-export interface TruckSummary {
-  truckId: string;
-  tripCount: number;
-  totalRevenue: number;
+export interface FrotaSummary {
+  frota: string;
+  totalFretes: number;
+  totalFrete: number;
+  totalPedagio: number;
+  totalGeral: number;
 }
 
-export interface DashboardSummary {
-  grossRevenue: number;
-  totalExpenses: number;
-  netProfit: number;
-  profitMargin: number;
-  totalTrips: number;
-  avgRevenuePerTrip: number;
+export interface Abastecimento {
+  id: number;
+  mes: string;
+  ano: number;
   /** @nullable */
-  bestTruck?: string | null;
+  requisicao?: string | null;
   /** @nullable */
-  worstTruck?: string | null;
+  posto?: string | null;
+  data: string;
+  placa: string;
+  litros: number;
+  precoLitro: number;
+  totalPago: number;
+  /** @nullable */
+  kmInicio?: number | null;
+  /** @nullable */
+  kmFinal?: number | null;
+  /** @nullable */
+  kmPercorrido?: number | null;
+  /** @nullable */
+  media?: number | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface TruckRevenue {
-  truckId: string;
-  totalRevenue: number;
-  totalExpenses: number;
-  netProfit: number;
-  tripCount: number;
-  avgRevenuePerTrip: number;
+export interface AbastecimentoInput {
+  mes: string;
+  ano: number;
+  requisicao?: string;
+  posto?: string;
+  data: string;
+  placa: string;
+  litros: number;
+  precoLitro: number;
+  totalPago: number;
+  kmInicio?: number;
+  kmFinal?: number;
+  kmPercorrido?: number;
+  media?: number;
+}
+
+export interface AbastecimentoUpdate {
+  mes?: string;
+  ano?: number;
+  requisicao?: string;
+  posto?: string;
+  data?: string;
+  placa?: string;
+  litros?: number;
+  precoLitro?: number;
+  totalPago?: number;
+  kmInicio?: number;
+  kmFinal?: number;
+  kmPercorrido?: number;
+  media?: number;
+}
+
+export interface AbastecimentoListResponse {
+  abastecimentos: Abastecimento[];
+  total: number;
+}
+
+export interface PlacaSummary {
+  placa: string;
+  totalAbastecimentos: number;
+  totalLitros: number;
+  totalPago: number;
+  /** @nullable */
+  mediaGeral?: number | null;
+}
+
+export interface DashboardResumo {
+  totalFrete: number;
+  totalPedagio: number;
+  totalGeral: number;
+  totalViagens: number;
+  totalPeso: number;
+  mediaPorViagem: number;
+  /** @nullable */
+  melhorFrota?: string | null;
+  totalDiesel: number;
+  totalLitros: number;
+}
+
+export interface FrotaRevenue {
+  frota: string;
+  totalFrete: number;
+  totalPedagio: number;
+  totalGeral: number;
+  totalViagens: number;
   rank: number;
 }
 
-export interface PeriodRevenue {
-  period: string;
-  revenue: number;
-  expenses: number;
-  netProfit: number;
-  tripCount: number;
+export interface PeriodoRevenue {
+  periodo: string;
+  totalFrete: number;
+  totalPedagio: number;
+  totalGeral: number;
+  totalViagens: number;
 }
 
-export interface AnnualPerformance {
-  year: number;
-  totalRevenue: number;
-  totalExpenses: number;
-  netProfit: number;
-  totalTrips: number;
-  avgRevenuePerTrip: number;
-  monthlyTrend: PeriodRevenue[];
+export interface DieselByPlaca {
+  placa: string;
+  totalLitros: number;
+  totalPago: number;
+  /** @nullable */
+  mediaGeral?: number | null;
+  /** @nullable */
+  kmTotal?: number | null;
+  totalAbastecimentos: number;
 }
 
-export interface MonthlyComparison {
-  month: string;
-  revenue: number;
-  fuelCost: number;
-  otherExpenses: number;
-  netProfit: number;
+export interface MensalComparativo {
+  mes: string;
+  frete: number;
+  pedagio: number;
+  diesel: number;
+  lucroLiquido: number;
+  viagens: number;
 }
 
-export type ListTripsParams = {
-truckId?: string;
-driverName?: string;
-customerName?: string;
+export type ListFretesParams = {
+frota?: string;
+cliente?: string;
+origem?: string;
+placa?: string;
 dateFrom?: string;
 dateTo?: string;
 search?: string;
@@ -137,38 +229,47 @@ limit?: number;
 offset?: number;
 };
 
-export type GetDashboardSummaryParams = {
+export type ListAbastecimentosParams = {
+placa?: string;
+mes?: string;
+ano?: number;
+search?: string;
+limit?: number;
+offset?: number;
+};
+
+export type GetDashboardResumoParams = {
 dateFrom?: string;
 dateTo?: string;
 };
 
-export type GetRevenueByTruckParams = {
+export type GetRevenueByFrotaParams = {
 dateFrom?: string;
 dateTo?: string;
 };
 
-export type GetRevenueByPeriodParams = {
-period: GetRevenueByPeriodPeriod;
+export type GetRevenueByPeriodoParams = {
+period: GetRevenueByPeriodoPeriod;
 dateFrom?: string;
 dateTo?: string;
 };
 
-export type GetRevenueByPeriodPeriod = typeof GetRevenueByPeriodPeriod[keyof typeof GetRevenueByPeriodPeriod];
+export type GetRevenueByPeriodoPeriod = typeof GetRevenueByPeriodoPeriod[keyof typeof GetRevenueByPeriodoPeriod];
 
 
-export const GetRevenueByPeriodPeriod = {
-  daily: 'daily',
-  weekly: 'weekly',
-  monthly: 'monthly',
-  quarterly: 'quarterly',
-  yearly: 'yearly',
+export const GetRevenueByPeriodoPeriod = {
+  diario: 'diario',
+  semanal: 'semanal',
+  mensal: 'mensal',
+  trimestral: 'trimestral',
+  anual: 'anual',
 } as const;
 
-export type GetAnnualPerformanceParams = {
-year?: number;
+export type GetDieselByPlacaParams = {
+ano?: number;
 };
 
-export type GetExpensesComparisonParams = {
-year?: number;
+export type GetMensalComparativoParams = {
+ano?: number;
 };
 

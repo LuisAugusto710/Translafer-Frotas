@@ -2,25 +2,22 @@ openapi: 3.1.0
 info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
-  version: 0.1.0
+  version: 0.2.0
   description: Fleet Revenue Management API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
-  - name: trips
-    description: Fleet trip records
+  - name: fretes
+  - name: abastecimentos
   - name: dashboard
-    description: Dashboard analytics
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -29,111 +26,97 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
 
-  /trips:
+  /fretes:
     get:
-      operationId: listTrips
-      tags: [trips]
-      summary: List trips
-      description: List all trip records with optional filters
+      operationId: listFretes
+      tags: [fretes]
+      summary: List freight records
       parameters:
-        - name: truckId
+        - name: frota
           in: query
-          schema:
-            type: string
-        - name: driverName
+          schema: { type: string }
+        - name: cliente
           in: query
-          schema:
-            type: string
-        - name: customerName
+          schema: { type: string }
+        - name: origem
           in: query
-          schema:
-            type: string
+          schema: { type: string }
+        - name: placa
+          in: query
+          schema: { type: string }
         - name: dateFrom
           in: query
-          schema:
-            type: string
-            format: date
+          schema: { type: string, format: date }
         - name: dateTo
           in: query
-          schema:
-            type: string
-            format: date
+          schema: { type: string, format: date }
         - name: search
           in: query
-          schema:
-            type: string
+          schema: { type: string }
         - name: limit
           in: query
-          schema:
-            type: integer
-            default: 1000
+          schema: { type: integer, default: 1000 }
         - name: offset
           in: query
-          schema:
-            type: integer
-            default: 0
+          schema: { type: integer, default: 0 }
       responses:
         "200":
-          description: List of trips
+          description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TripListResponse"
+                $ref: "#/components/schemas/FreteListResponse"
     post:
-      operationId: createTrip
-      tags: [trips]
-      summary: Create a trip record
+      operationId: createFrete
+      tags: [fretes]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/TripInput"
+              $ref: "#/components/schemas/FreteInput"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Trip"
+                $ref: "#/components/schemas/Frete"
 
-  /trips/bulk:
+  /fretes/bulk:
     post:
-      operationId: bulkCreateTrips
-      tags: [trips]
-      summary: Bulk create trip records
+      operationId: bulkCreateFretes
+      tags: [fretes]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/BulkTripInput"
+              $ref: "#/components/schemas/BulkFreteInput"
       responses:
         "201":
-          description: Trips created
+          description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BulkCreateResult"
+                $ref: "#/components/schemas/BulkFreteResult"
 
-  /trips/{id}:
+  /fretes/{id}:
     get:
-      operationId: getTrip
-      tags: [trips]
-      summary: Get a single trip
+      operationId: getFrete
+      tags: [fretes]
       parameters:
         - name: id
           in: path
           required: true
-          schema:
-            type: integer
+          schema: { type: integer }
       responses:
         "200":
-          description: Trip record
+          description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Trip"
+                $ref: "#/components/schemas/Frete"
         "404":
           description: Not found
           content:
@@ -141,28 +124,26 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
     put:
-      operationId: updateTrip
-      tags: [trips]
-      summary: Update a trip record
+      operationId: updateFrete
+      tags: [fretes]
       parameters:
         - name: id
           in: path
           required: true
-          schema:
-            type: integer
+          schema: { type: integer }
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/TripUpdate"
+              $ref: "#/components/schemas/FreteUpdate"
       responses:
         "200":
-          description: Updated trip
+          description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Trip"
+                $ref: "#/components/schemas/Frete"
         "404":
           description: Not found
           content:
@@ -170,153 +151,237 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
     delete:
-      operationId: deleteTrip
-      tags: [trips]
-      summary: Delete a trip record
+      operationId: deleteFrete
+      tags: [fretes]
       parameters:
         - name: id
           in: path
           required: true
-          schema:
-            type: integer
+          schema: { type: integer }
       responses:
         "204":
           description: Deleted
 
-  /trucks:
+  /frotas:
     get:
-      operationId: listTrucks
-      tags: [trips]
-      summary: List unique trucks
+      operationId: listFrotas
+      tags: [fretes]
+      summary: List unique fleet trucks
       responses:
         "200":
-          description: List of trucks
+          description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/TruckSummary"
+                  $ref: "#/components/schemas/FrotaSummary"
 
-  /dashboard/summary:
+  /abastecimentos:
     get:
-      operationId: getDashboardSummary
-      tags: [dashboard]
-      summary: Financial summary
+      operationId: listAbastecimentos
+      tags: [abastecimentos]
+      summary: List fuel records
       parameters:
-        - name: dateFrom
+        - name: placa
           in: query
-          schema:
-            type: string
-            format: date
-        - name: dateTo
+          schema: { type: string }
+        - name: mes
           in: query
-          schema:
-            type: string
-            format: date
+          schema: { type: string }
+        - name: ano
+          in: query
+          schema: { type: integer }
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 1000 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
       responses:
         "200":
-          description: Financial summary
+          description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DashboardSummary"
+                $ref: "#/components/schemas/AbastecimentoListResponse"
+    post:
+      operationId: createAbastecimento
+      tags: [abastecimentos]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AbastecimentoInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Abastecimento"
 
-  /dashboard/by-truck:
-    get:
-      operationId: getRevenueByTruck
-      tags: [dashboard]
-      summary: Revenue breakdown by truck
+  /abastecimentos/{id}:
+    put:
+      operationId: updateAbastecimento
+      tags: [abastecimentos]
       parameters:
-        - name: dateFrom
-          in: query
-          schema:
-            type: string
-            format: date
-        - name: dateTo
-          in: query
-          schema:
-            type: string
-            format: date
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AbastecimentoUpdate"
       responses:
         "200":
-          description: Revenue by truck
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Abastecimento"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteAbastecimento
+      tags: [abastecimentos]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+
+  /placas:
+    get:
+      operationId: listPlacas
+      tags: [abastecimentos]
+      summary: List unique truck plates
+      responses:
+        "200":
+          description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/TruckRevenue"
+                  $ref: "#/components/schemas/PlacaSummary"
 
-  /dashboard/by-period:
+  /dashboard/resumo:
     get:
-      operationId: getRevenueByPeriod
+      operationId: getDashboardResumo
       tags: [dashboard]
-      summary: Revenue grouped by time period
+      parameters:
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardResumo"
+
+  /dashboard/por-frota:
+    get:
+      operationId: getRevenueByFrota
+      tags: [dashboard]
+      parameters:
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FrotaRevenue"
+
+  /dashboard/por-periodo:
+    get:
+      operationId: getRevenueByPeriodo
+      tags: [dashboard]
       parameters:
         - name: period
           in: query
           required: true
           schema:
             type: string
-            enum: [daily, weekly, monthly, quarterly, yearly]
+            enum: [diario, semanal, mensal, trimestral, anual]
         - name: dateFrom
           in: query
-          schema:
-            type: string
-            format: date
+          schema: { type: string, format: date }
         - name: dateTo
           in: query
-          schema:
-            type: string
-            format: date
+          schema: { type: string, format: date }
       responses:
         "200":
-          description: Revenue by period
+          description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/PeriodRevenue"
+                  $ref: "#/components/schemas/PeriodoRevenue"
 
-  /dashboard/annual:
+  /dashboard/diesel-por-placa:
     get:
-      operationId: getAnnualPerformance
+      operationId: getDieselByPlaca
       tags: [dashboard]
-      summary: Annual performance metrics
       parameters:
-        - name: year
+        - name: ano
           in: query
-          schema:
-            type: integer
+          schema: { type: integer }
       responses:
         "200":
-          description: Annual performance
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AnnualPerformance"
-
-  /dashboard/expenses-comparison:
-    get:
-      operationId: getExpensesComparison
-      tags: [dashboard]
-      summary: Monthly revenue vs expenses comparison
-      parameters:
-        - name: year
-          in: query
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Expenses comparison
+          description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/MonthlyComparison"
+                  $ref: "#/components/schemas/DieselByPlaca"
+
+  /dashboard/mensal:
+    get:
+      operationId: getMensalComparativo
+      tags: [dashboard]
+      parameters:
+        - name: ano
+          in: query
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MensalComparativo"
 
 components:
   schemas:
@@ -325,42 +390,52 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
     ErrorResponse:
       type: object
       properties:
         error:
           type: string
-      required:
-        - error
+      required: [error]
 
-    Trip:
+    Frete:
       type: object
       properties:
         id:
           type: integer
-        date:
+        dataCte:
           type: string
           format: date
-        truckId:
+        origem:
           type: string
-        driverName:
-          type: string
-        customerName:
-          type: string
-        route:
-          type: string
-        freightDescription:
+        transporte:
           type: ["string", "null"]
-        revenueAmount:
+        frota:
+          type: string
+        transp:
+          type: ["string", "null"]
+        cliente:
+          type: string
+        cidade:
+          type: string
+        cteNf:
+          type: ["string", "null"]
+        peso:
           type: number
-        fuelCost:
+        frete:
           type: number
-        otherExpenses:
+        pedagio:
           type: number
-        notes:
+        totalFrete:
+          type: number
+        dtaFrete:
+          type: ["string", "null"]
+          format: date
+        vencimento:
+          type: ["string", "null"]
+          format: date
+        obs:
           type: ["string", "null"]
         createdAt:
           type: string
@@ -370,243 +445,380 @@ components:
           format: date-time
       required:
         - id
-        - date
-        - truckId
-        - driverName
-        - customerName
-        - route
-        - revenueAmount
-        - fuelCost
-        - otherExpenses
+        - dataCte
+        - origem
+        - frota
+        - cliente
+        - cidade
+        - peso
+        - frete
+        - pedagio
+        - totalFrete
         - createdAt
         - updatedAt
 
-    TripInput:
+    FreteInput:
       type: object
       properties:
-        date:
+        dataCte:
           type: string
           format: date
-        truckId:
+        origem:
           type: string
-        driverName:
+        transporte:
           type: string
-        customerName:
+        frota:
           type: string
-        route:
+        transp:
           type: string
-        freightDescription:
+        cliente:
           type: string
-        revenueAmount:
+        cidade:
+          type: string
+        cteNf:
+          type: string
+        peso:
           type: number
-        fuelCost:
+        frete:
           type: number
-        otherExpenses:
+        pedagio:
           type: number
-        notes:
+        dtaFrete:
+          type: string
+          format: date
+        vencimento:
+          type: string
+          format: date
+        obs:
           type: string
       required:
-        - date
-        - truckId
-        - driverName
-        - customerName
-        - route
-        - revenueAmount
-        - fuelCost
-        - otherExpenses
+        - dataCte
+        - origem
+        - frota
+        - cliente
+        - cidade
+        - frete
 
-    TripUpdate:
+    FreteUpdate:
       type: object
       properties:
-        date:
+        dataCte:
           type: string
           format: date
-        truckId:
+        origem:
           type: string
-        driverName:
+        transporte:
           type: string
-        customerName:
+        frota:
           type: string
-        route:
+        transp:
           type: string
-        freightDescription:
+        cliente:
           type: string
-        revenueAmount:
+        cidade:
+          type: string
+        cteNf:
+          type: string
+        peso:
           type: number
-        fuelCost:
+        frete:
           type: number
-        otherExpenses:
+        pedagio:
           type: number
-        notes:
+        dtaFrete:
+          type: string
+          format: date
+        vencimento:
+          type: string
+          format: date
+        obs:
           type: string
 
-    TripListResponse:
+    FreteListResponse:
       type: object
       properties:
-        trips:
+        fretes:
           type: array
           items:
-            $ref: "#/components/schemas/Trip"
+            $ref: "#/components/schemas/Frete"
         total:
           type: integer
-      required:
-        - trips
-        - total
+      required: [fretes, total]
 
-    BulkTripInput:
+    BulkFreteInput:
       type: object
       properties:
-        trips:
+        fretes:
           type: array
           items:
-            $ref: "#/components/schemas/TripInput"
-      required:
-        - trips
+            $ref: "#/components/schemas/FreteInput"
+      required: [fretes]
 
-    BulkCreateResult:
+    BulkFreteResult:
       type: object
       properties:
         created:
           type: integer
-        trips:
+        fretes:
           type: array
           items:
-            $ref: "#/components/schemas/Trip"
-      required:
-        - created
-        - trips
+            $ref: "#/components/schemas/Frete"
+      required: [created, fretes]
 
-    TruckSummary:
+    FrotaSummary:
       type: object
       properties:
-        truckId:
+        frota:
           type: string
-        tripCount:
+        totalFretes:
           type: integer
-        totalRevenue:
+        totalFrete:
           type: number
-      required:
-        - truckId
-        - tripCount
-        - totalRevenue
+        totalPedagio:
+          type: number
+        totalGeral:
+          type: number
+      required: [frota, totalFretes, totalFrete, totalPedagio, totalGeral]
 
-    DashboardSummary:
+    Abastecimento:
       type: object
       properties:
-        grossRevenue:
-          type: number
-        totalExpenses:
-          type: number
-        netProfit:
-          type: number
-        profitMargin:
-          type: number
-        totalTrips:
+        id:
           type: integer
-        avgRevenuePerTrip:
-          type: number
-        bestTruck:
-          type: ["string", "null"]
-        worstTruck:
-          type: ["string", "null"]
-      required:
-        - grossRevenue
-        - totalExpenses
-        - netProfit
-        - profitMargin
-        - totalTrips
-        - avgRevenuePerTrip
-
-    TruckRevenue:
-      type: object
-      properties:
-        truckId:
+        mes:
           type: string
-        totalRevenue:
-          type: number
-        totalExpenses:
-          type: number
-        netProfit:
-          type: number
-        tripCount:
+        ano:
           type: integer
-        avgRevenuePerTrip:
+        requisicao:
+          type: ["string", "null"]
+        posto:
+          type: ["string", "null"]
+        data:
+          type: string
+          format: date
+        placa:
+          type: string
+        litros:
           type: number
+        precoLitro:
+          type: number
+        totalPago:
+          type: number
+        kmInicio:
+          type: ["number", "null"]
+        kmFinal:
+          type: ["number", "null"]
+        kmPercorrido:
+          type: ["number", "null"]
+        media:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - mes
+        - ano
+        - data
+        - placa
+        - litros
+        - precoLitro
+        - totalPago
+        - createdAt
+        - updatedAt
+
+    AbastecimentoInput:
+      type: object
+      properties:
+        mes:
+          type: string
+        ano:
+          type: integer
+        requisicao:
+          type: string
+        posto:
+          type: string
+        data:
+          type: string
+          format: date
+        placa:
+          type: string
+        litros:
+          type: number
+        precoLitro:
+          type: number
+        totalPago:
+          type: number
+        kmInicio:
+          type: number
+        kmFinal:
+          type: number
+        kmPercorrido:
+          type: number
+        media:
+          type: number
+      required:
+        - mes
+        - ano
+        - data
+        - placa
+        - litros
+        - precoLitro
+        - totalPago
+
+    AbastecimentoUpdate:
+      type: object
+      properties:
+        mes:
+          type: string
+        ano:
+          type: integer
+        requisicao:
+          type: string
+        posto:
+          type: string
+        data:
+          type: string
+          format: date
+        placa:
+          type: string
+        litros:
+          type: number
+        precoLitro:
+          type: number
+        totalPago:
+          type: number
+        kmInicio:
+          type: number
+        kmFinal:
+          type: number
+        kmPercorrido:
+          type: number
+        media:
+          type: number
+
+    AbastecimentoListResponse:
+      type: object
+      properties:
+        abastecimentos:
+          type: array
+          items:
+            $ref: "#/components/schemas/Abastecimento"
+        total:
+          type: integer
+      required: [abastecimentos, total]
+
+    PlacaSummary:
+      type: object
+      properties:
+        placa:
+          type: string
+        totalAbastecimentos:
+          type: integer
+        totalLitros:
+          type: number
+        totalPago:
+          type: number
+        mediaGeral:
+          type: ["number", "null"]
+      required: [placa, totalAbastecimentos, totalLitros, totalPago]
+
+    DashboardResumo:
+      type: object
+      properties:
+        totalFrete:
+          type: number
+        totalPedagio:
+          type: number
+        totalGeral:
+          type: number
+        totalViagens:
+          type: integer
+        totalPeso:
+          type: number
+        mediaPorViagem:
+          type: number
+        melhorFrota:
+          type: ["string", "null"]
+        totalDiesel:
+          type: number
+        totalLitros:
+          type: number
+      required:
+        - totalFrete
+        - totalPedagio
+        - totalGeral
+        - totalViagens
+        - totalPeso
+        - mediaPorViagem
+        - totalDiesel
+        - totalLitros
+
+    FrotaRevenue:
+      type: object
+      properties:
+        frota:
+          type: string
+        totalFrete:
+          type: number
+        totalPedagio:
+          type: number
+        totalGeral:
+          type: number
+        totalViagens:
+          type: integer
         rank:
           type: integer
-      required:
-        - truckId
-        - totalRevenue
-        - totalExpenses
-        - netProfit
-        - tripCount
-        - avgRevenuePerTrip
-        - rank
+      required: [frota, totalFrete, totalPedagio, totalGeral, totalViagens, rank]
 
-    PeriodRevenue:
+    PeriodoRevenue:
       type: object
       properties:
-        period:
+        periodo:
           type: string
-        revenue:
+        totalFrete:
           type: number
-        expenses:
+        totalPedagio:
           type: number
-        netProfit:
+        totalGeral:
           type: number
-        tripCount:
+        totalViagens:
           type: integer
-      required:
-        - period
-        - revenue
-        - expenses
-        - netProfit
-        - tripCount
+      required: [periodo, totalFrete, totalPedagio, totalGeral, totalViagens]
 
-    AnnualPerformance:
+    DieselByPlaca:
       type: object
       properties:
-        year:
-          type: integer
-        totalRevenue:
-          type: number
-        totalExpenses:
-          type: number
-        netProfit:
-          type: number
-        totalTrips:
-          type: integer
-        avgRevenuePerTrip:
-          type: number
-        monthlyTrend:
-          type: array
-          items:
-            $ref: "#/components/schemas/PeriodRevenue"
-      required:
-        - year
-        - totalRevenue
-        - totalExpenses
-        - netProfit
-        - totalTrips
-        - avgRevenuePerTrip
-        - monthlyTrend
-
-    MonthlyComparison:
-      type: object
-      properties:
-        month:
+        placa:
           type: string
-        revenue:
+        totalLitros:
           type: number
-        fuelCost:
+        totalPago:
           type: number
-        otherExpenses:
+        mediaGeral:
+          type: ["number", "null"]
+        kmTotal:
+          type: ["number", "null"]
+        totalAbastecimentos:
+          type: integer
+      required: [placa, totalLitros, totalPago, totalAbastecimentos]
+
+    MensalComparativo:
+      type: object
+      properties:
+        mes:
+          type: string
+        frete:
           type: number
-        netProfit:
+        pedagio:
           type: number
-      required:
-        - month
-        - revenue
-        - fuelCost
-        - otherExpenses
-        - netProfit
+        diesel:
+          type: number
+        lucroLiquido:
+          type: number
+        viagens:
+          type: integer
+      required: [mes, frete, pedagio, diesel, lucroLiquido, viagens]

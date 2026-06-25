@@ -3,15 +3,13 @@
  * Do not edit manually.
  * Api
  * Fleet Revenue Management API
- * OpenAPI spec version: 0.1.0
+ * OpenAPI spec version: 0.2.0
  */
 
-export type ListTripsParams = {
-truckId?: string;
-driverName?: string;
-customerName?: string;
-dateFrom?: Date;
-dateTo?: Date;
+export type ListAbastecimentosParams = {
+placa?: string;
+mes?: string;
+ano?: number;
 search?: string;
 limit?: number;
 offset?: number;

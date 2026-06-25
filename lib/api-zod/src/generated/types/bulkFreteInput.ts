@@ -5,7 +5,8 @@
  * Fleet Revenue Management API
  * OpenAPI spec version: 0.2.0
  */
+import type { FreteInput } from './freteInput';
 
-export interface HealthStatus {
-  status: string;
+export interface BulkFreteInput {
+  fretes: FreteInput[];
 }

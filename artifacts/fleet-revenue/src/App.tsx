@@ -6,7 +6,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Layout } from "@/components/layout";
 import NotFound from "@/pages/not-found";
 import { Dashboard } from "@/pages/dashboard";
-import { DataEntry } from "@/pages/data-entry";
+import { Fretes } from "@/pages/fretes";
+import { Diesel } from "@/pages/diesel";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,7 +21,9 @@ function Router() {
   return (
     <Layout>
       <Switch>
-        <Route path="/" component={DataEntry} />
+        <Route path="/" component={Fretes} />
+        <Route path="/fretes" component={Fretes} />
+        <Route path="/diesel" component={Diesel} />
         <Route path="/dashboard" component={Dashboard} />
         <Route component={NotFound} />
       </Switch>
@@ -30,7 +33,7 @@ function Router() {
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="fleet-theme">
+    <ThemeProvider defaultTheme="light" storageKey="fleet-theme">
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
