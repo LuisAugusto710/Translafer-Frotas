@@ -1,14 +1,11 @@
-import { useState, useEffect } from "react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { useState } from "react";
 import { 
   useListFretes, 
   getListFretesQueryKey,
   useDeleteFrete,
-  useListFrotas
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Download, Upload, MoreHorizontal, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Download, MoreHorizontal, Pencil, Trash2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -62,30 +59,29 @@ export function Fretes() {
     if (!dateStr) return false;
     const date = new Date(dateStr);
     const today = new Date();
-    today.setHours(0,0,0,0);
+    today.setHours(0, 0, 0, 0);
     return date < today;
   };
 
   return (
-    <div className="space-y-4 flex flex-col h-full">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Buscar fretes..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-64 pl-9"
-            />
-          </div>
+    <div className="space-y-3 flex flex-col h-full">
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[160px] max-w-xs">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar fretes..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 w-full"
+          />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ml-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
-                <Download className="mr-2 h-4 w-4" />
-                Exportar
+                <Download className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Exportar</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -93,33 +89,38 @@ export function Fretes() {
               <DropdownMenuItem onClick={handleExportExcel}>Excel</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button size="sm" onClick={() => { setEditingFrete(null); setIsFormOpen(true); }} className="bg-[#0a192f] hover:bg-[#0a192f]/90 text-white">
-            <Plus className="mr-2 h-4 w-4" />
-            Nova Entrada
+          <Button
+            size="sm"
+            onClick={() => { setEditingFrete(null); setIsFormOpen(true); }}
+            className="bg-[#0a192f] hover:bg-[#0a192f]/90 text-white"
+          >
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Nova Entrada</span>
           </Button>
         </div>
       </div>
 
-      <div className="border rounded-md flex-1 overflow-hidden flex flex-col bg-card shadow-sm text-sm">
+      {/* Table */}
+      <div className="border rounded-md flex-1 overflow-hidden flex flex-col bg-card shadow-sm text-sm min-h-0">
         <div className="overflow-auto flex-1">
-          <Table>
+          <Table className="min-w-[1100px]">
             <TableHeader className="bg-muted/50 sticky top-0 z-10 backdrop-blur">
               <TableRow>
-                <TableHead>Data CTE</TableHead>
-                <TableHead>Origem</TableHead>
-                <TableHead>Transporte</TableHead>
-                <TableHead>Frota</TableHead>
-                <TableHead>Transp</TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Cidade</TableHead>
-                <TableHead>CTE/NF</TableHead>
-                <TableHead className="text-right">Peso (kg)</TableHead>
-                <TableHead className="text-right">Frete (R$)</TableHead>
-                <TableHead className="text-right">Pedágio (R$)</TableHead>
-                <TableHead className="text-right font-bold text-[#0a192f]">Total Frete (R$)</TableHead>
-                <TableHead>Dta Frete</TableHead>
-                <TableHead>Vencimento</TableHead>
-                <TableHead>Obs</TableHead>
+                <TableHead className="whitespace-nowrap">Data CTE</TableHead>
+                <TableHead className="whitespace-nowrap">Origem</TableHead>
+                <TableHead className="whitespace-nowrap">Transporte</TableHead>
+                <TableHead className="whitespace-nowrap">Frota</TableHead>
+                <TableHead className="whitespace-nowrap">Transp</TableHead>
+                <TableHead className="whitespace-nowrap">Cliente</TableHead>
+                <TableHead className="whitespace-nowrap">Cidade</TableHead>
+                <TableHead className="whitespace-nowrap">CTE/NF</TableHead>
+                <TableHead className="text-right whitespace-nowrap">Peso (kg)</TableHead>
+                <TableHead className="text-right whitespace-nowrap">Frete (R$)</TableHead>
+                <TableHead className="text-right whitespace-nowrap">Pedágio (R$)</TableHead>
+                <TableHead className="text-right font-bold text-[#0a192f] whitespace-nowrap">Total Frete (R$)</TableHead>
+                <TableHead className="whitespace-nowrap">Dta Frete</TableHead>
+                <TableHead className="whitespace-nowrap">Vencimento</TableHead>
+                <TableHead className="whitespace-nowrap">Obs</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
@@ -143,18 +144,18 @@ export function Fretes() {
                   <TableRow key={frete.id} className="hover:bg-muted/50 transition-colors group">
                     <TableCell className="whitespace-nowrap">{formatDate(frete.dataCte)}</TableCell>
                     <TableCell className="truncate max-w-[120px]" title={frete.origem}>{frete.origem}</TableCell>
-                    <TableCell>{frete.transporte}</TableCell>
-                    <TableCell className="font-medium text-[#0a192f]">{frete.frota}</TableCell>
-                    <TableCell>{frete.transp}</TableCell>
-                    <TableCell className="truncate max-w-[150px]" title={frete.cliente}>{frete.cliente}</TableCell>
-                    <TableCell className="truncate max-w-[120px]" title={frete.cidade}>{frete.cidade}</TableCell>
-                    <TableCell>{frete.cteNf}</TableCell>
-                    <TableCell className="text-right">{formatNumber(frete.peso)}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(frete.frete)}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(frete.pedagio)}</TableCell>
-                    <TableCell className="text-right font-bold text-[#2ecc71] bg-[#2ecc71]/10">{formatCurrency(frete.totalFrete)}</TableCell>
+                    <TableCell className="whitespace-nowrap">{frete.transporte}</TableCell>
+                    <TableCell className="font-medium text-[#0a192f] whitespace-nowrap">{frete.frota}</TableCell>
+                    <TableCell className="whitespace-nowrap">{frete.transp}</TableCell>
+                    <TableCell className="truncate max-w-[140px]" title={frete.cliente}>{frete.cliente}</TableCell>
+                    <TableCell className="truncate max-w-[110px]" title={frete.cidade}>{frete.cidade}</TableCell>
+                    <TableCell className="whitespace-nowrap">{frete.cteNf}</TableCell>
+                    <TableCell className="text-right whitespace-nowrap">{formatNumber(frete.peso)}</TableCell>
+                    <TableCell className="text-right whitespace-nowrap">{formatCurrency(frete.frete)}</TableCell>
+                    <TableCell className="text-right whitespace-nowrap">{formatCurrency(frete.pedagio)}</TableCell>
+                    <TableCell className="text-right font-bold text-[#2ecc71] bg-[#2ecc71]/10 whitespace-nowrap">{formatCurrency(frete.totalFrete)}</TableCell>
                     <TableCell className="whitespace-nowrap">{formatDate(frete.dtaFrete)}</TableCell>
-                    <TableCell className={`whitespace-nowrap font-medium ${isPastDue(frete.vencimento) ? 'text-red-600' : ''}`}>
+                    <TableCell className={`whitespace-nowrap font-medium ${isPastDue(frete.vencimento) ? "text-red-600" : ""}`}>
                       {formatDate(frete.vencimento)}
                     </TableCell>
                     <TableCell className="truncate max-w-[100px]" title={frete.obs || ""}>{frete.obs || "-"}</TableCell>
@@ -169,7 +170,10 @@ export function Fretes() {
                           <DropdownMenuItem onClick={() => { setEditingFrete(frete); setIsFormOpen(true); }}>
                             <Pencil className="mr-2 h-4 w-4" /> Editar
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(frete.id)}>
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => handleDelete(frete.id)}
+                          >
                             <Trash2 className="mr-2 h-4 w-4" /> Excluir
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -182,11 +186,11 @@ export function Fretes() {
             {fretes.length > 0 && (
               <TableFooter className="bg-[#0a192f] text-white font-bold sticky bottom-0">
                 <TableRow>
-                  <TableCell colSpan={8} className="text-right">TOTAIS:</TableCell>
-                  <TableCell className="text-right">{formatNumber(totalPeso)}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(totalFrete)}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(totalPedagio)}</TableCell>
-                  <TableCell className="text-right text-[#2ecc71]">{formatCurrency(totalGeral)}</TableCell>
+                  <TableCell colSpan={8} className="text-right whitespace-nowrap">TOTAIS:</TableCell>
+                  <TableCell className="text-right whitespace-nowrap">{formatNumber(totalPeso)}</TableCell>
+                  <TableCell className="text-right whitespace-nowrap">{formatCurrency(totalFrete)}</TableCell>
+                  <TableCell className="text-right whitespace-nowrap">{formatCurrency(totalPedagio)}</TableCell>
+                  <TableCell className="text-right text-[#2ecc71] whitespace-nowrap">{formatCurrency(totalGeral)}</TableCell>
                   <TableCell colSpan={4}></TableCell>
                 </TableRow>
               </TableFooter>
@@ -195,10 +199,10 @@ export function Fretes() {
         </div>
       </div>
 
-      <FreteFormModal 
-        open={isFormOpen} 
-        onOpenChange={setIsFormOpen} 
-        frete={editingFrete} 
+      <FreteFormModal
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        frete={editingFrete}
       />
     </div>
   );

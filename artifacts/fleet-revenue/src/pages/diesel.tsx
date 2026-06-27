@@ -52,9 +52,10 @@ export function Diesel() {
   const abasts = data?.abastecimentos || [];
   const totalLitros = abasts.reduce((sum, a) => sum + (a.litros || 0), 0);
   const totalPago = abasts.reduce((sum, a) => sum + (a.totalPago || 0), 0);
-  
-  // Calculate average only if there are total litros
-  const avgMedia = totalLitros > 0 ? (abasts.reduce((sum, a) => sum + (a.kmPercorrido || 0), 0) / totalLitros) : 0;
+  const avgMedia =
+    totalLitros > 0
+      ? abasts.reduce((sum, a) => sum + (a.kmPercorrido || 0), 0) / totalLitros
+      : 0;
 
   const getMediaColor = (media: number | null | undefined) => {
     if (!media) return "";
@@ -64,25 +65,24 @@ export function Diesel() {
   };
 
   return (
-    <div className="space-y-4 flex flex-col h-full">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Buscar abastecimento (placa, posto)..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-80 pl-9"
-            />
-          </div>
+    <div className="space-y-3 flex flex-col h-full">
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[160px] max-w-sm">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar (placa, posto)..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 w-full"
+          />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ml-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
-                <Download className="mr-2 h-4 w-4" />
-                Exportar
+                <Download className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Exportar</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -90,32 +90,37 @@ export function Diesel() {
               <DropdownMenuItem onClick={handleExportExcel}>Excel</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button size="sm" onClick={() => { setEditingAbast(null); setIsFormOpen(true); }} className="bg-[#0a192f] hover:bg-[#0a192f]/90 text-white">
-            <Plus className="mr-2 h-4 w-4" />
-            Novo Abastecimento
+          <Button
+            size="sm"
+            onClick={() => { setEditingAbast(null); setIsFormOpen(true); }}
+            className="bg-[#0a192f] hover:bg-[#0a192f]/90 text-white"
+          >
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Novo Abastecimento</span>
           </Button>
         </div>
       </div>
 
-      <div className="border rounded-md flex-1 overflow-hidden flex flex-col bg-card shadow-sm text-sm">
+      {/* Table */}
+      <div className="border rounded-md flex-1 overflow-hidden flex flex-col bg-card shadow-sm text-sm min-h-0">
         <div className="overflow-auto flex-1">
-          <Table>
+          <Table className="min-w-[960px]">
             <TableHeader className="bg-muted/50 sticky top-0 z-10 backdrop-blur">
               <TableRow>
-                <TableHead className="w-[50px]">#</TableHead>
-                <TableHead>Mês</TableHead>
-                <TableHead>Ano</TableHead>
-                <TableHead>REQ</TableHead>
-                <TableHead>Posto</TableHead>
-                <TableHead>Data</TableHead>
-                <TableHead>Placa</TableHead>
-                <TableHead className="text-right">Litros</TableHead>
-                <TableHead className="text-right">R$/L</TableHead>
-                <TableHead className="text-right font-bold text-[#0a192f]">Total (R$)</TableHead>
-                <TableHead className="text-right">KM Início</TableHead>
-                <TableHead className="text-right">KM Final</TableHead>
-                <TableHead className="text-right">KM Perc.</TableHead>
-                <TableHead className="text-center">Média (km/l)</TableHead>
+                <TableHead className="w-[40px] whitespace-nowrap">#</TableHead>
+                <TableHead className="whitespace-nowrap">Mês</TableHead>
+                <TableHead className="whitespace-nowrap">Ano</TableHead>
+                <TableHead className="whitespace-nowrap">REQ</TableHead>
+                <TableHead className="whitespace-nowrap">Posto</TableHead>
+                <TableHead className="whitespace-nowrap">Data</TableHead>
+                <TableHead className="whitespace-nowrap">Placa</TableHead>
+                <TableHead className="text-right whitespace-nowrap">Litros</TableHead>
+                <TableHead className="text-right whitespace-nowrap">R$/L</TableHead>
+                <TableHead className="text-right font-bold text-[#0a192f] whitespace-nowrap">Total (R$)</TableHead>
+                <TableHead className="text-right whitespace-nowrap">KM Início</TableHead>
+                <TableHead className="text-right whitespace-nowrap">KM Final</TableHead>
+                <TableHead className="text-right whitespace-nowrap">KM Perc.</TableHead>
+                <TableHead className="text-center whitespace-nowrap">Média (km/l)</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
@@ -138,20 +143,20 @@ export function Diesel() {
                 abasts.map((a, index) => (
                   <TableRow key={a.id} className="hover:bg-muted/50 transition-colors">
                     <TableCell className="text-muted-foreground">{index + 1}</TableCell>
-                    <TableCell>{a.mes}</TableCell>
+                    <TableCell className="whitespace-nowrap">{a.mes}</TableCell>
                     <TableCell>{a.ano}</TableCell>
                     <TableCell>{a.requisicao || "-"}</TableCell>
-                    <TableCell className="truncate max-w-[120px]">{a.posto || "-"}</TableCell>
+                    <TableCell className="truncate max-w-[110px]">{a.posto || "-"}</TableCell>
                     <TableCell className="whitespace-nowrap">{formatDate(a.data)}</TableCell>
-                    <TableCell className="font-medium">{a.placa}</TableCell>
-                    <TableCell className="text-right">{formatNumber(a.litros, 2)} L</TableCell>
-                    <TableCell className="text-right">{formatCurrency(a.precoLitro)}</TableCell>
-                    <TableCell className="text-right font-bold">{formatCurrency(a.totalPago)}</TableCell>
-                    <TableCell className="text-right text-muted-foreground">{formatNumber(a.kmInicio, 0)}</TableCell>
-                    <TableCell className="text-right text-muted-foreground">{formatNumber(a.kmFinal, 0)}</TableCell>
-                    <TableCell className="text-right">{formatNumber(a.kmPercorrido, 0)}</TableCell>
+                    <TableCell className="font-medium whitespace-nowrap">{a.placa}</TableCell>
+                    <TableCell className="text-right whitespace-nowrap">{formatNumber(a.litros, 2)} L</TableCell>
+                    <TableCell className="text-right whitespace-nowrap">{formatCurrency(a.precoLitro)}</TableCell>
+                    <TableCell className="text-right font-bold whitespace-nowrap">{formatCurrency(a.totalPago)}</TableCell>
+                    <TableCell className="text-right text-muted-foreground whitespace-nowrap">{formatNumber(a.kmInicio, 0)}</TableCell>
+                    <TableCell className="text-right text-muted-foreground whitespace-nowrap">{formatNumber(a.kmFinal, 0)}</TableCell>
+                    <TableCell className="text-right whitespace-nowrap">{formatNumber(a.kmPercorrido, 0)}</TableCell>
                     <TableCell className="text-center">
-                      <div className={`px-2 py-1 rounded inline-block font-bold min-w-[60px] ${getMediaColor(a.media)}`}>
+                      <div className={`px-2 py-1 rounded inline-block font-bold min-w-[52px] ${getMediaColor(a.media)}`}>
                         {formatNumber(a.media, 2)}
                       </div>
                     </TableCell>
@@ -166,7 +171,10 @@ export function Diesel() {
                           <DropdownMenuItem onClick={() => { setEditingAbast(a); setIsFormOpen(true); }}>
                             <Pencil className="mr-2 h-4 w-4" /> Editar
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(a.id)}>
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => handleDelete(a.id)}
+                          >
                             <Trash2 className="mr-2 h-4 w-4" /> Excluir
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -179,12 +187,12 @@ export function Diesel() {
             {abasts.length > 0 && (
               <TableFooter className="bg-[#0a192f] text-white font-bold sticky bottom-0">
                 <TableRow>
-                  <TableCell colSpan={7} className="text-right">TOTAIS:</TableCell>
-                  <TableCell className="text-right">{formatNumber(totalLitros, 2)} L</TableCell>
+                  <TableCell colSpan={7} className="text-right whitespace-nowrap">TOTAIS:</TableCell>
+                  <TableCell className="text-right whitespace-nowrap">{formatNumber(totalLitros, 2)} L</TableCell>
                   <TableCell></TableCell>
-                  <TableCell className="text-right text-[#2ecc71]">{formatCurrency(totalPago)}</TableCell>
+                  <TableCell className="text-right text-[#2ecc71] whitespace-nowrap">{formatCurrency(totalPago)}</TableCell>
                   <TableCell colSpan={3}></TableCell>
-                  <TableCell className="text-center bg-[#1a2f4c]">{formatNumber(avgMedia, 2)}</TableCell>
+                  <TableCell className="text-center bg-[#1a2f4c] whitespace-nowrap">{formatNumber(avgMedia, 2)}</TableCell>
                   <TableCell></TableCell>
                 </TableRow>
               </TableFooter>
@@ -193,10 +201,10 @@ export function Diesel() {
         </div>
       </div>
 
-      <AbastecimentoFormModal 
-        open={isFormOpen} 
-        onOpenChange={setIsFormOpen} 
-        abastecimento={editingAbast} 
+      <AbastecimentoFormModal
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        abastecimento={editingAbast}
       />
     </div>
   );
