@@ -1,0 +1,84 @@
+**Prompt:**
+
+> Please implement the following improvements while **preserving the existing design, layout, styling, and functionality** of the application. Only make the changes described below.
+>
+> ## 1. Improve the Freight Search functionality
+>
+> The search bar on the **Freights** page should perform a **global, flexible search** across all freight fields.
+>
+> The current search is too limited. I want it to return **every freight record that contains the searched value**, regardless of which field the value belongs to.
+>
+> The search should work for, but not be limited to:
+>
+> * Freight date
+> * Due date
+> * Fleet number
+> * CTe number
+> * Origin city
+> * Destination city
+> * Driver name
+> * Customer name
+> * Vehicle
+> * License plate
+> * Status
+> * Revenue
+> * Expense
+> * Notes
+> * Any other searchable freight information
+>
+> ### Search behavior
+>
+> * Perform a **partial match** search rather than requiring exact matches.
+> * The search should be **case-insensitive**.
+> * It should ignore differences between uppercase and lowercase letters.
+> * Support searching by partial text or partial numbers.
+> * Results should update immediately while the user types.
+> * If a user enters a date (or part of a date), every freight containing that date should be returned.
+> * If a user enters part of a city name, all matching cities should be returned.
+> * If a user enters a fleet number or CTe number, all matching records should appear.
+> * The search should work as a global filter over the entire freight list.
+>
+> ## 2. Rename the application
+>
+> Replace every occurrence of:
+>
+> **"Coca graças a Deus"**
+>
+> with
+>
+> **"LAFER"**
+>
+> This includes:
+>
+> * Application title
+> * Dashboard
+> * Login screen
+> * Sidebar
+> * Window title
+> * Header
+> * Branding
+> * Any other location where the old name appears
+>
+> ## 3. Create a new logo
+>
+> Design a **new logo** for the brand **LAFER**.
+>
+> The logo should:
+>
+> * Be modern, clean, and elegant.
+> * Have a minimalist style.
+> * Convey professionalism and trust.
+> * Be inspired by the transportation and logistics industry.
+> * Include subtle visual elements related to freight transport, such as roads, trucks, movement, routes, or logistics.
+> * Integrate naturally with the name **LAFER**.
+> * Work well in both light and dark themes.
+> * Scale well for small icons as well as larger headers.
+> * Use a simple design without unnecessary details.
+>
+> The final logo should feel suitable for a modern transportation management system.
+>
+> ### Important
+>
+> * Do **not** redesign the application's interface.
+> * Do **not** change the layout, navigation, or existing workflow.
+> * Only improve the search functionality, replace the branding with **LAFER**, and create the new logo while keeping the rest of the application unchanged.
