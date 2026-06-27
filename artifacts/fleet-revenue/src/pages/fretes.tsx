@@ -25,8 +25,9 @@ export function Fretes() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingFrete, setEditingFrete] = useState<any>(null);
 
-  const { data, isLoading } = useListFretes({ search }, {
-    query: { queryKey: getListFretesQueryKey({ search }) }
+  // Fetch the full list once — filtering is done client-side for instant results
+  const { data, isLoading } = useListFretes({}, {
+    query: { queryKey: getListFretesQueryKey() }
   });
 
   const deleteFrete = useDeleteFrete();
@@ -54,7 +55,45 @@ export function Fretes() {
     if (data?.fretes) exportToExcel(data.fretes, "fretes_export");
   };
 
-  const fretes = data?.fretes || [];
+  // Client-side global search across every field including formatted values
+  const fretes = useMemo(() => {
+    const all = data?.fretes || [];
+    if (!search.trim()) return all;
+    const q = search.toLowerCase().trim();
+    return all.filter((f) => {
+      const haystack = [
+        f.dataCte,
+        f.dtaFrete,
+        f.vencimento,
+        // formatted dates (DD/MM/AAAA) so users can search "27/06" or "2026"
+        f.dataCte ? formatDate(f.dataCte) : null,
+        f.dtaFrete ? formatDate(f.dtaFrete) : null,
+        f.vencimento ? formatDate(f.vencimento) : null,
+        f.origem,
+        f.transporte,
+        f.frota,
+        f.transp,
+        f.cliente,
+        f.cidade,
+        f.cteNf,
+        f.obs,
+        // numeric values as strings so "1.200" or "320" matches
+        f.peso != null ? String(f.peso) : null,
+        f.frete != null ? String(f.frete) : null,
+        f.pedagio != null ? String(f.pedagio) : null,
+        f.totalFrete != null ? String(f.totalFrete) : null,
+        // formatted currency so "R$" or "1.200,00" matches
+        f.frete != null ? formatCurrency(f.frete) : null,
+        f.pedagio != null ? formatCurrency(f.pedagio) : null,
+        f.totalFrete != null ? formatCurrency(f.totalFrete) : null,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [data?.fretes, search]);
+
   const totalPeso = fretes.reduce((sum, f) => sum + (f.peso || 0), 0);
   const totalFrete = fretes.reduce((sum, f) => sum + (f.frete || 0), 0);
   const totalPedagio = fretes.reduce((sum, f) => sum + (f.pedagio || 0), 0);

@@ -1,3 +1,20 @@
 <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="180" height="180" rx="36" fill="#FF3C00"/>
+  <rect width="180" height="180" rx="36" fill="#0a192f"/>
+  <!-- Truck body -->
+  <rect x="22" y="88" width="90" height="48" rx="10" fill="#2ecc71"/>
+  <!-- Cab -->
+  <rect x="102" y="64" width="56" height="72" rx="10" fill="#2ecc71"/>
+  <!-- Windshield -->
+  <rect x="108" y="70" width="44" height="30" rx="6" fill="#0a192f" opacity="0.4"/>
+  <!-- Wheels -->
+  <circle cx="46" cy="142" r="16" fill="#0a192f"/>
+  <circle cx="46" cy="142" r="8" fill="#2ecc71"/>
+  <circle cx="92" cy="142" r="16" fill="#0a192f"/>
+  <circle cx="92" cy="142" r="8" fill="#2ecc71"/>
+  <circle cx="134" cy="142" r="16" fill="#0a192f"/>
+  <circle cx="134" cy="142" r="8" fill="#2ecc71"/>
+  <!-- Speed lines -->
+  <line x1="10" y1="95" x2="26" y2="95" stroke="white" stroke-width="6" stroke-linecap="round" opacity="0.7"/>
+  <line x1="10" y1="112" x2="22" y2="112" stroke="white" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+  <line x1="10" y1="129" x2="18" y2="129" stroke="white" stroke-width="6" stroke-linecap="round" opacity="0.3"/>
 </svg>

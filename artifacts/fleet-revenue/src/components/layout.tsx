@@ -33,14 +33,34 @@ function NavLinks({ currentLocation, onNavigate }: { currentLocation: string; on
   );
 }
 
+function LaferLogo({ size = 24 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="LAFER">
+      <rect width="32" height="32" rx="7" fill="#2ecc71"/>
+      {/* Route/road: horizontal line with a truck cab silhouette */}
+      {/* Truck body */}
+      <rect x="4" y="15" width="16" height="9" rx="2" fill="#0a192f"/>
+      {/* Cab */}
+      <rect x="17" y="11" width="9" height="13" rx="2" fill="#0a192f"/>
+      {/* Windshield */}
+      <rect x="18" y="12" width="7" height="5" rx="1" fill="#2ecc71" opacity="0.6"/>
+      {/* Wheels */}
+      <circle cx="8" cy="25" r="2.5" fill="#2ecc71"/>
+      <circle cx="15" cy="25" r="2.5" fill="#2ecc71"/>
+      <circle cx="23" cy="25" r="2.5" fill="#2ecc71"/>
+      {/* Speed lines */}
+      <line x1="2" y1="16" x2="5" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.8"/>
+      <line x1="2" y1="19" x2="4" y2="19" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
+    </svg>
+  );
+}
+
 function SidebarBrand() {
   return (
     <div className="p-4 border-b h-14 flex items-center bg-[#0a192f] text-white shrink-0">
       <div className="flex items-center gap-2 font-bold text-lg tracking-tight min-w-0">
-        <div className="w-6 h-6 rounded bg-[#2ecc71] flex items-center justify-center shrink-0">
-          <Truck className="h-4 w-4 text-[#0a192f]" />
-        </div>
-        <span className="truncate">COCA GRAÇAS A DEUS</span>
+        <LaferLogo size={28} />
+        <span className="truncate tracking-widest">LAFER</span>
       </div>
     </div>
   );
