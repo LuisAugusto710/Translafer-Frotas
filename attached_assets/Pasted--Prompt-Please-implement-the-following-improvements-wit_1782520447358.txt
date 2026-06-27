@@ -1,0 +1,59 @@
+**Prompt:**
+
+> Please implement the following improvements **without changing the application's design, layout, navigation, or existing workflow**. Focus only on the requested functionality and ensure all changes are fully integrated with the existing system.
+>
+> ### 1. Allow past due dates for freight
+>
+> * In the **"Freight Due Date"** field, allow users to select or manually enter a date that has already passed.
+> * The application should **not block** saving the freight when the due date is in the past.
+> * However, the overdue indication must remain active:
+>
+>   * Keep the due date highlighted in **red**.
+>   * Keep any existing overdue warning or status indicator.
+> * The validation should only warn the user, **not prevent** the record from being saved.
+>
+> ### 2. Fix the "Total Revenue" calculation
+>
+> * The **"Total Revenue"** card is not displaying the revenue generated throughout the selected year.
+> * Fix the calculation so it correctly sums the revenue from all freight records within the selected period.
+> * Ensure the value updates automatically whenever:
+>
+>   * The selected date or year changes.
+>   * A freight is created.
+>   * A freight is edited.
+>   * A freight is deleted.
+>
+> ### 3. Remove unnecessary dashboard cards
+>
+> Remove the following dashboard widgets/cards completely:
+>
+> * **Net Profit (Approx.)**
+> * **Total Weight**
+> * **Best Fleet**
+>
+> Remove both their UI components and any unused logic associated with them.
+>
+> ### 4. Fix the dashboard charts
+>
+> The following charts are currently not displaying any data:
+>
+> * **Freight by Period**
+> * **Freight by Fleet**
+>
+> Fix both charts so they correctly retrieve and display data from the freight records.
+>
+> Specifically:
+>
+> * Ensure the queries are connected to the correct data source.
+> * Recalculate chart data whenever freight records change.
+> * Respect the currently selected date range or year.
+> * Display accurate labels, values, and totals.
+> * Show meaningful empty states only when there is genuinely no data available.
+> * Verify that no filtering or aggregation logic is preventing the charts from rendering.
+>
+> ### Important
+>
+> * **Do not redesign the dashboard.**
+> * **Do not change the UI, styling, colors, spacing, or layout.**
+> * **Do not remove or modify any features other than those listed above.**
+> * Ensure all dashboard metrics, cards, and charts remain synchronized with the freight data and update in real time after any Create, Read, Update, or Delete (CRUD) operation.
