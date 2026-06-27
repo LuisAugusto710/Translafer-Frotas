@@ -36,6 +36,11 @@ export function Diesel() {
       deleteAbast.mutate({ id }, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListAbastecimentosQueryKey() });
+          queryClient.invalidateQueries({
+            predicate: (query) =>
+              typeof query.queryKey[0] === "string" &&
+              query.queryKey[0].startsWith("/api/dashboard"),
+          });
         }
       });
     }

@@ -177,6 +177,11 @@ export function FreteFormModal({
             description: `Frete ${isEditing ? "atualizado" : "criado"} com sucesso.`,
           });
           queryClient.invalidateQueries({ queryKey: getListFretesQueryKey() });
+          queryClient.invalidateQueries({
+            predicate: (query) =>
+              typeof query.queryKey[0] === "string" &&
+              query.queryKey[0].startsWith("/api/dashboard"),
+          });
           onOpenChange(false);
         },
         onError: (err) => {

@@ -36,6 +36,11 @@ export function Fretes() {
       deleteFrete.mutate({ id }, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListFretesQueryKey() });
+          queryClient.invalidateQueries({
+            predicate: (query) =>
+              typeof query.queryKey[0] === "string" &&
+              query.queryKey[0].startsWith("/api/dashboard"),
+          });
         }
       });
     }
