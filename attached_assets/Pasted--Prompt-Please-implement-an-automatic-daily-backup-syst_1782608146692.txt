@@ -1,0 +1,60 @@
+**Prompt:**
+
+Please implement an **automatic daily backup system** for the application **without changing the existing UI, layout, workflow, or business logic**.
+
+## 1. Automatic daily backup generation
+
+The system must automatically generate a **backup once per day**.
+
+* The backup must include **all critical application data**, especially:
+
+  * Freight records
+  * Dashboard-related data
+  * Any related metadata required to restore the system state
+* The backup must run automatically without requiring user interaction.
+* The process should execute once every 24 hours (configurable scheduling if possible).
+
+## 2. User-defined backup location
+
+* The user must be able to define a **local folder path on their computer** where backups will be saved.
+* The system must store backups directly in this selected directory.
+* If the path becomes invalid or unavailable, the system should notify the user and request a new valid location.
+
+## 3. File format (Excel-compatible)
+
+* The backup must be generated in a format that is **fully readable by Microsoft Excel**, such as:
+
+  * `.xlsx` (preferred), or
+  * `.csv` (if structured multi-sheet export is not required)
+* If multiple datasets exist (e.g., freights, dashboard summaries, etc.), the backup should ideally be organized into **separate Excel sheets within the same file**.
+
+## 4. Data integrity and reliability
+
+* Ensure all exported data is complete and consistent at the time of backup.
+* The backup must represent a **snapshot of the system state at the moment it is created**.
+* Avoid partial writes or corrupted files; use safe write operations (e.g., temporary file creation before final save).
+* Validate data before exporting.
+
+## 5. Overwrite and versioning strategy
+
+* Each backup file should include a timestamp in its filename (e.g., `backup_2026-06-28.xlsx`).
+* Do not overwrite previous backups.
+* Keep historical backups so the user can restore past versions if needed.
+
+## 6. Error handling
+
+* If backup creation fails, log the error and notify the user.
+* The system should retry the backup if a failure occurs (optional but recommended).
+* Ensure the application continues functioning normally even if the backup process fails.
+
+## 7. Performance considerations
+
+* The backup process must run in the background.
+* It should not freeze or degrade application performance.
+* It should not interfere with user actions or active sessions.
+
+## Important
+
+* Do **not** change the application UI or layout.
+* Do **not** modify existing features unrelated to backup functionality.
+* Focus exclusively on implementing a reliable, automated, and user-configurable daily backup system in an Excel-compatible format.
