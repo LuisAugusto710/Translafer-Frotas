@@ -1,0 +1,55 @@
+**Prompt:**
+
+Please optimize the **Freights** page for performance **without changing the application's design, layout, or functionality**.
+
+## 1. Implement lazy loading / infinite scrolling
+
+The Freights page does **not** need to load every freight record when it is opened.
+
+Instead:
+
+* Load only an initial batch of records (for example, 50 or 100 records).
+* As the user scrolls down, automatically load the next batch of records.
+* Continue loading additional batches until all records have been displayed.
+* The loading should be seamless, with no page refresh or interruption.
+* Keep scrolling smooth even when the database contains thousands of freight records.
+
+The objective is to significantly improve the page's performance and reduce the initial loading time.
+
+## 2. Search must work across the entire database
+
+Although the page only displays a subset of records initially, the search bar **must always search the complete database**, not just the records currently loaded on screen.
+
+For example:
+
+* If the user searches for a CTe number that has not yet been loaded into the visible list, it should still be found.
+* The same applies to dates, fleet numbers, cities, drivers, customers, status, and every other searchable field.
+
+The search should query the full dataset and return matching records immediately.
+
+## 3. Dashboard must continue using the complete dataset
+
+This optimization must affect **only the visual rendering of the Freights page**.
+
+The Dashboard must continue to have access to **100% of the freight data** at all times.
+
+Dashboard calculations must **never** be based only on the records currently visible on the Freights page.
+
+All KPIs, charts, reports, filters, summaries, and statistics should continue using the complete database.
+
+## 4. Performance requirements
+
+* Do not preload thousands of records into the UI.
+* Fetch records in configurable batches (pagination or cursor-based loading is preferred).
+* Avoid unnecessary database queries.
+* Cache only when appropriate and invalidate the cache after Create, Update, or Delete operations.
+* Maintain smooth scrolling even with very large datasets.
+* Ensure memory usage remains low.
+* Optimize rendering to avoid unnecessary component re-renders.
+
+## Important
+
+* Do **not** redesign the application.
+* Do **not** modify the existing UI or user workflow.
+* Do **not** change any business logic.
+* Only optimize how freight records are loaded and rendered on the Freights page while ensuring that all application features—including the Dashboard, reports, and global search—continue to use the complete dataset.

@@ -34,12 +34,22 @@ router.get("/fretes", async (req, res) => {
   if (dateFrom) conditions.push(gte(fretesTable.dataCte, toDateStr(dateFrom)!));
   if (dateTo) conditions.push(lte(fretesTable.dataCte, toDateStr(dateTo)!));
   if (search) {
+    const like = `%${search}%`;
     conditions.push(or(
-      ilike(fretesTable.frota, `%${search}%`),
-      ilike(fretesTable.cliente, `%${search}%`),
-      ilike(fretesTable.cidade, `%${search}%`),
-      ilike(fretesTable.origem, `%${search}%`),
-      ilike(fretesTable.cteNf, `%${search}%`),
+      ilike(fretesTable.frota,      like),
+      ilike(fretesTable.cliente,    like),
+      ilike(fretesTable.cidade,     like),
+      ilike(fretesTable.origem,     like),
+      ilike(fretesTable.cteNf,      like),
+      ilike(fretesTable.transporte, like),
+      ilike(fretesTable.transp,     like),
+      ilike(fretesTable.obs,        like),
+      sql`CAST(${fretesTable.dataCte}   AS TEXT) ILIKE ${like}`,
+      sql`CAST(${fretesTable.dtaFrete}  AS TEXT) ILIKE ${like}`,
+      sql`CAST(${fretesTable.vencimento} AS TEXT) ILIKE ${like}`,
+      sql`CAST(${fretesTable.frete}     AS TEXT) ILIKE ${like}`,
+      sql`CAST(${fretesTable.pedagio}   AS TEXT) ILIKE ${like}`,
+      sql`CAST(${fretesTable.peso}      AS TEXT) ILIKE ${like}`,
     )!);
   }
 

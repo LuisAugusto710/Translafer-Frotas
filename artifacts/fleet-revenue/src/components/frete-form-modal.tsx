@@ -176,7 +176,8 @@ export function FreteFormModal({
             title: "Sucesso",
             description: `Frete ${isEditing ? "atualizado" : "criado"} com sucesso.`,
           });
-          queryClient.invalidateQueries({ queryKey: getListFretesQueryKey() });
+          // Invalidate all fretes queries (paginated + search) and dashboard
+          queryClient.invalidateQueries({ queryKey: ["/api/fretes"] });
           queryClient.invalidateQueries({
             predicate: (query) =>
               typeof query.queryKey[0] === "string" &&

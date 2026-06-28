@@ -1,11 +1,7 @@
-import { useState, useMemo } from "react";
-import { 
-  useListFretes, 
-  getListFretesQueryKey,
-  useDeleteFrete,
-} from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Download, MoreHorizontal, Pencil, Trash2, Search } from "lucide-react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useDeleteFrete } from "@workspace/api-client-react";
+import { Plus, Download, MoreHorizontal, Pencil, Trash2, Search, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -19,93 +15,180 @@ import { formatCurrency, formatNumber, formatDate } from "@/lib/utils";
 import { exportToCsv, exportToExcel } from "@/lib/export";
 import { FreteFormModal } from "@/components/frete-form-modal";
 
+// ── Types ───────────────────────────────────────────────────────────────────
+
+type FreteRow = {
+  id: number;
+  dataCte: string;
+  dtaFrete: string | null;
+  vencimento: string | null;
+  origem: string;
+  transporte: string | null;
+  frota: string;
+  transp: string | null;
+  cliente: string;
+  cidade: string;
+  cteNf: string | null;
+  obs: string | null;
+  peso: number;
+  frete: number;
+  pedagio: number;
+  totalFrete: number;
+};
+
+type FretePage = { fretes: FreteRow[]; total: number };
+
+// ── Constants ────────────────────────────────────────────────────────────────
+
+const PAGE_SIZE = 100;
+const FRETES_KEY = "/api/fretes";
+
+// ── Fetch helpers ────────────────────────────────────────────────────────────
+
+async function fetchFretePage(offset: number): Promise<FretePage> {
+  const res = await fetch(`${FRETES_KEY}?limit=${PAGE_SIZE}&offset=${offset}`);
+  if (!res.ok) throw new Error("Erro ao carregar fretes");
+  return res.json();
+}
+
+async function searchFretes(search: string): Promise<FretePage> {
+  const res = await fetch(`${FRETES_KEY}?search=${encodeURIComponent(search)}&limit=5000`);
+  if (!res.ok) throw new Error("Erro na busca");
+  return res.json();
+}
+
+async function fetchAllFretes(search?: string): Promise<FreteRow[]> {
+  const url = search
+    ? `${FRETES_KEY}?search=${encodeURIComponent(search)}&limit=10000`
+    : `${FRETES_KEY}?limit=10000`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Erro ao exportar");
+  const data: FretePage = await res.json();
+  return data.fretes;
+}
+
+// ── Component ────────────────────────────────────────────────────────────────
+
 export function Fretes() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingFrete, setEditingFrete] = useState<any>(null);
+  const [editingFrete, setEditingFrete] = useState<FreteRow | null>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Fetch the full list once — filtering is done client-side for instant results
-  const { data, isLoading } = useListFretes({}, {
-    query: { queryKey: getListFretesQueryKey() }
+  // Debounce search input
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  const isSearching = debouncedSearch.length > 0;
+
+  // ── Mode 1: paginated infinite scroll (no search) ──
+  const {
+    data: infiniteData,
+    isLoading: isPagesLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
+    queryKey: [FRETES_KEY, "pages"],
+    queryFn: ({ pageParam }: { pageParam: number }) => fetchFretePage(pageParam),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      const loaded = allPages.reduce((s, p) => s + p.fretes.length, 0);
+      return loaded < lastPage.total ? loaded : undefined;
+    },
+    enabled: !isSearching,
+    staleTime: 30_000,
   });
+
+  // ── Mode 2: server-side search (full DB) ──
+  const {
+    data: searchData,
+    isLoading: isSearchLoading,
+  } = useQuery({
+    queryKey: [FRETES_KEY, "search", debouncedSearch],
+    queryFn: () => searchFretes(debouncedSearch),
+    enabled: isSearching,
+    staleTime: 30_000,
+  });
+
+  // ── Derive displayed rows ──
+  const fretes: FreteRow[] = useMemo(() => {
+    if (isSearching) return searchData?.fretes ?? [];
+    return infiniteData?.pages.flatMap((p) => p.fretes) ?? [];
+  }, [isSearching, searchData, infiniteData]);
+
+  const totalInDb = isSearching
+    ? (searchData?.total ?? 0)
+    : (infiniteData?.pages[0]?.total ?? 0);
+
+  const isLoading = isSearching ? isSearchLoading : isPagesLoading;
+
+  // ── Totals (over currently loaded rows) ──
+  const totalPeso   = useMemo(() => fretes.reduce((s, f) => s + (f.peso || 0), 0), [fretes]);
+  const totalFrete  = useMemo(() => fretes.reduce((s, f) => s + (f.frete || 0), 0), [fretes]);
+  const totalPedagio = useMemo(() => fretes.reduce((s, f) => s + (f.pedagio || 0), 0), [fretes]);
+  const totalGeral  = useMemo(() => fretes.reduce((s, f) => s + (f.totalFrete || 0), 0), [fretes]);
+
+  // ── Infinite scroll sentinel ──
+  const onSentinelVisible = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    },
+    [hasNextPage, isFetchingNextPage, fetchNextPage]
+  );
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(onSentinelVisible, { threshold: 0.1 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [onSentinelVisible]);
+
+  // ── CRUD helpers ──
+  const invalidateFretes = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: [FRETES_KEY] });
+    queryClient.invalidateQueries({
+      predicate: (q) =>
+        typeof q.queryKey[0] === "string" &&
+        q.queryKey[0].startsWith("/api/dashboard"),
+    });
+  }, [queryClient]);
 
   const deleteFrete = useDeleteFrete();
 
   const handleDelete = (id: number) => {
-    if (confirm("Tem certeza que deseja excluir este frete?")) {
-      deleteFrete.mutate({ id }, {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListFretesQueryKey() });
-          queryClient.invalidateQueries({
-            predicate: (query) =>
-              typeof query.queryKey[0] === "string" &&
-              query.queryKey[0].startsWith("/api/dashboard"),
-          });
-        }
-      });
-    }
+    if (!confirm("Tem certeza que deseja excluir este frete?")) return;
+    deleteFrete.mutate({ id }, { onSuccess: invalidateFretes });
   };
 
-  const handleExportCsv = () => {
-    if (data?.fretes) exportToCsv(data.fretes, "fretes_export");
+  // ── Export (always fetches full dataset) ──
+  const handleExportCsv = async () => {
+    const rows = await fetchAllFretes(debouncedSearch || undefined);
+    exportToCsv(rows, "fretes_export");
   };
 
-  const handleExportExcel = () => {
-    if (data?.fretes) exportToExcel(data.fretes, "fretes_export");
+  const handleExportExcel = async () => {
+    const rows = await fetchAllFretes(debouncedSearch || undefined);
+    exportToExcel(rows, "fretes_export");
   };
 
-  // Client-side global search across every field including formatted values
-  const fretes = useMemo(() => {
-    const all = data?.fretes || [];
-    if (!search.trim()) return all;
-    const q = search.toLowerCase().trim();
-    return all.filter((f) => {
-      const haystack = [
-        f.dataCte,
-        f.dtaFrete,
-        f.vencimento,
-        // formatted dates (DD/MM/AAAA) so users can search "27/06" or "2026"
-        f.dataCte ? formatDate(f.dataCte) : null,
-        f.dtaFrete ? formatDate(f.dtaFrete) : null,
-        f.vencimento ? formatDate(f.vencimento) : null,
-        f.origem,
-        f.transporte,
-        f.frota,
-        f.transp,
-        f.cliente,
-        f.cidade,
-        f.cteNf,
-        f.obs,
-        // numeric values as strings so "1.200" or "320" matches
-        f.peso != null ? String(f.peso) : null,
-        f.frete != null ? String(f.frete) : null,
-        f.pedagio != null ? String(f.pedagio) : null,
-        f.totalFrete != null ? String(f.totalFrete) : null,
-        // formatted currency so "R$" or "1.200,00" matches
-        f.frete != null ? formatCurrency(f.frete) : null,
-        f.pedagio != null ? formatCurrency(f.pedagio) : null,
-        f.totalFrete != null ? formatCurrency(f.totalFrete) : null,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return haystack.includes(q);
-    });
-  }, [data?.fretes, search]);
-
-  const totalPeso = fretes.reduce((sum, f) => sum + (f.peso || 0), 0);
-  const totalFrete = fretes.reduce((sum, f) => sum + (f.frete || 0), 0);
-  const totalPedagio = fretes.reduce((sum, f) => sum + (f.pedagio || 0), 0);
-  const totalGeral = fretes.reduce((sum, f) => sum + (f.totalFrete || 0), 0);
-
-  const isPastDue = (dateStr: string) => {
+  // ── Misc ──
+  const isPastDue = (dateStr: string | null) => {
     if (!dateStr) return false;
-    const date = new Date(dateStr);
+    const d = new Date(dateStr);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return date < today;
+    return d < today;
   };
+
+  // ── Render ───────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-3 flex flex-col h-full">
@@ -170,7 +253,7 @@ export function Fretes() {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
+                Array.from({ length: 10 }).map((_, i) => (
                   <TableRow key={i}>
                     {Array.from({ length: 16 }).map((_, j) => (
                       <TableCell key={j}><Skeleton className="h-4 w-full min-w-[60px]" /></TableCell>
@@ -180,7 +263,7 @@ export function Fretes() {
               ) : fretes.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={16} className="text-center h-32 text-muted-foreground">
-                    Nenhum frete encontrado.
+                    {isSearching ? "Nenhum frete encontrado para a busca." : "Nenhum frete encontrado."}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -230,7 +313,11 @@ export function Fretes() {
             {fretes.length > 0 && (
               <TableFooter className="bg-[#0a192f] text-white font-bold sticky bottom-0">
                 <TableRow>
-                  <TableCell colSpan={8} className="text-right whitespace-nowrap">TOTAIS:</TableCell>
+                  <TableCell colSpan={8} className="text-right whitespace-nowrap">
+                    {!isSearching && hasNextPage
+                      ? `${fretes.length.toLocaleString("pt-BR")} de ${totalInDb.toLocaleString("pt-BR")} TOTAIS:`
+                      : "TOTAIS:"}
+                  </TableCell>
                   <TableCell className="text-right whitespace-nowrap">{formatNumber(totalPeso)}</TableCell>
                   <TableCell className="text-right whitespace-nowrap">{formatCurrency(totalFrete)}</TableCell>
                   <TableCell className="text-right whitespace-nowrap">{formatCurrency(totalPedagio)}</TableCell>
@@ -240,6 +327,17 @@ export function Fretes() {
               </TableFooter>
             )}
           </Table>
+
+          {/* Infinite scroll sentinel + loading indicator */}
+          {!isSearching && (
+            <div ref={sentinelRef} className="flex items-center justify-center py-3 text-muted-foreground text-xs">
+              {isFetchingNextPage && (
+                <span className="flex items-center gap-1.5">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Carregando mais...
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
