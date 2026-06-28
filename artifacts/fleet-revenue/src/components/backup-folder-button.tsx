@@ -149,7 +149,8 @@ export function BackupFolderButton() {
       if (!handle) { setStatus("no-folder"); return; }
 
       // queryPermission doesn't require a user gesture
-      const perm = await handle.queryPermission({ mode: "readwrite" });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const perm = await (handle as any).queryPermission({ mode: "readwrite" });
       if (perm === "granted") {
         setDir(handle);
         setStatus("idle");
@@ -175,7 +176,8 @@ export function BackupFolderButton() {
 
     // If only permission expired, try to re-request without picking a new folder
     if (status === "needs-perm" && dir) {
-      const perm = await dir.requestPermission({ mode: "readwrite" });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const perm = await (dir as any).requestPermission({ mode: "readwrite" });
       if (perm === "granted") {
         setStatus("idle");
         await autoSave(dir);

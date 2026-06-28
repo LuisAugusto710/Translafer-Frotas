@@ -227,6 +227,9 @@ importers:
 
   artifacts/fleet-revenue:
     dependencies:
+      '@azure/msal-browser':
+        specifier: ^5.15.0
+        version: 5.15.0
       '@tanstack/react-virtual':
         specifier: ^3.14.4
         version: 3.14.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -660,6 +663,14 @@ importers:
         version: 4.22.4
 
 packages:
+
+  '@azure/msal-browser@5.15.0':
+    resolution: {integrity: sha512-2NYT6v+eeQn8kmNddr9LnbXSvXbVELpmFMmfFvtRxD7I/5+5GlkMlncApeuRFj+mY6C9syOwQip1a0Y+TIbyiA==}
+    engines: {node: '>=0.8.0'}
+
+  '@azure/msal-common@16.10.0':
+    resolution: {integrity: sha512-iYtjpanlv6963Jprs0MvzIap07V+QhultjQctfbEDQCflsDAEeO3R7XnVA5gk30fhoBFLdgJT7VqO0TGsEsN9w==}
+    engines: {node: '>=0.8.0'}
 
   '@babel/code-frame@7.29.7':
     resolution: {integrity: sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw==}
@@ -3186,6 +3197,12 @@ packages:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
 snapshots:
+
+  '@azure/msal-browser@5.15.0':
+    dependencies:
+      '@azure/msal-common': 16.10.0
+
+  '@azure/msal-common@16.10.0': {}
 
   '@babel/code-frame@7.29.7':
     dependencies:

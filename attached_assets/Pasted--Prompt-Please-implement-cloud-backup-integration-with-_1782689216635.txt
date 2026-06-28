@@ -1,0 +1,119 @@
+**Prompt:**
+
+Please implement **cloud backup integration with Microsoft OneDrive** **without changing the application's existing UI, layout, workflow, or business logic**.
+
+## 1. OneDrive Backup Integration
+
+Add support for automatically backing up the application's data directly to the user's **Microsoft OneDrive account**.
+
+The goal is to provide an additional layer of protection in case of:
+
+* Server failure
+* Local disk failure
+* Corrupted database
+* Computer replacement
+* Accidental file deletion
+
+## 2. Microsoft Account Authentication
+
+* Allow the user to securely sign in with their Microsoft account using the official Microsoft OAuth authentication flow.
+* Never request or store the user's Microsoft password.
+* Store only the access and refresh tokens securely.
+* Allow the user to disconnect their OneDrive account at any time.
+
+## 3. Backup Destination
+
+After authentication:
+
+* Create a folder named **LAFER Backups** in the user's OneDrive (if it does not already exist).
+* Save every backup inside this folder.
+* Organize backups by date if appropriate (for example, folders by year/month or timestamped filenames).
+
+Example:
+
+```
+OneDrive/
+└── LAFER Backups/
+    ├── backup_2026-06-29.xlsx
+    ├── backup_2026-06-30.xlsx
+    └── ...
+```
+
+## 4. Automatic Backup
+
+The cloud backup should work together with the existing local backup system.
+
+Every scheduled backup should:
+
+* Create the local backup.
+* Upload the same backup to OneDrive automatically.
+* Perform the upload in the background.
+* Never interrupt the user while working.
+
+## 5. Manual Backup
+
+Add an option to:
+
+* **Back Up Now**
+
+This should immediately generate a backup and upload it to OneDrive.
+
+## 6. Restore Support
+
+Allow the user to:
+
+* View available backups stored in OneDrive.
+* Select a backup.
+* Download it.
+* Restore the application's data from the selected backup after confirmation.
+
+## 7. Synchronization
+
+The application should:
+
+* Detect when the user is offline.
+* Queue pending uploads.
+* Automatically upload queued backups when the internet connection becomes available.
+* Prevent duplicate uploads of the same backup.
+
+## 8. Error Handling
+
+If the upload fails:
+
+* Notify the user.
+* Log the error.
+* Retry automatically later.
+* Never delete the local backup if the cloud upload fails.
+
+## 9. Security
+
+* Use only the official Microsoft Graph API and OneDrive APIs.
+* Encrypt authentication tokens at rest.
+* Always use secure HTTPS communication.
+* Request only the minimum permissions required to create, read, update, and delete backup files inside the application's backup folder.
+
+## 10. Performance
+
+* Perform uploads asynchronously.
+* Do not block the application while uploading.
+* Display upload progress for manual backups.
+* Optimize uploads for large backup files.
+
+## 11. User Interface
+
+Add a **Backup Settings** section where the user can:
+
+* Connect or disconnect their OneDrive account.
+* View the current connection status.
+* See the last successful cloud backup date and time.
+* Trigger a manual backup.
+* Restore from a cloud backup.
+* Configure whether automatic cloud backups are enabled or disabled.
+
+## Important
+
+* Do **not** redesign the application.
+* Do **not** modify unrelated features.
+* The existing local backup system must continue to work normally.
+* Cloud backup should function as an additional layer of redundancy, not as a replacement for local backups.
+* The implementation should be reliable, secure, and scalable, ensuring that backups are automatically synchronized with the user's OneDrive account.

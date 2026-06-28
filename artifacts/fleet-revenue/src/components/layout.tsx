@@ -4,6 +4,7 @@ import { useTheme } from "./theme-provider";
 import { Moon, Sun, LayoutDashboard, Truck, Fuel, Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { BackupFolderButton } from "./backup-folder-button";
+import { OneDriveBackupButton } from "./onedrive-backup-button";
 
 function NavLinks({ currentLocation, onNavigate }: { currentLocation: string; onNavigate?: () => void }) {
   const isFretes = currentLocation === "/" || currentLocation === "/fretes";
@@ -135,6 +136,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </h1>
 
           <div className="flex items-center gap-2 shrink-0">
+            <OneDriveBackupButton />
             <BackupFolderButton />
             <div className="hidden sm:block text-xs text-muted-foreground font-mono font-medium">
               Sistema Online
