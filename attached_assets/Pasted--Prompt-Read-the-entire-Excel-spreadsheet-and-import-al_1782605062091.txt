@@ -1,0 +1,52 @@
+**Prompt:**
+
+> Read the entire Excel spreadsheet and import **all valid records** into the application's database.
+>
+> ### Requirements
+>
+> * Read every worksheet in the Excel file.
+> * Process every row containing valid freight data.
+> * Map each spreadsheet column to the corresponding field in the application's database.
+> * Preserve the original values exactly as they appear in the spreadsheet whenever possible.
+> * Ensure that dates, numbers, currency values, text, and other data types are imported correctly.
+>
+> ### Duplicate detection
+>
+> Before inserting any record, perform a thorough duplicate verification.
+>
+> A record should only be imported if it does **not** already exist in the database.
+>
+> To determine whether a record is a duplicate, compare multiple identifying fields (such as CTe number, fleet number, date, customer, origin, destination, or other unique combinations available in the data), rather than relying on a single field.
+>
+> If there is any uncertainty about whether a record is a duplicate:
+>
+> * Perform a second verification before inserting it.
+> * Only create the record if both checks confirm it is new.
+> * If the record already exists, skip it without creating duplicates.
+>
+> ### Data validation
+>
+> * Validate all required fields before importing.
+> * Skip only rows that are clearly invalid or completely empty.
+> * Log any skipped or invalid records so they can be reviewed later.
+> * Ensure the import process continues even if individual rows contain errors.
+>
+> ### Database integrity
+>
+> * Do not overwrite existing records unless there is an explicit update rule.
+> * Preserve relationships and references between records.
+> * Ensure the import is transactional whenever possible to avoid partial or corrupted data.
+>
+> ### Final verification
+>
+> After the import is complete:
+>
+> * Verify that every eligible record from the Excel spreadsheet has been imported.
+> * Confirm that no duplicate records were created.
+> * Ensure all imported data is immediately available throughout the application, including the Freight page, Dashboard, reports, charts, filters, and search functionality.
+>
+> **Important:**
+>
+> * Do not modify the spreadsheet.
+> * Do not alter the application's UI or existing functionality.
+> * Focus exclusively on accurately importing the Excel data while preventing duplicate records through a double-verification process.
