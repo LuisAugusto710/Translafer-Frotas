@@ -1,0 +1,44 @@
+**Prompt:**
+
+Please improve the search experience on the **Freights** page **without changing the application's design, layout, workflow, or existing functionality**.
+
+## Highlight matching search results
+
+When a user performs a search using the search bar, the application should not only return the matching freight records, but also visually highlight the exact data that matched the search.
+
+### Requirements
+
+* Highlight only the field(s) that match the search term.
+* Use a **subtle background color** (for example, a light yellow, light blue, or another soft accent color that fits the application's theme).
+* The highlight should be noticeable but not distracting.
+* The highlighted text must remain fully readable.
+* Do not change the row's overall appearance—only emphasize the matching value.
+
+### Examples
+
+* If the user searches for **"Lisbon"**, highlight only the city field containing **"Lisbon"**.
+* If the user searches for a **CTe number**, highlight only the matching CTe value.
+* If the user searches for a **fleet number**, highlight only that fleet number.
+* If the user searches for a **date**, highlight only the matching date field.
+* If multiple fields within the same freight record match the search, highlight all matching fields.
+* If multiple records match, apply the highlighting consistently across every matching record.
+
+### Search behavior
+
+* Continue searching across the entire database.
+* Support partial matches.
+* Be case-insensitive.
+* Update the highlighting dynamically as the user types.
+* Remove all highlights immediately when the search field is cleared.
+
+### Performance
+
+* The highlighting should not negatively affect scrolling performance or lazy loading.
+* It must work correctly with infinite scrolling and virtualized lists.
+* Newly loaded records should automatically apply the highlight if they match the current search query.
+
+## Important
+
+* Do **not** redesign the interface.
+* Do **not** change fonts, spacing, colors, or layout except for the subtle highlight used to indicate matching values.
+* The purpose is to improve readability by making it immediately clear why each freight record was returned by the search.

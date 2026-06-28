@@ -1,11 +1,12 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { useDeleteFrete } from "@workspace/api-client-react";
 import { Plus, Download, MoreHorizontal, Pencil, Trash2, Search, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
 import { 
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger 
@@ -15,7 +16,28 @@ import { formatCurrency, formatNumber, formatDate } from "@/lib/utils";
 import { exportToCsv, exportToExcel } from "@/lib/export";
 import { FreteFormModal } from "@/components/frete-form-modal";
 
-// ── Types ───────────────────────────────────────────────────────────────────
+// ── Highlight component ──────────────────────────────────────────────────────
+// Wraps the first matching occurrence of `query` inside the displayed text
+// with a subtle amber highlight. Case-insensitive, partial-match.
+
+function Highlight({ text, query }: { text: string; query: string }) {
+  if (!query || !text) return <>{text}</>;
+  const lowerText = text.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+  const idx = lowerText.indexOf(lowerQuery);
+  if (idx === -1) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark className="bg-amber-200/80 dark:bg-amber-800/60 text-inherit rounded-[2px] not-italic">
+        {text.slice(idx, idx + query.length)}
+      </mark>
+      {text.slice(idx + query.length)}
+    </>
+  );
+}
+
+// ── Types ────────────────────────────────────────────────────────────────────
 
 type FreteRow = {
   id: number;
@@ -38,12 +60,13 @@ type FreteRow = {
 
 type FretePage = { fretes: FreteRow[]; total: number };
 
-// ── Constants ────────────────────────────────────────────────────────────────
+// ── Constants ─────────────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 100;
 const FRETES_KEY = "/api/fretes";
+const ROW_HEIGHT = 41; // estimated px per row for the virtualizer
 
-// ── Fetch helpers ────────────────────────────────────────────────────────────
+// ── Fetch helpers ─────────────────────────────────────────────────────────────
 
 async function fetchFretePage(offset: number): Promise<FretePage> {
   const res = await fetch(`${FRETES_KEY}?limit=${PAGE_SIZE}&offset=${offset}`);
@@ -67,7 +90,7 @@ async function fetchAllFretes(search?: string): Promise<FreteRow[]> {
   return data.fretes;
 }
 
-// ── Component ────────────────────────────────────────────────────────────────
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export function Fretes() {
   const queryClient = useQueryClient();
@@ -75,9 +98,11 @@ export function Fretes() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingFrete, setEditingFrete] = useState<FreteRow | null>(null);
-  const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Debounce search input
+  // The scrollable div that react-virtual measures
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Debounce search input (300 ms)
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search.trim()), 300);
     return () => clearTimeout(t);
@@ -85,7 +110,9 @@ export function Fretes() {
 
   const isSearching = debouncedSearch.length > 0;
 
-  // ── Mode 1: paginated infinite scroll (no search) ──
+  // ── Data fetching ──
+
+  // Mode 1: paginated infinite scroll when no search term
   const {
     data: infiniteData,
     isLoading: isPagesLoading,
@@ -104,54 +131,49 @@ export function Fretes() {
     staleTime: 30_000,
   });
 
-  // ── Mode 2: server-side search (full DB) ──
-  const {
-    data: searchData,
-    isLoading: isSearchLoading,
-  } = useQuery({
+  // Mode 2: server-side full-DB search when a term is entered
+  const { data: searchData, isLoading: isSearchLoading } = useQuery({
     queryKey: [FRETES_KEY, "search", debouncedSearch],
     queryFn: () => searchFretes(debouncedSearch),
     enabled: isSearching,
     staleTime: 30_000,
   });
 
-  // ── Derive displayed rows ──
   const fretes: FreteRow[] = useMemo(() => {
     if (isSearching) return searchData?.fretes ?? [];
     return infiniteData?.pages.flatMap((p) => p.fretes) ?? [];
   }, [isSearching, searchData, infiniteData]);
 
-  const totalInDb = isSearching
-    ? (searchData?.total ?? 0)
-    : (infiniteData?.pages[0]?.total ?? 0);
-
   const isLoading = isSearching ? isSearchLoading : isPagesLoading;
 
-  // ── Totals (over currently loaded rows) ──
-  const totalPeso   = useMemo(() => fretes.reduce((s, f) => s + (f.peso || 0), 0), [fretes]);
-  const totalFrete  = useMemo(() => fretes.reduce((s, f) => s + (f.frete || 0), 0), [fretes]);
-  const totalPedagio = useMemo(() => fretes.reduce((s, f) => s + (f.pedagio || 0), 0), [fretes]);
-  const totalGeral  = useMemo(() => fretes.reduce((s, f) => s + (f.totalFrete || 0), 0), [fretes]);
+  // ── Virtualizer ──
+  // Renders only the rows visible in the scroll container plus an overscan buffer.
+  // Off-screen rows are unmounted; react-virtual uses spacer rows to maintain
+  // the correct scroll position and height.
 
-  // ── Infinite scroll sentinel ──
-  const onSentinelVisible = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-        fetchNextPage();
-      }
-    },
-    [hasNextPage, isFetchingNextPage, fetchNextPage]
-  );
+  const virtualizer = useVirtualizer({
+    count: fretes.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 15,
+  });
 
+  const virtualItems = virtualizer.getVirtualItems();
+  const totalVirtualSize = virtualizer.getTotalSize();
+  const topPadding = virtualItems[0]?.start ?? 0;
+  const bottomPadding = totalVirtualSize - (virtualItems[virtualItems.length - 1]?.end ?? 0);
+
+  // Trigger next page load when the last rendered row is within 20 items of the end
+  const lastVirtualIndex = virtualItems[virtualItems.length - 1]?.index ?? -1;
   useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(onSentinelVisible, { threshold: 0.1 });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [onSentinelVisible]);
+    if (!hasNextPage || isFetchingNextPage || isSearching) return;
+    if (lastVirtualIndex >= fretes.length - 20) {
+      fetchNextPage();
+    }
+  }, [lastVirtualIndex, fretes.length, hasNextPage, isFetchingNextPage, isSearching, fetchNextPage]);
 
-  // ── CRUD helpers ──
+  // ── CRUD ──
+
   const invalidateFretes = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: [FRETES_KEY] });
     queryClient.invalidateQueries({
@@ -162,33 +184,42 @@ export function Fretes() {
   }, [queryClient]);
 
   const deleteFrete = useDeleteFrete();
-
   const handleDelete = (id: number) => {
     if (!confirm("Tem certeza que deseja excluir este frete?")) return;
     deleteFrete.mutate({ id }, { onSuccess: invalidateFretes });
   };
 
-  // ── Export (always fetches full dataset) ──
+  // ── Export (always fetches complete dataset) ──
+
   const handleExportCsv = async () => {
     const rows = await fetchAllFretes(debouncedSearch || undefined);
     exportToCsv(rows, "fretes_export");
   };
-
   const handleExportExcel = async () => {
     const rows = await fetchAllFretes(debouncedSearch || undefined);
     exportToExcel(rows, "fretes_export");
   };
 
-  // ── Misc ──
-  const isPastDue = (dateStr: string | null) => {
-    if (!dateStr) return false;
-    const d = new Date(dateStr);
+  // ── Highlight helper ──
+  // Applied to every cell when search is active; no-ops when search is empty.
+
+  const hl = useCallback(
+    (text: string | null | undefined): React.ReactNode =>
+      isSearching
+        ? <Highlight text={text ?? ""} query={debouncedSearch} />
+        : <>{text ?? ""}</>,
+    [isSearching, debouncedSearch]
+  );
+
+  const isPastDue = (d: string | null) => {
+    if (!d) return false;
+    const dt = new Date(d);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return d < today;
+    return dt < today;
   };
 
-  // ── Render ───────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-3 flex flex-col h-full">
@@ -229,7 +260,8 @@ export function Fretes() {
 
       {/* Table */}
       <div className="border rounded-md flex-1 overflow-hidden flex flex-col bg-card shadow-sm text-sm min-h-0">
-        <div className="overflow-auto flex-1">
+        {/* Scrollable container — passed to useVirtualizer as the scroll element */}
+        <div ref={scrollRef} className="overflow-auto flex-1">
           <Table className="min-w-[1100px]">
             <TableHeader className="bg-muted/50 sticky top-0 z-10 backdrop-blur">
               <TableRow>
@@ -267,78 +299,87 @@ export function Fretes() {
                   </TableCell>
                 </TableRow>
               ) : (
-                fretes.map((frete) => (
-                  <TableRow key={frete.id} className="hover:bg-muted/50 transition-colors group">
-                    <TableCell className="whitespace-nowrap">{formatDate(frete.dataCte)}</TableCell>
-                    <TableCell className="truncate max-w-[120px]" title={frete.origem}>{frete.origem}</TableCell>
-                    <TableCell className="whitespace-nowrap">{frete.transporte}</TableCell>
-                    <TableCell className="font-medium text-[#0a192f] whitespace-nowrap">{frete.frota}</TableCell>
-                    <TableCell className="whitespace-nowrap">{frete.transp}</TableCell>
-                    <TableCell className="truncate max-w-[140px]" title={frete.cliente}>{frete.cliente}</TableCell>
-                    <TableCell className="truncate max-w-[110px]" title={frete.cidade}>{frete.cidade}</TableCell>
-                    <TableCell className="whitespace-nowrap">{frete.cteNf}</TableCell>
-                    <TableCell className="text-right whitespace-nowrap">{formatNumber(frete.peso)}</TableCell>
-                    <TableCell className="text-right whitespace-nowrap">{formatCurrency(frete.frete)}</TableCell>
-                    <TableCell className="text-right whitespace-nowrap">{formatCurrency(frete.pedagio)}</TableCell>
-                    <TableCell className="text-right font-bold text-[#2ecc71] bg-[#2ecc71]/10 whitespace-nowrap">{formatCurrency(frete.totalFrete)}</TableCell>
-                    <TableCell className="whitespace-nowrap">{formatDate(frete.dtaFrete)}</TableCell>
-                    <TableCell className={`whitespace-nowrap font-medium ${isPastDue(frete.vencimento) ? "text-red-600" : ""}`}>
-                      {formatDate(frete.vencimento)}
-                    </TableCell>
-                    <TableCell className="truncate max-w-[100px]" title={frete.obs || ""}>{frete.obs || "-"}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => { setEditingFrete(frete); setIsFormOpen(true); }}>
-                            <Pencil className="mr-2 h-4 w-4" /> Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={() => handleDelete(frete.id)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" /> Excluir
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
+                <>
+                  {/* Top spacer — fills the virtual height above the first rendered row */}
+                  {topPadding > 0 && (
+                    <TableRow aria-hidden>
+                      <TableCell colSpan={16} style={{ height: topPadding, padding: 0 }} />
+                    </TableRow>
+                  )}
+
+                  {/* Only the rows currently in the virtual window are rendered */}
+                  {virtualItems.map((vItem) => {
+                    const frete = fretes[vItem.index];
+                    return (
+                      <TableRow
+                        key={frete.id}
+                        style={{ height: ROW_HEIGHT }}
+                        className="hover:bg-muted/50 transition-colors group"
+                      >
+                        <TableCell className="whitespace-nowrap">{hl(formatDate(frete.dataCte))}</TableCell>
+                        <TableCell className="truncate max-w-[120px]" title={frete.origem}>{hl(frete.origem)}</TableCell>
+                        <TableCell className="whitespace-nowrap">{hl(frete.transporte)}</TableCell>
+                        <TableCell className="font-medium text-[#0a192f] whitespace-nowrap">{hl(frete.frota)}</TableCell>
+                        <TableCell className="whitespace-nowrap">{hl(frete.transp)}</TableCell>
+                        <TableCell className="truncate max-w-[140px]" title={frete.cliente}>{hl(frete.cliente)}</TableCell>
+                        <TableCell className="truncate max-w-[110px]" title={frete.cidade}>{hl(frete.cidade)}</TableCell>
+                        <TableCell className="whitespace-nowrap">{hl(frete.cteNf)}</TableCell>
+                        <TableCell className="text-right whitespace-nowrap">{hl(formatNumber(frete.peso))}</TableCell>
+                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(frete.frete))}</TableCell>
+                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(frete.pedagio))}</TableCell>
+                        <TableCell className="text-right font-bold text-[#2ecc71] bg-[#2ecc71]/10 whitespace-nowrap">
+                          {hl(formatCurrency(frete.totalFrete))}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">{hl(formatDate(frete.dtaFrete))}</TableCell>
+                        <TableCell className={`whitespace-nowrap font-medium ${isPastDue(frete.vencimento) ? "text-red-600" : ""}`}>
+                          {hl(formatDate(frete.vencimento))}
+                        </TableCell>
+                        <TableCell className="truncate max-w-[100px]" title={frete.obs || ""}>
+                          {hl(frete.obs || "-")}
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => { setEditingFrete(frete); setIsFormOpen(true); }}>
+                                <Pencil className="mr-2 h-4 w-4" /> Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-destructive focus:text-destructive"
+                                onClick={() => handleDelete(frete.id)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" /> Excluir
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+
+                  {/* Bottom spacer — fills virtual height below the last rendered row */}
+                  {bottomPadding > 0 && (
+                    <TableRow aria-hidden>
+                      <TableCell colSpan={16} style={{ height: bottomPadding, padding: 0 }} />
+                    </TableRow>
+                  )}
+                </>
               )}
             </TableBody>
-            {fretes.length > 0 && (
-              <TableFooter className="bg-[#0a192f] text-white font-bold sticky bottom-0">
-                <TableRow>
-                  <TableCell colSpan={8} className="text-right whitespace-nowrap">
-                    {!isSearching && hasNextPage
-                      ? `${fretes.length.toLocaleString("pt-BR")} de ${totalInDb.toLocaleString("pt-BR")} TOTAIS:`
-                      : "TOTAIS:"}
-                  </TableCell>
-                  <TableCell className="text-right whitespace-nowrap">{formatNumber(totalPeso)}</TableCell>
-                  <TableCell className="text-right whitespace-nowrap">{formatCurrency(totalFrete)}</TableCell>
-                  <TableCell className="text-right whitespace-nowrap">{formatCurrency(totalPedagio)}</TableCell>
-                  <TableCell className="text-right text-[#2ecc71] whitespace-nowrap">{formatCurrency(totalGeral)}</TableCell>
-                  <TableCell colSpan={4}></TableCell>
-                </TableRow>
-              </TableFooter>
-            )}
           </Table>
-
-          {/* Infinite scroll sentinel + loading indicator */}
-          {!isSearching && (
-            <div ref={sentinelRef} className="flex items-center justify-center py-3 text-muted-foreground text-xs">
-              {isFetchingNextPage && (
-                <span className="flex items-center gap-1.5">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Carregando mais...
-                </span>
-              )}
-            </div>
-          )}
         </div>
+
+        {/* Fetching-next-page indicator shown below the scroll container */}
+        {isFetchingNextPage && (
+          <div className="flex items-center justify-center gap-1.5 border-t py-1.5 text-xs text-muted-foreground">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Carregando mais registros…
+          </div>
+        )}
       </div>
 
       <FreteFormModal

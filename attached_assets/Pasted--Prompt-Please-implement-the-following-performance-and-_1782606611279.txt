@@ -1,0 +1,56 @@
+**Prompt:**
+
+Please implement the following performance and UI improvements **without changing the application's design, layout, workflow, or core functionality**.
+
+## 1. Remove totals from the Freights page
+
+The **Freights** page does not need to display summary totals.
+
+Remove all total fields displayed on this page, such as totals shown at the bottom or top of the freight list.
+
+These totals should be available **only on the Dashboard**, where all statistics and aggregated information belong.
+
+The Dashboard should remain responsible for displaying:
+
+* Total Revenue
+* Total Expenses
+* Profit
+* Freight counts
+* Any other aggregated metrics
+
+The Freights page should focus solely on displaying and managing individual freight records.
+
+## 2. Automatically unload previously loaded records
+
+The Freights page already uses lazy loading/infinite scrolling. Improve it further by implementing automatic unloading of records that are no longer visible.
+
+Specifically:
+
+* As the user scrolls downward, load new batches of freight records as needed.
+* Once the user has scrolled far enough that previously loaded records are no longer visible, automatically remove those records from memory and the rendered list.
+* Keep only the records that are currently visible, plus a small configurable buffer above and below the viewport for smooth scrolling.
+* If the user scrolls back up, reload the required records automatically from the database or cache.
+* The user should never notice records being unloaded or reloaded.
+
+## 3. Performance requirements
+
+* Implement list virtualization or windowing instead of rendering every loaded record.
+* Keep memory usage low even with very large databases.
+* Prevent unnecessary component re-renders.
+* Ensure scrolling remains smooth regardless of the number of freight records.
+* Maintain fast loading times.
+* Preserve the current sorting, filtering, and search behavior.
+* The search must continue to query the entire database, not only the currently rendered records.
+
+## 4. Dashboard behavior
+
+These optimizations must affect **only the visual rendering of the Freights page**.
+
+The Dashboard must continue to use **100% of the freight records** for all calculations, charts, KPIs, reports, and statistics, regardless of which records are currently loaded or visible in the Freights page.
+
+## Important
+
+* Do **not** redesign the application.
+* Do **not** change the existing UI or layout.
+* Do **not** modify business logic.
+* Focus only on removing totals from the Freights page and optimizing memory usage by dynamically loading and unloading freight records while keeping the Dashboard connected to the complete dataset.
