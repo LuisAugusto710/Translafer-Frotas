@@ -36,21 +36,10 @@ function NavLinks({ currentLocation, onNavigate }: { currentLocation: string; on
 function LaferLogo({ size = 24 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="LAFER">
-      <rect width="32" height="32" rx="7" fill="#2ecc71"/>
-      {/* Route/road: horizontal line with a truck cab silhouette */}
-      {/* Truck body */}
-      <rect x="4" y="15" width="16" height="9" rx="2" fill="#0a192f"/>
-      {/* Cab */}
-      <rect x="17" y="11" width="9" height="13" rx="2" fill="#0a192f"/>
-      {/* Windshield */}
-      <rect x="18" y="12" width="7" height="5" rx="1" fill="#2ecc71" opacity="0.6"/>
-      {/* Wheels */}
-      <circle cx="8" cy="25" r="2.5" fill="#2ecc71"/>
-      <circle cx="15" cy="25" r="2.5" fill="#2ecc71"/>
-      <circle cx="23" cy="25" r="2.5" fill="#2ecc71"/>
-      {/* Speed lines */}
-      <line x1="2" y1="16" x2="5" y2="16" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.8"/>
-      <line x1="2" y1="19" x2="4" y2="19" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
+      {/* Stylised italic L — white, designed for dark sidebar background */}
+      <polygon points="6,4 13,4 11,22 26,22 26,28 4,28 6,22" fill="white"/>
+      {/* Gold diagonal swoosh accent */}
+      <polygon points="10,10 27,5 28,11 11,16" fill="#C4A44A"/>
     </svg>
   );
 }
