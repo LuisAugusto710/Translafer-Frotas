@@ -1,0 +1,49 @@
+**Prompt:**
+
+Please implement the following feature in the application **without changing the existing UI layout, design system, navigation structure, or business logic**.
+
+## Add backup folder selection on the main page
+
+On the **main page (home/dashboard entry screen)**, add a new **icon/button dedicated to backup configuration**.
+
+### 1. Purpose of the feature
+
+This icon must allow the user to **select a local folder on their computer** where automatic backups will be saved.
+
+### 2. UI requirements
+
+* Add a simple, intuitive icon (e.g., a folder, settings, or backup icon).
+* The icon should be placed in a logical and accessible area of the main page (e.g., header, settings area, or top-right corner), without disrupting the current layout.
+* When clicked, it should open a **native system folder selector dialog**.
+
+### 3. Folder selection behavior
+
+* The user must be able to choose any directory on their computer.
+* The selected folder path must be stored in the application settings.
+* This path will be used as the default destination for all **automatic daily backup files**.
+* The system must remember the selected folder even after closing and reopening the application.
+
+### 4. Integration with backup system
+
+* The chosen folder must be directly linked to the automatic backup process.
+* All daily backups (Excel-compatible files) must be saved automatically into this directory.
+* If the folder becomes invalid or inaccessible, the system must notify the user and request a new selection.
+
+### 5. User experience requirements
+
+* The feature must be simple and non-intrusive.
+* No additional steps should be required after selecting the folder.
+* Provide a small confirmation message after the folder is successfully selected (e.g., “Backup folder updated successfully”).
+
+### 6. Technical constraints
+
+* Do not modify or redesign the main page layout.
+* Do not change unrelated features or workflows.
+* Ensure compatibility with the existing automatic backup system.
+* Ensure the folder picker works across supported operating systems (Windows priority).
+
+## Important
+
+* Focus only on adding the backup folder selection functionality.
+* Maintain full compatibility with the existing application structure.
+* Ensure the feature integrates seamlessly with the daily automatic Excel backup system.
