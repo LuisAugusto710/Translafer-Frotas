@@ -1,0 +1,144 @@
+**Prompt:**
+
+I have already configured the application in **Microsoft Azure** and obtained my **Client ID**.
+
+**Client ID:**
+`01d8cddd-6465-4619-b91b-64b25e63b7b6`
+
+Please implement Microsoft OneDrive authentication so users can securely sign in with their Microsoft account and enable automatic daily cloud backups.
+
+## Objectives
+
+Implement a complete OneDrive authentication and backup flow using the **Microsoft Identity Platform (OAuth 2.0 + Microsoft Graph API)**.
+
+## Authentication
+
+* Add a **"Sign in with Microsoft"** button in the Backup Settings page.
+* Use the following Azure Application (Client) ID:
+
+```
+01d8cddd-6465-4619-b91b-64b25e63b7b6
+```
+
+* Authenticate using the official Microsoft OAuth flow.
+* Never request or store the user's Microsoft password.
+* Securely store the access token and refresh token.
+* Automatically refresh expired access tokens.
+* Keep the user signed in between application sessions until they explicitly sign out.
+
+## Required Microsoft Graph Permissions
+
+Request only the minimum permissions required to manage backups:
+
+* Files.ReadWrite.AppFolder (preferred if using the application's dedicated folder)
+* If AppFolder cannot meet the requirements, use:
+
+  * Files.ReadWrite
+  * offline_access
+  * User.Read
+
+Follow the principle of least privilege.
+
+## After Successful Login
+
+After authentication:
+
+* Detect the authenticated Microsoft account.
+* Display the user's name and email.
+* Display the current connection status.
+* Create a folder named:
+
+```
+LAFER Backups
+```
+
+inside the user's OneDrive if it does not already exist.
+
+If the folder already exists, reuse it.
+
+## Automatic Daily Backup
+
+Once the user has successfully signed in:
+
+* Enable automatic daily cloud backups.
+* Every day, generate the backup file.
+* Upload it automatically to:
+
+```
+OneDrive/
+└── LAFER Backups/
+```
+
+The upload must happen in the background without interrupting the user.
+
+## Backup File
+
+The uploaded backup should:
+
+* Be Excel-compatible (.xlsx preferred).
+* Include all application data.
+* Use timestamped filenames.
+
+Example:
+
+```
+backup_2026-06-29.xlsx
+backup_2026-06-30.xlsx
+backup_2026-07-01.xlsx
+```
+
+Never overwrite previous backups.
+
+## Offline Support
+
+If the user is offline:
+
+* Generate the local backup normally.
+* Queue the cloud upload.
+* Automatically upload the pending backup once internet connectivity returns.
+
+## Restore Support
+
+Allow the user to:
+
+* View all backups stored in OneDrive.
+* Download a selected backup.
+* Restore the application's database from that backup after confirmation.
+
+## Security
+
+* Use only the official Microsoft Graph API.
+* Use HTTPS for all communication.
+* Encrypt stored OAuth tokens.
+* Never expose sensitive credentials.
+* Handle token expiration automatically.
+
+## Error Handling
+
+If authentication or upload fails:
+
+* Display a clear error message.
+* Log the error.
+* Retry automatically when appropriate.
+* Never delete the local backup because of a failed cloud upload.
+
+## User Interface
+
+In the Backup Settings page, display:
+
+* Sign in with Microsoft
+* Sign out
+* Connection status
+* Connected account (name and email)
+* Last successful cloud backup
+* Next scheduled backup
+* Backup Now button
+* Restore Backup button
+
+## Important
+
+* Do **not** redesign the application.
+* Do **not** modify unrelated functionality.
+* Preserve the existing local backup system.
+* OneDrive synchronization should work as an additional backup layer.
+* Ensure the implementation is production-ready, secure, and follows Microsoft's recommended OAuth 2.0 and Microsoft Graph API best practices.
