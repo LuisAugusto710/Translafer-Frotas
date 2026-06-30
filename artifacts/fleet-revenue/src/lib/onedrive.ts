@@ -31,7 +31,7 @@ export const isConfigured = Boolean(CLIENT_ID && CLIENT_ID !== "");
  * This URI must be registered in the Azure app under Authentication →
  * Single-page application → Redirect URIs.
  */
-const REDIRECT_URI = "https://lafertransportes.replit.app/blank.html";
+const REDIRECT_URI = window.location.origin + "/blank.html";
 
 const msalConfig: Configuration = {
   auth: {

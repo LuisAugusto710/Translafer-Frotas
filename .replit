@@ -25,4 +25,4 @@ channel = "stable-25_05"
 [userenv]
 
 [userenv.shared]
-VITE_AZURE_CLIENT_ID = "01d8cddd-6465-4619-b91b-64b25e63b7b6"
+VITE_AZURE_CLIENT_ID = "4316db1b-2e21-48b3-9bc3-756169a55c6b"
