@@ -1,0 +1,107 @@
+**Prompt:**
+
+Using the attached Excel spreadsheet as the reference data source, implement a new module in the application called **"Expenses"**.
+
+The new page must follow the **same visual design, layout, navigation, spacing, components, and user experience** as the existing **Freights** page, so it feels like a natural part of the application.
+
+## 1. Create a new navigation tab
+
+* Add a new menu item named **"Expenses"**.
+* Place it **above the Dashboard** in the application's sidebar/navigation menu.
+
+## 2. Import the spreadsheet structure
+
+Analyze the attached Excel spreadsheet and use it as the basis for the new **Expenses** module.
+
+* Create database fields corresponding to the spreadsheet columns.
+* Import all existing records from the spreadsheet into the new Expenses database table.
+* Preserve dates, currency values, text, and numeric values correctly.
+* Validate imported data and prevent duplicate records during the import process.
+
+## 3. Add a new "Fleet" column
+
+In addition to the columns that already exist in the spreadsheet, create a new field:
+
+**Fleet**
+
+This field will store the truck's fleet number and should:
+
+* Be displayed in the Expenses table.
+* Be editable when creating or editing an expense.
+* Be searchable.
+* Be filterable.
+* Be available for reports and future dashboard calculations.
+
+## 4. Match the Freights page
+
+The Expenses page should closely match the existing Freights page, including:
+
+* Table layout
+* Search bar
+* Filters
+* Pagination or infinite scrolling
+* Responsive behavior
+* Column sorting
+* Context menus
+* Edit and delete actions
+* Overall styling and spacing
+
+The goal is to provide a consistent user experience throughout the application.
+
+## 5. Add an "Add Expense" button
+
+Create a button labeled:
+
+**Add Expense**
+
+When clicked, it should open a form similar to the **Add Freight** form.
+
+The form should include:
+
+* All fields represented in the Excel spreadsheet.
+* The new **Fleet** field.
+* Appropriate validation for each field.
+* Save and Cancel actions.
+* Edit support for existing expense records.
+
+## 6. Search functionality
+
+The Expenses search bar should behave exactly like the Freights search:
+
+* Search across every field.
+* Support partial matches.
+* Be case-insensitive.
+* Return matching records instantly while typing.
+* Highlight matching values in the results.
+
+## 7. Dashboard integration
+
+The Expenses module must be fully integrated with the Dashboard.
+
+Whenever an expense is:
+
+* Created,
+* Edited,
+* Deleted, or
+* Imported,
+
+the Dashboard should immediately update all calculations, charts, KPIs, and summaries that depend on expense data.
+
+## 8. Performance
+
+The Expenses page should follow the same performance optimizations already implemented for Freights:
+
+* Lazy loading / infinite scrolling.
+* Load records in batches.
+* Virtualized rendering.
+* Efficient searching.
+* Low memory usage.
+* Smooth scrolling.
+
+## Important
+
+* Do **not** redesign the application.
+* Keep the existing visual identity unchanged.
+* Reuse existing components whenever possible.
+* Follow the same coding standards and architecture already used in the Freights module.
+* Ensure the new Expenses module is fully integrated with the application's database, Dashboard, search system, and backup functionality.
