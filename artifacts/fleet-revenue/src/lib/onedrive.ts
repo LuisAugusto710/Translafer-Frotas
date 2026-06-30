@@ -22,11 +22,22 @@ export const CLIENT_ID = import.meta.env["VITE_AZURE_CLIENT_ID"] as
 
 export const isConfigured = Boolean(CLIENT_ID && CLIENT_ID !== "");
 
+/**
+ * Redirect URI for the OAuth popup.
+ * Points to blank.html — a minimal page that initialises MSAL and
+ * calls handleRedirectPromise(), letting MSAL broadcast the auth
+ * response back to the parent window and close the popup cleanly.
+ *
+ * This URI must be registered in the Azure app under Authentication →
+ * Single-page application → Redirect URIs.
+ */
+const REDIRECT_URI = window.location.origin + "/blank.html";
+
 const msalConfig: Configuration = {
   auth: {
     clientId: CLIENT_ID ?? "00000000-0000-0000-0000-000000000000",
     authority: "https://login.microsoftonline.com/common",
-    redirectUri: window.location.origin,
+    redirectUri: REDIRECT_URI,
   },
   cache: {
     cacheLocation: "localStorage",

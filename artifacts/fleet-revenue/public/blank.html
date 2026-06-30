@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Autenticando…</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #f8fafc;
+      color: #64748b;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <span>Autenticando com Microsoft, aguarde…</span>
+
+  <!--
+    This page is the OAuth popup redirect target for MSAL.
+    MSAL opens this page in a popup after the user signs in with Microsoft.
+    Initialising MSAL here and calling handleRedirectPromise() lets it
+    broadcast the auth response back to the parent window and close the popup.
+  -->
+  <script type="module">
+    // Use the same MSAL version installed in the app (esm.sh proxies npm).
+    const { PublicClientApplication } = await import(
+      "https://esm.sh/@azure/msal-browser@5.15.0"
+    );
+
+    const redirectUri = window.location.origin + "/blank.html";
+
+    const app = new PublicClientApplication({
+      auth: {
+        // Public client ID — safe to embed here.
+        clientId: "01d8cddd-6465-4619-b91b-64b25e63b7b6",
+        authority: "https://login.microsoftonline.com/common",
+        redirectUri,
+      },
+      cache: {
+        // Must match the cacheLocation used in the main app (onedrive.ts).
+        cacheLocation: "localStorage",
+      },
+    });
+
+    await app.initialize();
+
+    // Process the popup response and broadcast result to the parent window.
+    // After this, MSAL closes the popup automatically.
+    await app.handleRedirectPromise().catch((err) => {
+      console.error("[LAFER/blank.html] MSAL handleRedirectPromise error:", err);
+    });
+  </script>
+</body>
+</html>
