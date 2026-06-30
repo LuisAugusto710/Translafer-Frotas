@@ -2,6 +2,8 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import cron from "node-cron";
 import { generateBackup } from "./backup";
+import { seedAuthUser } from "./lib/seed";
+import { ensureSessionTable } from "./lib/session";
 
 const rawPort = process.env["PORT"];
 
@@ -17,25 +19,37 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-app.listen(port, (err) => {
-  if (err) {
-    logger.error({ err }, "Error listening on port");
-    process.exit(1);
-  }
+async function bootstrap(): Promise<void> {
+  // Ensure session storage and the shared login user exist before accepting
+  // traffic, otherwise the first requests would fail to persist sessions.
+  await ensureSessionTable();
+  await seedAuthUser();
 
-  logger.info({ port }, "Server listening");
+  app.listen(port, (err) => {
+    if (err) {
+      logger.error({ err }, "Error listening on port");
+      process.exit(1);
+    }
 
-  // ── Daily backup at 02:00 ─────────────────────────────────────────────────
-  // Runs every day at 02:00 AM server time.
-  cron.schedule("0 2 * * *", () => {
-    logger.info("Cron: iniciando backup diário agendado…");
+    logger.info({ port }, "Server listening");
+
+    // ── Daily backup at 02:00 ───────────────────────────────────────────────
+    // Runs every day at 02:00 AM server time.
+    cron.schedule("0 2 * * *", () => {
+      logger.info("Cron: iniciando backup diário agendado…");
+      generateBackup().catch((err) => {
+        logger.error({ err }, "Cron: falha no backup diário agendado");
+      });
+    });
+
+    // Also run once on startup so there is always a backup for today.
     generateBackup().catch((err) => {
-      logger.error({ err }, "Cron: falha no backup diário agendado");
+      logger.error({ err }, "Startup: falha ao gerar backup inicial");
     });
   });
+}
 
-  // Also run once on startup so there is always a backup for today.
-  generateBackup().catch((err) => {
-    logger.error({ err }, "Startup: falha ao gerar backup inicial");
-  });
+bootstrap().catch((err) => {
+  logger.error({ err }, "Fatal error during server bootstrap");
+  process.exit(1);
 });

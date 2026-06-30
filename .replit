@@ -1,4 +1,4 @@
-modules = ["nodejs-24", "postgresql-16"]
+modules = ["nodejs-24", "postgresql-16", "python-3.11"]
 
 [deployment]
 router = "application"
@@ -26,3 +26,5 @@ channel = "stable-25_05"
 
 [userenv.shared]
 VITE_AZURE_CLIENT_ID = "4316db1b-2e21-48b3-9bc3-756169a55c6b"
+AUTH_EMAIL = "translafer@yahoo.com.br"
+AUTH_PASSWORD_HASH = "$2b$12$JwD8S41jb/1YK.k6iMK73.vzQvyvNPt70FAwCc44bw1RtLw0jrXy."

@@ -1,10 +1,15 @@
 import express, { type Express } from "express";
-import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { sessionMiddleware } from "./lib/session";
+import { csrfProtection } from "./middlewares/auth";
 
 const app: Express = express();
+
+// Behind the Replit reverse proxy: trust the first proxy hop so secure
+// cookies and req.ip work correctly.
+app.set("trust proxy", 1);
 
 app.use(
   pinoHttp({
@@ -25,9 +30,13 @@ app.use(
     },
   }),
 );
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Session + CSRF must run before the API routes. Frontend and API are
+// same-origin behind the proxy, so no CORS layer is needed.
+app.use(sessionMiddleware);
+app.use(csrfProtection);
 
 app.use("/api", router);
 

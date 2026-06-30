@@ -1,1 +1,1 @@
-- [MSAL v5 popup redirect bridge](msal-v5-popup-redirect.md) — popup redirect page must call `broadcastResponseToMainFrame` from `@azure/msal-browser/redirect-bridge`, not `handleRedirectPromise()`, or `loginPopup` never resolves.
+- [esbuild bundling breaks runtime asset reads](esbuild-runtime-assets.md) — libs that read data files via `__dirname` at runtime (e.g. connect-pg-simple `createTableIfMissing`) fail in the bundled api-server; do the work explicitly instead.

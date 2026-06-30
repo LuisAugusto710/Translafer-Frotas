@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useTheme } from "./theme-provider";
-import { Moon, Sun, LayoutDashboard, Truck, Fuel, Menu, X } from "lucide-react";
+import { Moon, Sun, LayoutDashboard, Truck, Fuel, Menu, X, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { BackupFolderButton } from "./backup-folder-button";
 import { OneDriveBackupButton } from "./onedrive-backup-button";
+import { useAuth } from "@/lib/auth-context";
 
 function NavLinks({ currentLocation, onNavigate }: { currentLocation: string; onNavigate?: () => void }) {
   const isFretes = currentLocation === "/" || currentLocation === "/fretes";
@@ -60,6 +61,7 @@ function SidebarBrand() {
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { theme, setTheme } = useTheme();
+  const { logout, user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const pageTitle =
@@ -138,10 +140,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2 shrink-0">
             <OneDriveBackupButton />
             <BackupFolderButton />
-            <div className="hidden sm:block text-xs text-muted-foreground font-mono font-medium">
-              Sistema Online
-            </div>
+            {user?.email && (
+              <span className="hidden lg:inline text-xs text-muted-foreground font-mono max-w-[180px] truncate">
+                {user.email}
+              </span>
+            )}
             <div className="h-2 w-2 rounded-full bg-[#2ecc71] animate-pulse" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => logout()}
+              className="gap-1.5 text-muted-foreground hover:text-foreground"
+              title="Sair"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Sair</span>
+            </Button>
           </div>
         </header>
 

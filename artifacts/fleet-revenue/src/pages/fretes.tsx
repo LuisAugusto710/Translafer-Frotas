@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useDeleteFrete } from "@workspace/api-client-react";
+import { apiFetch } from "@/lib/api-fetch";
 import { Plus, Download, MoreHorizontal, Pencil, Trash2, Search, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,13 +70,13 @@ const ROW_HEIGHT = 41; // estimated px per row for the virtualizer
 // ── Fetch helpers ─────────────────────────────────────────────────────────────
 
 async function fetchFretePage(offset: number): Promise<FretePage> {
-  const res = await fetch(`${FRETES_KEY}?limit=${PAGE_SIZE}&offset=${offset}`);
+  const res = await apiFetch(`${FRETES_KEY}?limit=${PAGE_SIZE}&offset=${offset}`);
   if (!res.ok) throw new Error("Erro ao carregar fretes");
   return res.json();
 }
 
 async function searchFretes(search: string): Promise<FretePage> {
-  const res = await fetch(`${FRETES_KEY}?search=${encodeURIComponent(search)}&limit=5000`);
+  const res = await apiFetch(`${FRETES_KEY}?search=${encodeURIComponent(search)}&limit=5000`);
   if (!res.ok) throw new Error("Erro na busca");
   return res.json();
 }
@@ -84,7 +85,7 @@ async function fetchAllFretes(search?: string): Promise<FreteRow[]> {
   const url = search
     ? `${FRETES_KEY}?search=${encodeURIComponent(search)}&limit=10000`
     : `${FRETES_KEY}?limit=10000`;
-  const res = await fetch(url);
+  const res = await apiFetch(url);
   if (!res.ok) throw new Error("Erro ao exportar");
   const data: FretePage = await res.json();
   return data.fretes;

@@ -360,7 +360,28 @@ export async function customFetch<T = unknown>(
 
   const requestInfo = { method, url: resolveUrl(input) };
 
-  const response = await fetch(input, { ...init, method, headers });
+  // Same-origin session auth: echo the readable CSRF cookie into the header on
+  // mutating requests (browser only).
+  if (
+    typeof document !== "undefined" &&
+    (method === "POST" ||
+      method === "PUT" ||
+      method === "PATCH" ||
+      method === "DELETE") &&
+    !headers.has("x-csrf-token")
+  ) {
+    const csrfMatch = document.cookie.match(/(?:^|; )csrf_token=([^;]*)/);
+    if (csrfMatch) {
+      headers.set("x-csrf-token", decodeURIComponent(csrfMatch[1]));
+    }
+  }
+
+  const response = await fetch(input, {
+    ...init,
+    method,
+    headers,
+    credentials: init.credentials ?? "include",
+  });
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);

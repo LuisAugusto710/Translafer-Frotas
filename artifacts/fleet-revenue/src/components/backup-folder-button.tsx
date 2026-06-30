@@ -10,6 +10,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { FolderOpen, HardDriveDownload, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { apiFetch } from "@/lib/api-fetch";
 import {
   Tooltip,
   TooltipContent,
@@ -68,7 +69,7 @@ async function idbLoad(): Promise<FileSystemDirectoryHandle | null> {
 
 async function fetchLatestFilename(): Promise<string | null> {
   try {
-    const res = await fetch("/api/backup");
+    const res = await apiFetch("/api/backup");
     if (!res.ok) return null;
     const { backups } = await res.json();
     return backups?.[0]?.filename ?? null;
@@ -80,7 +81,7 @@ async function fetchLatestFilename(): Promise<string | null> {
 async function triggerAndGetFilename(): Promise<string | null> {
   try {
     // Trigger a fresh backup if none exists yet for today
-    const res = await fetch("/api/backup", { method: "POST" });
+    const res = await apiFetch("/api/backup", { method: "POST" });
     if (!res.ok) return null;
     const { filename } = await res.json();
     return filename ?? null;
@@ -93,7 +94,7 @@ async function writeBackupToDir(
   dir: FileSystemDirectoryHandle,
   filename: string,
 ): Promise<void> {
-  const res = await fetch(`/api/backup/download/${encodeURIComponent(filename)}`);
+  const res = await apiFetch(`/api/backup/download/${encodeURIComponent(filename)}`);
   if (!res.ok) throw new Error(`Download failed: ${res.status}`);
   const blob = await res.blob();
   const file = await dir.getFileHandle(filename, { create: true });

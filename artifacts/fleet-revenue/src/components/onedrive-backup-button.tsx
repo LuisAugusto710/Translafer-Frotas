@@ -11,6 +11,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { apiFetch } from "@/lib/api-fetch";
 import {
   Cloud,
   CloudOff,
@@ -107,7 +108,7 @@ async function fetchAndUploadBackup(
   filename: string,
   onProgress?: (pct: number) => void,
 ): Promise<void> {
-  const dlRes = await fetch(`/api/backup/download/${encodeURIComponent(filename)}`);
+  const dlRes = await apiFetch(`/api/backup/download/${encodeURIComponent(filename)}`);
   if (!dlRes.ok) throw new Error(`Download local falhou: ${dlRes.status}`);
   const blob = await dlRes.blob();
   await uploadBackup(filename, blob, onProgress);
@@ -115,7 +116,7 @@ async function fetchAndUploadBackup(
 
 async function triggerAndGetFilename(): Promise<string | null> {
   try {
-    const res = await fetch("/api/backup", { method: "POST" });
+    const res = await apiFetch("/api/backup", { method: "POST" });
     if (!res.ok) return null;
     const json = (await res.json()) as { filename?: string };
     return json.filename ?? null;
@@ -126,7 +127,7 @@ async function triggerAndGetFilename(): Promise<string | null> {
 
 async function getLatestFilename(): Promise<string | null> {
   try {
-    const res = await fetch("/api/backup");
+    const res = await apiFetch("/api/backup");
     if (!res.ok) return null;
     const json = (await res.json()) as { backups?: { filename: string }[] };
     return json.backups?.[0]?.filename ?? null;
@@ -332,7 +333,7 @@ export function OneDriveBackupButton() {
         const blob = await downloadBackup(file);
 
         toast({ title: "Importando dados…", description: "Aguarde, isso pode levar alguns segundos." });
-        const res = await fetch("/api/backup/restore", {
+        const res = await apiFetch("/api/backup/restore", {
           method: "POST",
           headers: { "Content-Type": "application/octet-stream" },
           body: blob,
