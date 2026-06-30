@@ -31,7 +31,7 @@ export const isConfigured = Boolean(CLIENT_ID && CLIENT_ID !== "");
  * This URI must be registered in the Azure app under Authentication →
  * Single-page application → Redirect URIs.
  */
-const REDIRECT_URI = window.location.origin + "/blank.html";
+const REDIRECT_URI = "https://lafertransportes.replit.app/blank.html";
 
 const msalConfig: Configuration = {
   auth: {
@@ -109,10 +109,7 @@ export async function getToken(): Promise<string> {
 const GRAPH = "https://graph.microsoft.com/v1.0";
 const FOLDER = "LAFER Backups";
 
-async function graph(
-  path: string,
-  init: RequestInit = {},
-): Promise<Response> {
+async function graph(path: string, init: RequestInit = {}): Promise<Response> {
   const token = await getToken();
   return fetch(`${GRAPH}${path}`, {
     ...init,
@@ -222,7 +219,12 @@ export async function uploadBackup(
       },
       body: chunk,
     });
-    if (!res.ok && res.status !== 202 && res.status !== 201 && res.status !== 200) {
+    if (
+      !res.ok &&
+      res.status !== 202 &&
+      res.status !== 201 &&
+      res.status !== 200
+    ) {
       throw new Error(`Falha no chunk: ${res.status}`);
     }
     offset += CHUNK;
