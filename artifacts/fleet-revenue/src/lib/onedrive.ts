@@ -24,9 +24,11 @@ export const isConfigured = Boolean(CLIENT_ID && CLIENT_ID !== "");
 
 /**
  * Redirect URI for the OAuth popup.
- * Points to blank.html — a minimal page that initialises MSAL and
- * calls handleRedirectPromise(), letting MSAL broadcast the auth
- * response back to the parent window and close the popup cleanly.
+ * Points to blank.html — a dedicated Vite entry page that runs MSAL's
+ * `broadcastResponseToMainFrame` bridge (see src/blank-redirect.ts). The
+ * bridge parses the auth response from the URL, posts it to the parent
+ * window over a BroadcastChannel keyed on the request state id, and
+ * closes the popup.
  *
  * This URI must be registered in the Azure app under Authentication →
  * Single-page application → Redirect URIs.

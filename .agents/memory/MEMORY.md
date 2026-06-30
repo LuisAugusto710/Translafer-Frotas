@@ -1,0 +1,1 @@
+- [MSAL v5 popup redirect bridge](msal-v5-popup-redirect.md) — popup redirect page must call `broadcastResponseToMainFrame` from `@azure/msal-browser/redirect-bridge`, not `handleRedirectPromise()`, or `loginPopup` never resolves.
