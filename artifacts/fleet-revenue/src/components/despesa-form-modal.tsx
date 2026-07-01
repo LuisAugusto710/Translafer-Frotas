@@ -211,7 +211,7 @@ export function DespesaFormModal({
               />
             </div>
 
-            {/* Motorista (Nome) */}
+            {/* Driver group: name + payment together */}
             <div className="space-y-2">
               <Label htmlFor="motoristaNome">Motorista (Nome)</Label>
               <Input
@@ -222,8 +222,19 @@ export function DespesaFormModal({
                 placeholder="Nome do motorista"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="motorista">Motorista (R$)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                id="motorista"
+                name="motorista"
+                value={formData.motorista}
+                onChange={handleChange}
+              />
+            </div>
 
-            {/* Ajudante (Nome) */}
+            {/* Assistant group: name + payment together */}
             <div className="space-y-2">
               <Label htmlFor="ajudanteNome">Ajudante (Nome)</Label>
               <Input
@@ -234,9 +245,20 @@ export function DespesaFormModal({
                 placeholder="Nome do ajudante"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="ajudante">Ajudante (R$)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                id="ajudante"
+                name="ajudante"
+                value={formData.ajudante}
+                onChange={handleChange}
+              />
+            </div>
 
-            {/* Numeric fields */}
-            {NUMERIC_FIELDS.map((f) => (
+            {/* Remaining numeric fields (motorista and ajudante rendered above) */}
+            {NUMERIC_FIELDS.filter((f) => f.name !== "motorista" && f.name !== "ajudante").map((f) => (
               <div className="space-y-2" key={f.name}>
                 <Label htmlFor={f.name}>{f.label}</Label>
                 <Input

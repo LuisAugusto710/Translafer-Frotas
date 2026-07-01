@@ -1,0 +1,60 @@
+Additional UI Improvements
+
+Please implement the following improvements to the Expenses page while keeping the application’s current design language and visual identity.
+
+1. Reorganize the Driver and Assistant fields
+
+For better usability and a more intuitive form layout, reposition the payment fields so they are grouped with the corresponding person.
+
+The layout should be:
+
+Driver
+
+* Driver Name
+* Driver Payment
+
+Assistant
+
+* Assistant Name
+* Assistant Payment
+
+In other words:
+
+* Place the Driver Payment field immediately below the Driver Name field.
+* Place the Assistant Payment field immediately below the Assistant Name field.
+
+This grouping will make it much easier for users to understand which payment belongs to which person.
+
+2. Improve mobile readability of the table
+
+On mobile devices, the column headers in the Expenses table are difficult to read.
+
+Please improve their visibility while preserving the overall design.
+
+Requirements:
+
+* Increase the readability of column titles.
+* Ensure the font size is appropriate for mobile screens.
+* Prevent text from being cut off or overlapping.
+* Improve spacing between column headers.
+* Keep the table responsive.
+* Ensure headers remain aligned with their respective columns.
+* If necessary, allow long column titles to wrap onto a second line rather than being truncated.
+* Maintain consistency with the application’s typography and color palette.
+
+3. Mobile optimization
+
+The table should remain easy to use on smaller screens by ensuring:
+
+* Horizontal scrolling behaves smoothly when necessary.
+* Sticky column headers continue to work correctly.
+* Touch interactions remain responsive.
+* Text remains legible without excessive zooming.
+* No column titles overlap or become unreadable.
+
+Important
+
+* Do not redesign the page.
+* Keep the existing layout and visual identity.
+* Only improve the organization of the Driver/Assistant fields and enhance the readability of the table headers on mobile devices.
+* Ensure these changes remain fully responsive across desktop, tablet, and mobile screens.
