@@ -1,0 +1,68 @@
+Here’s a clean, professional prompt in English with the constraints you asked for:
+
+---
+
+**PROMPT**
+
+I want to improve my freight management system, but with strict rules regarding modifications.
+
+### ⚠️ IMPORTANT RULES
+
+* Maintain the **integrity of the existing system**
+* Only modify what is **absolutely necessary**
+* Do **not refactor unrelated code**
+* Do **not change the current architecture or logic flow unless required**
+* Keep the **current UI/UX design exactly the same**
+* Do not alter styling, layout, or visual structure of the pages
+
+---
+
+### 1. Automatic calculation in Expenses table
+
+In the **Expenses** table, when the user finishes filling in both:
+
+* **Date**
+* **Fleet (Frota)**
+
+The system must automatically:
+
+* Fetch all **freight (Fretes)** records matching the same **date + fleet**
+* Calculate the daily totals:
+
+  * Total **Freight (R$)**
+  * Total **KM**
+  * Total **Diesel (Liters)**
+  * Total **Diesel (R$)**
+
+Then automatically populate the following fields in the Expenses table:
+
+* **FREIGHT (R$)** → total freight value of the day
+* **KM** → total kilometers of the day
+* **Diesel (LT)** → total diesel liters of the day
+* **Diesel (R$)** → total diesel cost of the day
+
+📌 This calculation must happen automatically as soon as the **Date and Fleet fields are filled**, without requiring any button or manual trigger.
+
+---
+
+### 2. Diesel table simplification
+
+In the **Diesel table**, remove the following fields:
+
+* Year
+* Month
+
+Because the **Date field already contains all necessary temporal information** and must be used as the only reference for filtering and grouping.
+
+---
+
+### 3. Performance and consistency
+
+* Ensure calculations only consider records with the same **date and fleet**
+* Ensure updates happen automatically when data is created or edited
+* Avoid duplicating logic; reuse existing functions where possible
+* Keep performance optimized even with large datasets
+
+---
+
+If you want, I can also convert this into a **step-by-step backend + frontend implementation plan** for your stack (React, Node, etc.).
