@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MaskedDateInput } from "@/components/masked-date-input";
-import { useCreateDespesa, useUpdateDespesa, useListFretes, getListFretesQueryKey } from "@workspace/api-client-react";
+import { useCreateDespesa, useUpdateDespesa, useListFretes, getListFretesQueryKey, useListAbastecimentos, getListAbastecimentosQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
@@ -81,6 +81,12 @@ export function DespesaFormModal({
     { query: { enabled: canAutoFetch, queryKey: getListFretesQueryKey({ frota: formData.frota, dateFrom: formData.data, dateTo: formData.data, limit: 1000 }) } }
   );
 
+  // Fetch diesel records for this fleet (placa = frota) and filter client-side by date
+  const { data: abastecimentosDaFrota } = useListAbastecimentos(
+    { placa: formData.frota, limit: 500 },
+    { query: { enabled: canAutoFetch, queryKey: getListAbastecimentosQueryKey({ placa: formData.frota, limit: 500 }) } }
+  );
+
   useEffect(() => {
     if (!canAutoFetch || !fretesDodia?.fretes) return;
     const totalFrete = fretesDodia.fretes.reduce((sum, f) => sum + (f.totalFrete ?? 0), 0);
@@ -88,6 +94,23 @@ export function DespesaFormModal({
       setFormData((prev) => ({ ...prev, frete: totalFrete.toFixed(2) }));
     }
   }, [fretesDodia]);
+
+  useEffect(() => {
+    if (!canAutoFetch || !abastecimentosDaFrota?.abastecimentos) return;
+    const matching = abastecimentosDaFrota.abastecimentos.filter(
+      (a) => a.data?.split("T")[0] === formData.data
+    );
+    if (matching.length === 0) return;
+    const totalKm = matching.reduce((s, a) => s + (a.kmPercorrido ?? 0), 0);
+    const totalLt = matching.reduce((s, a) => s + (a.litros ?? 0), 0);
+    const totalRs = matching.reduce((s, a) => s + (a.totalPago ?? 0), 0);
+    setFormData((prev) => ({
+      ...prev,
+      ...(totalKm > 0 ? { km: totalKm.toFixed(2) } : {}),
+      ...(totalLt > 0 ? { dieselLt: totalLt.toFixed(3) } : {}),
+      ...(totalRs > 0 ? { dieselRs: totalRs.toFixed(2) } : {}),
+    }));
+  }, [abastecimentosDaFrota, formData.data]);
 
   useEffect(() => {
     if (!open) return;
