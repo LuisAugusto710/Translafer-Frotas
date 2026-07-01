@@ -26,18 +26,15 @@ function fmt(t: typeof abastecimentosTable.$inferSelect) {
 }
 
 router.get("/abastecimentos", async (req, res) => {
-  const { placa, mes, search, limit = "1000", offset = "0" } = req.query as Record<string, string>;
-  const ano = req.query.ano ? Number(req.query.ano) : undefined;
+  const { placa, search, limit = "1000", offset = "0" } = req.query as Record<string, string>;
 
   const conditions = [];
   if (placa) conditions.push(ilike(abastecimentosTable.placa, `%${placa}%`));
-  if (mes) conditions.push(ilike(abastecimentosTable.mes, `%${mes}%`));
-  if (ano) conditions.push(eq(abastecimentosTable.ano, ano));
   if (search) {
     conditions.push(or(
       ilike(abastecimentosTable.placa, `%${search}%`),
       ilike(abastecimentosTable.posto, `%${search}%`),
-      ilike(abastecimentosTable.mes, `%${search}%`),
+      sql`CAST(${abastecimentosTable.data} AS TEXT) ILIKE ${`%${search}%`}`,
     )!);
   }
 
@@ -54,11 +51,11 @@ router.get("/abastecimentos", async (req, res) => {
 });
 
 router.post("/abastecimentos", async (req, res) => {
-  const { data, litros, precoLitro, totalPago, kmInicio, kmFinal, kmPercorrido, media, requisicao, posto, ...rest } = req.body;
+  const { data, placa, litros, precoLitro, totalPago, kmInicio, kmFinal, kmPercorrido, media, requisicao, posto } = req.body;
 
   const [row] = await db.insert(abastecimentosTable).values({
-    ...rest,
     data: toDateStr(data) ?? data,
+    placa,
     litros: String(litros ?? 0),
     precoLitro: String(precoLitro ?? 0),
     totalPago: String(totalPago ?? 0),
@@ -74,8 +71,8 @@ router.post("/abastecimentos", async (req, res) => {
 });
 
 router.put("/abastecimentos/:id", async (req, res) => {
-  const { data, litros, precoLitro, totalPago, kmInicio, kmFinal, kmPercorrido, media, ...rest } = req.body;
-  const update: Record<string, unknown> = { ...rest, updatedAt: new Date() };
+  const { data, litros, precoLitro, totalPago, kmInicio, kmFinal, kmPercorrido, media } = req.body;
+  const update: Record<string, unknown> = { updatedAt: new Date() };
   if (data !== undefined) update.data = toDateStr(data) ?? data;
   if (litros !== undefined) update.litros = String(litros);
   if (precoLitro !== undefined) update.precoLitro = String(precoLitro);

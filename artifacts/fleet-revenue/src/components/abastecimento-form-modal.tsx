@@ -3,13 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MaskedDateInput } from "@/components/masked-date-input";
 import { useCreateAbastecimento, useUpdateAbastecimento, getListAbastecimentosQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-
-const MESES = ["JANEIRO","FEVEREIRO","MARÇO","ABRIL","MAIO","JUNHO","JULHO","AGOSTO","SETEMBRO","OUTUBRO","NOVEMBRO","DEZEMBRO"];
 
 export function AbastecimentoFormModal({
   open,
@@ -26,8 +23,6 @@ export function AbastecimentoFormModal({
   const updateMutation = useUpdateAbastecimento();
 
   const [formData, setFormData] = useState({
-    mes: MESES[new Date().getMonth()],
-    ano: new Date().getFullYear().toString(),
     requisicao: "",
     posto: "",
     data: new Date().toISOString().split("T")[0],
@@ -44,8 +39,6 @@ export function AbastecimentoFormModal({
     if (open) {
       if (abastecimento) {
         setFormData({
-          mes: abastecimento.mes || MESES[new Date().getMonth()],
-          ano: abastecimento.ano?.toString() || new Date().getFullYear().toString(),
           requisicao: abastecimento.requisicao || "",
           posto: abastecimento.posto || "",
           data: abastecimento.data?.split("T")[0] || "",
@@ -59,8 +52,6 @@ export function AbastecimentoFormModal({
         });
       } else {
         setFormData({
-          mes: MESES[new Date().getMonth()],
-          ano: new Date().getFullYear().toString(),
           requisicao: "",
           posto: "",
           data: new Date().toISOString().split("T")[0],
@@ -104,7 +95,6 @@ export function AbastecimentoFormModal({
 
     const payload = {
       ...formData,
-      ano: parseInt(formData.ano),
       litros: parseFloat(formData.litros),
       precoLitro: parseFloat(formData.precoLitro),
       totalPago: parseFloat(formData.totalPago),
@@ -174,40 +164,6 @@ export function AbastecimentoFormModal({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Mês */}
-            <div className="space-y-2">
-              <Label>Mês</Label>
-              <Select
-                value={formData.mes}
-                onValueChange={(v) =>
-                  setFormData((prev) => ({ ...prev, mes: v }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o mês" />
-                </SelectTrigger>
-                <SelectContent>
-                  {MESES.map((m) => (
-                    <SelectItem key={m} value={m}>
-                      {m}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Ano */}
-            <div className="space-y-2">
-              <Label>Ano</Label>
-              <Input
-                type="number"
-                name="ano"
-                value={formData.ano}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
             {/* Data */}
             <div className="space-y-2">
               <Label>

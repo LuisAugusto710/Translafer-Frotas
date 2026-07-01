@@ -99,15 +99,13 @@ export async function generateBackup(): Promise<string> {
   // Sheet 2 — Diesel
   const dieselRows: (string | number)[][] = [
     [
-      "Mês", "Ano", "Requisição", "Posto", "Data", "Placa",
+      "Requisição", "Posto", "Data", "Placa",
       "Litros", "Preço/L (R$)", "Total Pago (R$)",
       "KM Início", "KM Final", "KM Percorrido", "Média (km/L)",
     ],
   ];
   for (const a of dieselData) {
     dieselRows.push([
-      a.mes,
-      a.ano,
       a.requisicao  ?? "",
       a.posto       ?? "",
       fmtDate(a.data),

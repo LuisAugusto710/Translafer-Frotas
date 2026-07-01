@@ -8,8 +8,6 @@
 
 export interface Abastecimento {
   id: number;
-  mes: string;
-  ano: number;
   /** @nullable */
   requisicao?: string | null;
   /** @nullable */

@@ -133,7 +133,7 @@ router.get("/dashboard/por-periodo", async (req, res) => {
 
 router.get("/dashboard/diesel-por-placa", async (req, res) => {
   const ano = req.query.ano ? Number(req.query.ano) : undefined;
-  const where = ano ? eq(abastecimentosTable.ano, ano) : undefined;
+  const where = ano ? sql`EXTRACT(YEAR FROM ${abastecimentosTable.data}) = ${ano}` : undefined;
 
   const result = await db.select({
     placa: abastecimentosTable.placa,

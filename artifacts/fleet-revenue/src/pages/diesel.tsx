@@ -113,8 +113,6 @@ export function Diesel() {
             <TableHeader className="bg-muted/50 sticky top-0 z-10 backdrop-blur">
               <TableRow>
                 <TableHead className="w-[40px] whitespace-nowrap">#</TableHead>
-                <TableHead className="whitespace-nowrap">Mês</TableHead>
-                <TableHead className="whitespace-nowrap">Ano</TableHead>
                 <TableHead className="whitespace-nowrap">REQ</TableHead>
                 <TableHead className="whitespace-nowrap">Posto</TableHead>
                 <TableHead className="whitespace-nowrap">Data</TableHead>
@@ -133,14 +131,14 @@ export function Diesel() {
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    {Array.from({ length: 15 }).map((_, j) => (
+                    {Array.from({ length: 13 }).map((_, j) => (
                       <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
                     ))}
                   </TableRow>
                 ))
               ) : abasts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={15} className="text-center h-32 text-muted-foreground">
+                  <TableCell colSpan={13} className="text-center h-32 text-muted-foreground">
                     Nenhum abastecimento encontrado.
                   </TableCell>
                 </TableRow>
@@ -148,8 +146,6 @@ export function Diesel() {
                 abasts.map((a, index) => (
                   <TableRow key={a.id} className="hover:bg-muted/50 transition-colors">
                     <TableCell className="text-muted-foreground">{index + 1}</TableCell>
-                    <TableCell className="whitespace-nowrap">{a.mes}</TableCell>
-                    <TableCell>{a.ano}</TableCell>
                     <TableCell>{a.requisicao || "-"}</TableCell>
                     <TableCell className="truncate max-w-[110px]">{a.posto || "-"}</TableCell>
                     <TableCell className="whitespace-nowrap">{formatDate(a.data)}</TableCell>
@@ -192,7 +188,7 @@ export function Diesel() {
             {abasts.length > 0 && (
               <TableFooter className="bg-[#0a192f] text-white font-bold sticky bottom-0">
                 <TableRow>
-                  <TableCell colSpan={7} className="text-right whitespace-nowrap">TOTAIS:</TableCell>
+                  <TableCell colSpan={5} className="text-right whitespace-nowrap">TOTAIS:</TableCell>
                   <TableCell className="text-right whitespace-nowrap">{formatNumber(totalLitros, 2)} L</TableCell>
                   <TableCell></TableCell>
                   <TableCell className="text-right text-[#2ecc71] whitespace-nowrap">{formatCurrency(totalPago)}</TableCell>

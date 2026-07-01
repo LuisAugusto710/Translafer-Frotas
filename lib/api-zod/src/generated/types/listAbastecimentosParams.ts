@@ -8,8 +8,6 @@
 
 export type ListAbastecimentosParams = {
 placa?: string;
-mes?: string;
-ano?: number;
 search?: string;
 limit?: number;
 offset?: number;

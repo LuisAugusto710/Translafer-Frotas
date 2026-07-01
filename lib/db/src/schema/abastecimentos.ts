@@ -1,9 +1,7 @@
-import { pgTable, serial, text, numeric, date, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, numeric, date, timestamp } from "drizzle-orm/pg-core";
 
 export const abastecimentosTable = pgTable("abastecimentos", {
   id: serial("id").primaryKey(),
-  mes: text("mes").notNull(),
-  ano: integer("ano").notNull(),
   requisicao: text("requisicao"),
   posto: text("posto"),
   data: date("data").notNull(),

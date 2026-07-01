@@ -187,12 +187,6 @@ paths:
         - name: placa
           in: query
           schema: { type: string }
-        - name: mes
-          in: query
-          schema: { type: string }
-        - name: ano
-          in: query
-          schema: { type: integer }
         - name: search
           in: query
           schema: { type: string }
@@ -750,10 +744,6 @@ components:
       properties:
         id:
           type: integer
-        mes:
-          type: string
-        ano:
-          type: integer
         requisicao:
           type: ["string", "null"]
         posto:
@@ -785,8 +775,6 @@ components:
           format: date-time
       required:
         - id
-        - mes
-        - ano
         - data
         - placa
         - litros
@@ -798,10 +786,6 @@ components:
     AbastecimentoInput:
       type: object
       properties:
-        mes:
-          type: string
-        ano:
-          type: integer
         requisicao:
           type: string
         posto:
@@ -826,8 +810,6 @@ components:
         media:
           type: number
       required:
-        - mes
-        - ano
         - data
         - placa
         - litros
@@ -837,10 +819,6 @@ components:
     AbastecimentoUpdate:
       type: object
       properties:
-        mes:
-          type: string
-        ano:
-          type: integer
         requisicao:
           type: string
         posto:

@@ -137,27 +137,27 @@ router.post(
 
     for (let i = 1; i < dieselAoa.length; i++) {
       const r = dieselAoa[i] as unknown[];
-      const data  = parseDate(r[4]);
-      const placa = toStr(r[5]);
-      const mes   = toStr(r[0]);
-      const anoRaw = Number(r[1]);
+      // New column order (after removing mes/ano):
+      // [0]=Requisição, [1]=Posto, [2]=Data, [3]=Placa,
+      // [4]=Litros, [5]=Preço/L, [6]=Total Pago,
+      // [7]=KM Início, [8]=KM Final, [9]=KM Percorrido, [10]=Média
+      const data  = parseDate(r[2]);
+      const placa = toStr(r[3]);
 
-      if (!data || !placa || !mes || isNaN(anoRaw)) continue;
+      if (!data || !placa) continue;
 
       abastRows.push({
-        mes,
-        ano:          anoRaw,
-        requisicao:   toStr(r[2])  || null,
-        posto:        toStr(r[3])  || null,
+        requisicao:   toStr(r[0])  || null,
+        posto:        toStr(r[1])  || null,
         data,
         placa,
-        litros:       toNum(r[6]),
-        precoLitro:   toNum(r[7]),
-        totalPago:    toNum(r[8]),
-        kmInicio:     r[9]  !== "" ? toNum(r[9])  : null,
-        kmFinal:      r[10] !== "" ? toNum(r[10]) : null,
-        kmPercorrido: r[11] !== "" ? toNum(r[11]) : null,
-        media:        r[12] !== "" ? toNum(r[12]) : null,
+        litros:       toNum(r[4]),
+        precoLitro:   toNum(r[5]),
+        totalPago:    toNum(r[6]),
+        kmInicio:     r[7]  !== "" ? toNum(r[7])  : null,
+        kmFinal:      r[8]  !== "" ? toNum(r[8])  : null,
+        kmPercorrido: r[9]  !== "" ? toNum(r[9])  : null,
+        media:        r[10] !== "" ? toNum(r[10]) : null,
       });
     }
 

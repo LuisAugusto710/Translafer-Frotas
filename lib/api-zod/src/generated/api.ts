@@ -239,8 +239,6 @@ export const listAbastecimentosQueryOffsetDefault = 0;
 
 export const ListAbastecimentosQueryParams = zod.object({
   "placa": zod.coerce.string().optional(),
-  "mes": zod.coerce.string().optional(),
-  "ano": zod.coerce.number().optional(),
   "search": zod.coerce.string().optional(),
   "limit": zod.coerce.number().default(listAbastecimentosQueryLimitDefault),
   "offset": zod.coerce.number().default(listAbastecimentosQueryOffsetDefault)
@@ -249,8 +247,6 @@ export const ListAbastecimentosQueryParams = zod.object({
 export const ListAbastecimentosResponse = zod.object({
   "abastecimentos": zod.array(zod.object({
   "id": zod.number(),
-  "mes": zod.string(),
-  "ano": zod.number(),
   "requisicao": zod.string().nullish(),
   "posto": zod.string().nullish(),
   "data": zod.coerce.date(),
@@ -270,8 +266,6 @@ export const ListAbastecimentosResponse = zod.object({
 
 
 export const CreateAbastecimentoBody = zod.object({
-  "mes": zod.string(),
-  "ano": zod.number(),
   "requisicao": zod.string().optional(),
   "posto": zod.string().optional(),
   "data": zod.coerce.date(),
@@ -287,8 +281,6 @@ export const CreateAbastecimentoBody = zod.object({
 
 export const CreateAbastecimentoResponse = zod.object({
   "id": zod.number(),
-  "mes": zod.string(),
-  "ano": zod.number(),
   "requisicao": zod.string().nullish(),
   "posto": zod.string().nullish(),
   "data": zod.coerce.date(),
@@ -310,8 +302,6 @@ export const UpdateAbastecimentoParams = zod.object({
 })
 
 export const UpdateAbastecimentoBody = zod.object({
-  "mes": zod.string().optional(),
-  "ano": zod.number().optional(),
   "requisicao": zod.string().optional(),
   "posto": zod.string().optional(),
   "data": zod.coerce.date().optional(),
@@ -327,8 +317,6 @@ export const UpdateAbastecimentoBody = zod.object({
 
 export const UpdateAbastecimentoResponse = zod.object({
   "id": zod.number(),
-  "mes": zod.string(),
-  "ano": zod.number(),
   "requisicao": zod.string().nullish(),
   "posto": zod.string().nullish(),
   "data": zod.coerce.date(),

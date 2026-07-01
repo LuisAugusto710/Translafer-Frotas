@@ -7,8 +7,6 @@
  */
 
 export interface AbastecimentoInput {
-  mes: string;
-  ano: number;
   requisicao?: string;
   posto?: string;
   data: Date;

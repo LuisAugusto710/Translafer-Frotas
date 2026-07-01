@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MaskedDateInput } from "@/components/masked-date-input";
-import { useCreateDespesa, useUpdateDespesa } from "@workspace/api-client-react";
+import { useCreateDespesa, useUpdateDespesa, useListFretes, getListFretesQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
@@ -72,6 +72,22 @@ export function DespesaFormModal({
   const updateMutation = useUpdateDespesa();
 
   const [formData, setFormData] = useState<FormData>(emptyForm());
+
+  const isEditing = !!despesa?.id;
+  const canAutoFetch = open && !isEditing && !!formData.data && !!formData.frota;
+
+  const { data: fretesDodia } = useListFretes(
+    { frota: formData.frota, dateFrom: formData.data, dateTo: formData.data, limit: 1000 },
+    { query: { enabled: canAutoFetch, queryKey: getListFretesQueryKey({ frota: formData.frota, dateFrom: formData.data, dateTo: formData.data, limit: 1000 }) } }
+  );
+
+  useEffect(() => {
+    if (!canAutoFetch || !fretesDodia?.fretes) return;
+    const totalFrete = fretesDodia.fretes.reduce((sum, f) => sum + (f.totalFrete ?? 0), 0);
+    if (totalFrete > 0) {
+      setFormData((prev) => ({ ...prev, frete: totalFrete.toFixed(2) }));
+    }
+  }, [fretesDodia]);
 
   useEffect(() => {
     if (!open) return;

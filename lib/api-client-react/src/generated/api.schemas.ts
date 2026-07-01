@@ -98,8 +98,6 @@ export interface FrotaSummary {
 
 export interface Abastecimento {
   id: number;
-  mes: string;
-  ano: number;
   /** @nullable */
   requisicao?: string | null;
   /** @nullable */
@@ -122,8 +120,6 @@ export interface Abastecimento {
 }
 
 export interface AbastecimentoInput {
-  mes: string;
-  ano: number;
   requisicao?: string;
   posto?: string;
   data: string;
@@ -138,8 +134,6 @@ export interface AbastecimentoInput {
 }
 
 export interface AbastecimentoUpdate {
-  mes?: string;
-  ano?: number;
   requisicao?: string;
   posto?: string;
   data?: string;
@@ -353,8 +347,6 @@ offset?: number;
 
 export type ListAbastecimentosParams = {
 placa?: string;
-mes?: string;
-ano?: number;
 search?: string;
 limit?: number;
 offset?: number;
