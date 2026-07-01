@@ -1,0 +1,60 @@
+Prompt:
+
+Please improve the usability of the application’s data tables without changing the current design, layout, or functionality.
+
+Implement a Sticky Table Header
+
+When the user scrolls down through large tables (such as Freights, Expenses, and any other data tables), the table header (column titles) should remain fixed at the top of the table.
+
+This should work on both:
+
+* Desktop browsers
+* Mobile devices (Android and iPhone)
+
+Requirements
+
+* The column headers must remain visible while the user scrolls through the records.
+* Only the header row should remain fixed; the data rows should continue scrolling normally.
+* The header should always stay perfectly aligned with its corresponding columns.
+* The solution must work correctly with:
+    * Infinite scrolling
+    * Lazy loading
+    * Virtualized lists
+    * Dynamic column widths
+    * Responsive layouts
+
+Desktop Behavior
+
+* When scrolling down, the table header should remain fixed at the top of the visible table area.
+* Users should always be able to identify which column each value belongs to.
+* Horizontal scrolling (if present) should keep the header synchronized with the table content.
+
+Mobile Behavior
+
+On smaller screens, the sticky header is even more important.
+
+Ensure that:
+
+* The header remains fixed while scrolling vertically.
+* It continues to align correctly with each column during horizontal scrolling.
+* The header text remains readable.
+* No overlapping, clipping, or layout issues occur.
+* Touch scrolling remains smooth and responsive.
+
+Visual Requirements
+
+* Keep the current colors, typography, spacing, and design.
+* Add a subtle shadow or bottom border to the sticky header (optional) to visually separate it from the scrolling rows.
+* Maintain the application’s existing visual identity.
+
+Performance
+
+* The sticky header should not negatively impact scrolling performance.
+* It must work efficiently with thousands of records.
+* Avoid unnecessary re-renders or layout recalculations during scrolling.
+
+Important
+
+* Do not redesign the interface.
+* Do not modify the table layout or existing functionality.
+* Only implement a sticky table header to improve readability and usability while browsing large amounts of data on both desktop and mobile devices.
