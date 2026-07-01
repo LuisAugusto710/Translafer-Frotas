@@ -222,6 +222,8 @@ export interface Despesa {
   data: string;
   frota: string;
   cidade: string;
+  motoristaNome?: string;
+  ajudanteNome?: string;
   frete: number;
   km: number;
   dieselLt: number;
@@ -251,6 +253,8 @@ export interface DespesaInput {
   data: string;
   frota: string;
   cidade?: string;
+  motoristaNome?: string;
+  ajudanteNome?: string;
   frete?: number;
   km?: number;
   dieselLt?: number;
@@ -275,6 +279,8 @@ export interface DespesaUpdate {
   data?: string;
   frota?: string;
   cidade?: string;
+  motoristaNome?: string;
+  ajudanteNome?: string;
   frete?: number;
   km?: number;
   dieselLt?: number;

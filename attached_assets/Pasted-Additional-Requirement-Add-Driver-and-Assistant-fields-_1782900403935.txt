@@ -1,0 +1,85 @@
+Additional Requirement
+
+Add Driver and Assistant fields to the Expenses module
+
+Please extend the Expenses page by adding two new fields:
+
+* Driver
+* Assistant
+
+These fields will allow the company to track how much each driver and assistant receives over time.
+
+Requirements
+
+1. New database fields
+
+Create two new fields in the Expenses database:
+
+* Driver
+* Assistant
+
+Both fields should:
+
+* Be editable when creating or editing an expense.
+* Be displayed as columns in the Expenses table.
+* Be searchable.
+* Be filterable.
+* Be sortable.
+* Be included in imports, exports, and backups.
+
+2. Add Expense form
+
+Include both fields in the Add Expense and Edit Expense forms.
+
+The fields should support:
+
+* Manual text entry.
+* Future compatibility with a list of registered employees (optional enhancement).
+
+3. Expense tracking
+
+Each expense record should clearly indicate:
+
+* Which Driver received the payment.
+* Which Assistant received the payment (if applicable).
+
+If an expense is related only to a driver or only to an assistant, the other field may remain empty.
+
+4. Dashboard integration
+
+These fields should be available for future Dashboard analytics, including:
+
+* Total expenses per driver.
+* Total expenses per assistant.
+* Monthly payments by driver.
+* Monthly payments by assistant.
+* Expense history by employee.
+* Reports grouped by driver or assistant.
+
+The Dashboard should automatically update whenever an expense is created, edited, or deleted.
+
+5. Search functionality
+
+The global search should return records when searching by:
+
+* Driver name.
+* Assistant name.
+* Partial names.
+* Case-insensitive matches.
+
+Matching values should continue to be highlighted in the search results.
+
+6. Performance
+
+Adding these fields must not impact the performance optimizations already implemented, including:
+
+* Lazy loading.
+* Infinite scrolling.
+* Virtualized rendering.
+* Fast global search.
+
+Important
+
+* Do not redesign the interface.
+* Keep the same visual style as the Freights page.
+* Integrate these new fields seamlessly into the existing Expenses module and ensure they are fully supported by the database, Dashboard, reports, search, exports, and backup system.

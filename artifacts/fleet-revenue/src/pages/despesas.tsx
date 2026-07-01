@@ -41,6 +41,8 @@ type DespesaRow = {
   data: string;
   frota: string;
   cidade: string;
+  motoristaNome: string;
+  ajudanteNome: string;
   frete: number;
   km: number;
   dieselLt: number;
@@ -69,7 +71,7 @@ type DespesaPage = { despesas: DespesaRow[]; total: number };
 const PAGE_SIZE = 100;
 const DESPESAS_KEY = "/api/despesas";
 const ROW_HEIGHT = 41;
-const COL_COUNT = 24;
+const COL_COUNT = 26;
 
 // ── Fetch helpers ─────────────────────────────────────────────────────────────
 async function fetchDespesaPage(offset: number): Promise<DespesaPage> {
@@ -236,12 +238,14 @@ export function Despesas() {
       {/* Table */}
       <div className="border rounded-md flex-1 overflow-hidden flex flex-col bg-card shadow-sm text-sm min-h-0">
         <div ref={scrollRef} className="overflow-auto flex-1">
-          <Table className="min-w-[1800px]">
+          <Table className="min-w-[2000px]">
             <TableHeader className="bg-muted/50 sticky top-0 z-10 backdrop-blur">
               <TableRow>
                 <TableHead className="whitespace-nowrap">Data</TableHead>
                 <TableHead className="whitespace-nowrap">Frota</TableHead>
                 <TableHead className="whitespace-nowrap">Cidade</TableHead>
+                <TableHead className="whitespace-nowrap">Motorista (Nome)</TableHead>
+                <TableHead className="whitespace-nowrap">Ajudante (Nome)</TableHead>
                 <TableHead className="text-right whitespace-nowrap">Frete (R$)</TableHead>
                 <TableHead className="text-right whitespace-nowrap">KM</TableHead>
                 <TableHead className="text-right whitespace-nowrap">Diesel (LT)</TableHead>
@@ -299,6 +303,8 @@ export function Despesas() {
                         <TableCell className="whitespace-nowrap">{hl(formatDate(d.data))}</TableCell>
                         <TableCell className="font-medium text-[#0a192f] whitespace-nowrap">{hl(d.frota)}</TableCell>
                         <TableCell className="truncate max-w-[140px]" title={d.cidade}>{hl(d.cidade)}</TableCell>
+                        <TableCell className="truncate max-w-[140px] whitespace-nowrap" title={d.motoristaNome}>{hl(d.motoristaNome || "-")}</TableCell>
+                        <TableCell className="truncate max-w-[140px] whitespace-nowrap" title={d.ajudanteNome}>{hl(d.ajudanteNome || "-")}</TableCell>
                         <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.frete))}</TableCell>
                         <TableCell className="text-right whitespace-nowrap">{hl(formatNumber(d.km))}</TableCell>
                         <TableCell className="text-right whitespace-nowrap">{hl(formatNumber(d.dieselLt))}</TableCell>

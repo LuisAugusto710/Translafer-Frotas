@@ -41,7 +41,7 @@ A professional transportation fleet revenue management system for logging trip d
 ## Product
 
 - **Data Entry tab**: Spreadsheet-like table for logging trips (date, truck, driver, customer, route, revenue, costs). Add/edit/delete rows, search/filter, export to CSV and Excel.
-- **Despesas tab** (nav placed above Dashboard): Fretes-style table for daily per-fleet expenses (data, frota, cidade, frete, km, diesel, and 14 cost fields). `lucro` and `totalDespesa` are computed server-side (`lucro = frete − sum(14 cost fields)`; km/dieselLt are metrics, not costs). Same search+highlight, virtualization, context menus, CSV/Excel export as Fretes. Bulk import dedupes on unique `(frota, data)`.
+- **Despesas tab** (nav placed above Dashboard): Fretes-style table for daily per-fleet expenses (data, frota, cidade, motoristaNome/ajudanteNome (driver/assistant name text fields, searchable), frete, km, diesel, and 14 cost fields). Note: `motorista`/`ajudante` are numeric payment amounts; `motoristaNome`/`ajudanteNome` are the person names (text, not costs). `lucro` and `totalDespesa` are computed server-side (`lucro = frete − sum(14 cost fields)`; km/dieselLt are metrics, not costs). Same search+highlight, virtualization, context menus, CSV/Excel export as Fretes. Bulk import dedupes on unique `(frota, data)`.
 - **Dashboard tab**: KPI cards (gross revenue, expenses, net profit, margin), revenue charts by truck and over time, expenses vs revenue comparison, annual performance metrics. Also includes a Despesas analysis section (KPIs, category breakdown, monthly frete/custos/lucro).
 
 ## User preferences

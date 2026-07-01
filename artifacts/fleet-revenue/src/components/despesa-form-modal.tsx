@@ -44,6 +44,8 @@ function emptyForm(): FormData {
     data: "",
     frota: "",
     cidade: "",
+    motoristaNome: "",
+    ajudanteNome: "",
     obs: "",
   };
   for (const f of NUMERIC_FIELDS) base[f.name] = "0";
@@ -77,6 +79,8 @@ export function DespesaFormModal({
         data: despesa.data?.split("T")[0] || "",
         frota: despesa.frota || "",
         cidade: despesa.cidade || "",
+        motoristaNome: despesa.motoristaNome || "",
+        ajudanteNome: despesa.ajudanteNome || "",
         obs: despesa.obs || "",
       };
       for (const f of NUMERIC_FIELDS) {
@@ -116,6 +120,8 @@ export function DespesaFormModal({
       data: formData.data,
       frota: formData.frota,
       cidade: formData.cidade,
+      motoristaNome: formData.motoristaNome,
+      ajudanteNome: formData.ajudanteNome,
       obs: formData.obs,
     };
     for (const f of NUMERIC_FIELDS) {
@@ -202,6 +208,30 @@ export function DespesaFormModal({
                 value={formData.cidade}
                 onChange={handleChange}
                 placeholder="Ex: Patrocínio / não / SAB / DOM / feriado"
+              />
+            </div>
+
+            {/* Motorista (Nome) */}
+            <div className="space-y-2">
+              <Label htmlFor="motoristaNome">Motorista (Nome)</Label>
+              <Input
+                id="motoristaNome"
+                name="motoristaNome"
+                value={formData.motoristaNome}
+                onChange={handleChange}
+                placeholder="Nome do motorista"
+              />
+            </div>
+
+            {/* Ajudante (Nome) */}
+            <div className="space-y-2">
+              <Label htmlFor="ajudanteNome">Ajudante (Nome)</Label>
+              <Input
+                id="ajudanteNome"
+                name="ajudanteNome"
+                value={formData.ajudanteNome}
+                onChange={handleChange}
+                placeholder="Nome do ajudante"
               />
             </div>
 

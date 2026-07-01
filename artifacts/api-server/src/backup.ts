@@ -126,7 +126,8 @@ export async function generateBackup(): Promise<string> {
   // Sheet 3 — Despesas
   const despesasRows: (string | number)[][] = [
     [
-      "Data", "Frota", "Cidade", "Frete (R$)", "KM", "Diesel (LT)", "Diesel (R$)",
+      "Data", "Frota", "Cidade", "Motorista (Nome)", "Ajudante (Nome)",
+      "Frete (R$)", "KM", "Diesel (LT)", "Diesel (R$)",
       "DAS", "Motorista", "Almoço", "Ajudante", "Pedágio", "Unimed", "Seguro",
       "Gasto", "Rastreador", "INSS", "Escritório", "IPVA", "Bsoft",
       "Total Despesa (R$)", "Lucro (R$)", "Obs",
@@ -138,6 +139,8 @@ export async function generateBackup(): Promise<string> {
       fmtDate(d.data),
       d.frota,
       d.cidade,
+      d.motoristaNome ?? "",
+      d.ajudanteNome ?? "",
       Number(d.frete ?? 0),
       Number(d.km ?? 0),
       Number(d.dieselLt ?? 0),

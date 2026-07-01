@@ -1000,6 +1000,10 @@ components:
           type: string
         cidade:
           type: string
+        motoristaNome:
+          type: string
+        ajudanteNome:
+          type: string
         frete:
           type: number
         km:
@@ -1083,6 +1087,10 @@ components:
           type: string
         cidade:
           type: string
+        motoristaNome:
+          type: string
+        ajudanteNome:
+          type: string
         frete:
           type: number
         km:
@@ -1132,6 +1140,10 @@ components:
         frota:
           type: string
         cidade:
+          type: string
+        motoristaNome:
+          type: string
+        ajudanteNome:
           type: string
         frete:
           type: number

@@ -10,6 +10,8 @@ export interface DespesaInput {
   data: Date;
   frota: string;
   cidade?: string;
+  motoristaNome?: string;
+  ajudanteNome?: string;
   frete?: number;
   km?: number;
   dieselLt?: number;

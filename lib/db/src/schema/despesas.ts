@@ -7,6 +7,8 @@ export const despesasTable = pgTable(
     data: date("data").notNull(),
     frota: text("frota").notNull(),
     cidade: text("cidade").notNull().default(""),
+    motoristaNome: text("motorista_nome").notNull().default(""),
+    ajudanteNome: text("ajudante_nome").notNull().default(""),
     frete: numeric("frete", { precision: 12, scale: 2 }).notNull().default("0"),
     km: numeric("km", { precision: 12, scale: 2 }).notNull().default("0"),
     dieselLt: numeric("diesel_lt", { precision: 12, scale: 2 }).notNull().default("0"),
