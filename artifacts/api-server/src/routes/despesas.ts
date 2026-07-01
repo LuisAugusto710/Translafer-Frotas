@@ -49,6 +49,7 @@ function buildValues(body: Record<string, unknown>) {
   if (body.cidade !== undefined) out.cidade = body.cidade ?? "";
   if (body.motoristaNome !== undefined) out.motoristaNome = body.motoristaNome ?? "";
   if (body.ajudanteNome !== undefined) out.ajudanteNome = body.ajudanteNome ?? "";
+  if (body.trocaOleoParcela !== undefined) out.trocaOleoParcela = body.trocaOleoParcela ?? "";
   if (body.frota !== undefined) out.frota = body.frota;
   if (body.obs !== undefined) out.obs = body.obs ?? null;
   if (body.data !== undefined) out.data = toDateStr(body.data) ?? body.data;
@@ -77,6 +78,7 @@ router.get("/despesas", async (req, res) => {
       ilike(despesasTable.cidade, like),
       ilike(despesasTable.motoristaNome, like),
       ilike(despesasTable.ajudanteNome, like),
+      ilike(despesasTable.trocaOleoParcela, like),
       ilike(despesasTable.obs, like),
       sql`CAST(${despesasTable.data} AS TEXT) ILIKE ${like}`,
       sql`CAST(${despesasTable.frete} AS TEXT) ILIKE ${like}`,

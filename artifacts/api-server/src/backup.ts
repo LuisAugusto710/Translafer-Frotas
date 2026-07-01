@@ -130,7 +130,7 @@ export async function generateBackup(): Promise<string> {
       "Frete (R$)", "KM", "Diesel (LT)", "Diesel (R$)",
       "DAS", "Motorista", "Almoço", "Ajudante", "Pedágio", "Unimed", "Seguro",
       "Gasto", "Rastreador", "INSS", "Escritório", "IPVA", "Bsoft",
-      "Total Despesa (R$)", "Lucro (R$)", "Obs",
+      "Total Despesa (R$)", "Lucro (R$)", "Parcela Troca de Óleo", "Obs",
     ],
   ];
   for (const d of despesasData) {
@@ -160,6 +160,7 @@ export async function generateBackup(): Promise<string> {
       Number(d.bsoft ?? 0),
       Math.round(totalDespesa * 100) / 100,
       Number(d.lucro ?? 0),
+      d.trocaOleoParcela ?? "",
       d.obs ?? "",
     ]);
   }

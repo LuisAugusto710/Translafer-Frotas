@@ -62,6 +62,7 @@ type DespesaRow = {
   bsoft: number;
   totalDespesa: number;
   lucro: number;
+  trocaOleoParcela: string;
   obs: string | null;
 };
 
@@ -71,7 +72,7 @@ type DespesaPage = { despesas: DespesaRow[]; total: number };
 const PAGE_SIZE = 100;
 const DESPESAS_KEY = "/api/despesas";
 const ROW_HEIGHT = 41;
-const COL_COUNT = 26;
+const COL_COUNT = 27;
 
 // ── Fetch helpers ─────────────────────────────────────────────────────────────
 async function fetchDespesaPage(offset: number): Promise<DespesaPage> {
@@ -265,6 +266,7 @@ export function Despesas() {
                 <TableHead className="text-right min-w-[64px] whitespace-nowrap">Bsoft</TableHead>
                 <TableHead className="text-right font-bold text-red-600 min-w-[100px] leading-tight">Total Despesa</TableHead>
                 <TableHead className="text-right font-bold text-[#0a192f] min-w-[80px] leading-tight">Lucro (R$)</TableHead>
+                <TableHead className="min-w-[110px] leading-tight">Parcela Troca Óleo</TableHead>
                 <TableHead className="min-w-[80px] whitespace-nowrap">Obs</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
@@ -327,6 +329,9 @@ export function Despesas() {
                         </TableCell>
                         <TableCell className={`text-right font-bold whitespace-nowrap ${d.lucro >= 0 ? "text-[#2ecc71] bg-[#2ecc71]/10" : "text-red-600 bg-red-500/10"}`}>
                           {hl(formatCurrency(d.lucro))}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap" title={d.trocaOleoParcela}>
+                          {hl(d.trocaOleoParcela || "-")}
                         </TableCell>
                         <TableCell className="truncate max-w-[100px]" title={d.obs || ""}>
                           {hl(d.obs || "-")}

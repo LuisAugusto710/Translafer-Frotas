@@ -32,6 +32,7 @@ export interface Despesa {
   bsoft: number;
   totalDespesa: number;
   lucro: number;
+  trocaOleoParcela?: string;
   /** @nullable */
   obs?: string | null;
   createdAt: Date;

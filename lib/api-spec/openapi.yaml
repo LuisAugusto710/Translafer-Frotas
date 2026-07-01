@@ -1042,6 +1042,8 @@ components:
           type: number
         lucro:
           type: number
+        trocaOleoParcela:
+          type: string
         obs:
           type: ["string", "null"]
         createdAt:
@@ -1125,6 +1127,8 @@ components:
           type: number
         bsoft:
           type: number
+        trocaOleoParcela:
+          type: string
         obs:
           type: string
       required:
@@ -1179,6 +1183,8 @@ components:
           type: number
         bsoft:
           type: number
+        trocaOleoParcela:
+          type: string
         obs:
           type: string
 

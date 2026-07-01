@@ -27,6 +27,7 @@ export const despesasTable = pgTable(
     ipva: numeric("ipva", { precision: 12, scale: 2 }).notNull().default("0"),
     bsoft: numeric("bsoft", { precision: 12, scale: 2 }).notNull().default("0"),
     lucro: numeric("lucro", { precision: 12, scale: 2 }).notNull().default("0"),
+    trocaOleoParcela: text("troca_oleo_parcela").notNull().default(""),
     obs: text("obs"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),

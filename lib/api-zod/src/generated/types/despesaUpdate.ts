@@ -29,5 +29,6 @@ export interface DespesaUpdate {
   escritorio?: number;
   ipva?: number;
   bsoft?: number;
+  trocaOleoParcela?: string;
   obs?: string;
 }

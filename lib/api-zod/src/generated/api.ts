@@ -488,6 +488,7 @@ export const ListDespesasResponse = zod.object({
   "bsoft": zod.number(),
   "totalDespesa": zod.number(),
   "lucro": zod.number(),
+  "trocaOleoParcela": zod.string().optional(),
   "obs": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
@@ -519,6 +520,7 @@ export const CreateDespesaBody = zod.object({
   "escritorio": zod.number().optional(),
   "ipva": zod.number().optional(),
   "bsoft": zod.number().optional(),
+  "trocaOleoParcela": zod.string().optional(),
   "obs": zod.string().optional()
 })
 
@@ -548,6 +550,7 @@ export const CreateDespesaResponse = zod.object({
   "bsoft": zod.number(),
   "totalDespesa": zod.number(),
   "lucro": zod.number(),
+  "trocaOleoParcela": zod.string().optional(),
   "obs": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
@@ -578,6 +581,7 @@ export const BulkCreateDespesasBody = zod.object({
   "escritorio": zod.number().optional(),
   "ipva": zod.number().optional(),
   "bsoft": zod.number().optional(),
+  "trocaOleoParcela": zod.string().optional(),
   "obs": zod.string().optional()
 }))
 })
@@ -610,6 +614,7 @@ export const BulkCreateDespesasResponse = zod.object({
   "bsoft": zod.number(),
   "totalDespesa": zod.number(),
   "lucro": zod.number(),
+  "trocaOleoParcela": zod.string().optional(),
   "obs": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
@@ -647,6 +652,7 @@ export const GetDespesaResponse = zod.object({
   "bsoft": zod.number(),
   "totalDespesa": zod.number(),
   "lucro": zod.number(),
+  "trocaOleoParcela": zod.string().optional(),
   "obs": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
@@ -680,6 +686,7 @@ export const UpdateDespesaBody = zod.object({
   "escritorio": zod.number().optional(),
   "ipva": zod.number().optional(),
   "bsoft": zod.number().optional(),
+  "trocaOleoParcela": zod.string().optional(),
   "obs": zod.string().optional()
 })
 
@@ -709,6 +716,7 @@ export const UpdateDespesaResponse = zod.object({
   "bsoft": zod.number(),
   "totalDespesa": zod.number(),
   "lucro": zod.number(),
+  "trocaOleoParcela": zod.string().optional(),
   "obs": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()

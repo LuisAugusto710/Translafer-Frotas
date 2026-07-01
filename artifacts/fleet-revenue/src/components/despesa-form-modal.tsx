@@ -46,6 +46,7 @@ function emptyForm(): FormData {
     cidade: "",
     motoristaNome: "",
     ajudanteNome: "",
+    trocaOleoParcela: "",
     obs: "",
   };
   for (const f of NUMERIC_FIELDS) base[f.name] = "0";
@@ -81,6 +82,7 @@ export function DespesaFormModal({
         cidade: despesa.cidade || "",
         motoristaNome: despesa.motoristaNome || "",
         ajudanteNome: despesa.ajudanteNome || "",
+        trocaOleoParcela: despesa.trocaOleoParcela || "",
         obs: despesa.obs || "",
       };
       for (const f of NUMERIC_FIELDS) {
@@ -122,6 +124,7 @@ export function DespesaFormModal({
       cidade: formData.cidade,
       motoristaNome: formData.motoristaNome,
       ajudanteNome: formData.ajudanteNome,
+      trocaOleoParcela: formData.trocaOleoParcela,
       obs: formData.obs,
     };
     for (const f of NUMERIC_FIELDS) {
@@ -199,6 +202,19 @@ export function DespesaFormModal({
               />
             </div>
 
+            {/* Frete — immediately after Frota */}
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="frete">Frete (R$)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                id="frete"
+                name="frete"
+                value={formData.frete}
+                onChange={handleChange}
+              />
+            </div>
+
             {/* Cidade */}
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="cidade">Cidade</Label>
@@ -257,8 +273,10 @@ export function DespesaFormModal({
               />
             </div>
 
-            {/* Remaining numeric fields (motorista and ajudante rendered above) */}
-            {NUMERIC_FIELDS.filter((f) => f.name !== "motorista" && f.name !== "ajudante").map((f) => (
+            {/* Remaining numeric fields (frete, motorista, ajudante rendered above) */}
+            {NUMERIC_FIELDS.filter(
+              (f) => f.name !== "frete" && f.name !== "motorista" && f.name !== "ajudante"
+            ).map((f) => (
               <div className="space-y-2" key={f.name}>
                 <Label htmlFor={f.name}>{f.label}</Label>
                 <Input
@@ -271,6 +289,18 @@ export function DespesaFormModal({
                 />
               </div>
             ))}
+
+            {/* Oil Change Installment — tracking field near end */}
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="trocaOleoParcela">Parcela Troca de Óleo</Label>
+              <Input
+                id="trocaOleoParcela"
+                name="trocaOleoParcela"
+                value={formData.trocaOleoParcela}
+                onChange={handleChange}
+                placeholder="Ex: 1, 2/6, Parcela 3 de 6"
+              />
+            </div>
           </div>
 
           {/* Computed totals */}

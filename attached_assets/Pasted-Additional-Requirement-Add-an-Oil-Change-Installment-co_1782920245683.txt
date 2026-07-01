@@ -1,0 +1,53 @@
+Additional Requirement
+
+Add an “Oil Change Installment” column to the Expenses page
+
+Please add a new column to the Expenses page called:
+
+Oil Change Installment
+
+This field will be used to identify which installment of an oil change payment each expense belongs to.
+
+Requirements
+
+* Add a new column named Oil Change Installment to the Expenses table.
+* Display this column in the main list of expenses.
+* Include this field in both the Add Expense and Edit Expense forms.
+* Allow the user to enter the installment number (e.g., 1, 2, 3, 4, etc.).
+* Optionally support a format such as “2 of 6” or “Installment 2/6” if installment tracking is available.
+* Make the field searchable, filterable, and sortable.
+* Include it in Excel imports, exports, reports, and backup files.
+* Store the value correctly in the database.
+
+Reorder the fields in the Add/Edit Expense form
+
+For a more logical and user-friendly workflow, change the order of the fields in the Add Expense and Edit Expense forms.
+
+The Freight field must appear immediately after the Fleet Number field.
+
+The order should be:
+
+* Fleet Number
+* Freight
+* Remaining fields…
+
+This positioning better reflects the relationship between the truck fleet and the corresponding freight, making data entry faster and more intuitive.
+
+Integration
+
+* Associate the oil change installment with the corresponding expense record.
+* Ensure the Freight field remains fully linked to the corresponding freight record.
+* Allow future Dashboard reports to analyze oil change expenses by installment if needed.
+* Ensure these fields are included in all CRUD operations (Create, Read, Update, Delete).
+
+User Experience
+
+* Position the Oil Change Installment field close to the oil change expense information so it is intuitive and easy to fill out.
+* Place the Freight field immediately after the Fleet Number field in both the creation and editing forms.
+* Keep the same visual style, spacing, and alignment as the other fields on the Expenses page.
+
+Important
+
+* Do not redesign the interface.
+* Do not modify unrelated functionality.
+* Keep the new field and the reordered layout fully integrated with the application’s search, filtering, reporting, dashboard, import/export, and backup systems while maintaining the existing visual identity.

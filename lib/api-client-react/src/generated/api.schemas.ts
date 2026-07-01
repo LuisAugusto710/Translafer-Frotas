@@ -243,6 +243,7 @@ export interface Despesa {
   bsoft: number;
   totalDespesa: number;
   lucro: number;
+  trocaOleoParcela?: string;
   /** @nullable */
   obs?: string | null;
   createdAt: string;
@@ -272,6 +273,7 @@ export interface DespesaInput {
   escritorio?: number;
   ipva?: number;
   bsoft?: number;
+  trocaOleoParcela?: string;
   obs?: string;
 }
 
@@ -298,6 +300,7 @@ export interface DespesaUpdate {
   escritorio?: number;
   ipva?: number;
   bsoft?: number;
+  trocaOleoParcela?: string;
   obs?: string;
 }
 
