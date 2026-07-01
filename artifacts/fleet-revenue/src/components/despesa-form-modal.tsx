@@ -55,10 +55,7 @@ function emptyForm(): FormData {
     trocaOleoParcela: "",
     obs: "",
   };
-  for (const f of NUMERIC_FIELDS) base[f.name] = "0";
-  base.frete = "";
-  base.km = "";
-  base.dieselLt = "";
+  for (const f of NUMERIC_FIELDS) base[f.name] = "";
   return base;
 }
 
@@ -169,7 +166,7 @@ export function DespesaFormModal({
         obs: despesa.obs || "",
       };
       for (const f of NUMERIC_FIELDS) {
-        next[f.name] = despesa[f.name] != null ? String(despesa[f.name]) : "0";
+        next[f.name] = despesa[f.name] != null ? String(despesa[f.name]) : "";
       }
       setFormData(next);
     } else {
@@ -313,7 +310,7 @@ export function DespesaFormModal({
                 name="cidade"
                 value={formData.cidade}
                 onChange={handleChange}
-                placeholder="Ex: Patrocínio / não / SAB / DOM / feriado"
+                placeholder="Patrocínio / não / SAB / DOM / feriado"
               />
             </div>
 

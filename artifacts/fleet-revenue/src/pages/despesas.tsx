@@ -245,15 +245,15 @@ export function Despesas() {
                 <TableHead className="min-w-[90px] whitespace-nowrap">Data</TableHead>
                 <TableHead className="min-w-[64px] whitespace-nowrap">Frota</TableHead>
                 <TableHead className="min-w-[100px] whitespace-nowrap">Cidade</TableHead>
-                <TableHead className="min-w-[130px] leading-tight">Motorista (Nome)</TableHead>
-                <TableHead className="min-w-[120px] leading-tight">Ajudante (Nome)</TableHead>
                 <TableHead className="text-right min-w-[88px] whitespace-nowrap">Frete (R$)</TableHead>
                 <TableHead className="text-right min-w-[64px] whitespace-nowrap">KM</TableHead>
                 <TableHead className="text-right min-w-[82px] leading-tight">Diesel (LT)</TableHead>
                 <TableHead className="text-right min-w-[82px] leading-tight">Diesel (R$)</TableHead>
                 <TableHead className="text-right min-w-[64px] whitespace-nowrap">DAS</TableHead>
+                <TableHead className="min-w-[130px] leading-tight">Motorista (Nome)</TableHead>
                 <TableHead className="text-right min-w-[80px] whitespace-nowrap">Motorista</TableHead>
                 <TableHead className="text-right min-w-[72px] whitespace-nowrap">Almoço</TableHead>
+                <TableHead className="min-w-[120px] leading-tight">Ajudante (Nome)</TableHead>
                 <TableHead className="text-right min-w-[80px] whitespace-nowrap">Ajudante</TableHead>
                 <TableHead className="text-right min-w-[72px] whitespace-nowrap">Pedágio</TableHead>
                 <TableHead className="text-right min-w-[72px] whitespace-nowrap">Unimed</TableHead>
@@ -305,15 +305,15 @@ export function Despesas() {
                         <TableCell className="whitespace-nowrap">{hl(formatDate(d.data))}</TableCell>
                         <TableCell className="font-medium text-[#0a192f] whitespace-nowrap">{hl(d.frota)}</TableCell>
                         <TableCell className="truncate max-w-[140px]" title={d.cidade}>{hl(d.cidade)}</TableCell>
-                        <TableCell className="truncate max-w-[140px] whitespace-nowrap" title={d.motoristaNome}>{hl(d.motoristaNome || "-")}</TableCell>
-                        <TableCell className="truncate max-w-[140px] whitespace-nowrap" title={d.ajudanteNome}>{hl(d.ajudanteNome || "-")}</TableCell>
                         <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.frete))}</TableCell>
                         <TableCell className="text-right whitespace-nowrap">{hl(formatNumber(d.km))}</TableCell>
                         <TableCell className="text-right whitespace-nowrap">{hl(formatNumber(d.dieselLt))}</TableCell>
                         <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.dieselRs))}</TableCell>
                         <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.das))}</TableCell>
+                        <TableCell className="truncate max-w-[140px] whitespace-nowrap" title={d.motoristaNome}>{hl(d.motoristaNome || "-")}</TableCell>
                         <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.motorista))}</TableCell>
                         <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.almoco))}</TableCell>
+                        <TableCell className="truncate max-w-[140px] whitespace-nowrap" title={d.ajudanteNome}>{hl(d.ajudanteNome || "-")}</TableCell>
                         <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.ajudante))}</TableCell>
                         <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.pedagio))}</TableCell>
                         <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.unimed))}</TableCell>

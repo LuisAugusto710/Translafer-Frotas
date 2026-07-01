@@ -185,19 +185,6 @@ export function Diesel() {
                 ))
               )}
             </TableBody>
-            {abasts.length > 0 && (
-              <TableFooter className="bg-[#0a192f] text-white font-bold sticky bottom-0">
-                <TableRow>
-                  <TableCell colSpan={5} className="text-right whitespace-nowrap">TOTAIS:</TableCell>
-                  <TableCell className="text-right whitespace-nowrap">{formatNumber(totalLitros, 2)} L</TableCell>
-                  <TableCell></TableCell>
-                  <TableCell className="text-right text-[#2ecc71] whitespace-nowrap">{formatCurrency(totalPago)}</TableCell>
-                  <TableCell colSpan={3}></TableCell>
-                  <TableCell className="text-center bg-[#1a2f4c] whitespace-nowrap">{formatNumber(avgMedia, 2)}</TableCell>
-                  <TableCell></TableCell>
-                </TableRow>
-              </TableFooter>
-            )}
           </Table>
         </div>
       </div>
