@@ -10,7 +10,7 @@
 
 import { Router } from "express";
 import * as XLSX from "xlsx";
-import { db, fretesTable, abastecimentosTable } from "@workspace/db";
+import { db, fretesTable, abastecimentosTable, despesasTable } from "@workspace/db";
 import { logger } from "../lib/logger";
 
 const router = Router();
@@ -161,14 +161,69 @@ router.post(
       });
     }
 
+    // ── Parse Despesas sheet ───────────────────────────────────────────────
+    // Column order matches backup.ts Sheet 3:
+    // [0]=Data, [1]=Frota, [2]=Cidade, [3]=Motorista (Nome), [4]=Ajudante (Nome),
+    // [5]=Frete, [6]=KM, [7]=Diesel LT, [8]=Diesel R$,
+    // [9]=DAS, [10]=Motorista, [11]=Almoço, [12]=Ajudante, [13]=Pedágio,
+    // [14]=Unimed, [15]=Seguro, [16]=Gasto, [17]=Rastreador,
+    // [18]=INSS, [19]=Escritório, [20]=IPVA, [21]=Bsoft,
+    // [22]=Total Despesa (computed — skip), [23]=Lucro, [24]=Parcela Troca Óleo, [25]=Obs
+    const despesasSheet = wb.Sheets["Despesas"];
+    type NewDespesa = typeof despesasTable.$inferInsert;
+    const despesasRows: NewDespesa[] = [];
+
+    if (despesasSheet) {
+      const despesasAoa = XLSX.utils.sheet_to_json<unknown[]>(despesasSheet, {
+        header: 1,
+        defval: "",
+      });
+      for (let i = 1; i < despesasAoa.length; i++) {
+        const r = despesasAoa[i] as unknown[];
+        const data  = parseDate(r[0]);
+        const frota = toStr(r[1]);
+        const cidade = toStr(r[2]);
+        if (!data || !frota || !cidade) continue;
+
+        despesasRows.push({
+          data,
+          frota,
+          cidade,
+          motoristaNome:    toStr(r[3])  || undefined,
+          ajudanteNome:     toStr(r[4])  || undefined,
+          frete:            toNum(r[5]),
+          km:               toNum(r[6]),
+          dieselLt:         toNum(r[7]),
+          dieselRs:         toNum(r[8]),
+          das:              toNum(r[9]),
+          motorista:        toNum(r[10]),
+          almoco:           toNum(r[11]),
+          ajudante:         toNum(r[12]),
+          pedagio:          toNum(r[13]),
+          unimed:           toNum(r[14]),
+          seguro:           toNum(r[15]),
+          gasto:            toNum(r[16]),
+          rastreador:       toNum(r[17]),
+          inss:             toNum(r[18]),
+          escritorio:       toNum(r[19]),
+          ipva:             toNum(r[20]),
+          bsoft:            toNum(r[21]),
+          // [22] = Total Despesa (computed) — skip
+          lucro:            toNum(r[23]),
+          trocaOleoParcela: toStr(r[24]) || undefined,
+          obs:              toStr(r[25]) || null,
+        });
+      }
+    }
+
     // ── Validate we have something to restore ──────────────────────────────
-    if (fretesRows.length === 0 && abastRows.length === 0) {
+    if (fretesRows.length === 0 && abastRows.length === 0 && despesasRows.length === 0) {
       res.status(400).json({ error: "Nenhum dado válido encontrado no arquivo" });
       return;
     }
 
     req.log.info(
-      { fretes: fretesRows.length, abastecimentos: abastRows.length },
+      { fretes: fretesRows.length, abastecimentos: abastRows.length, despesas: despesasRows.length },
       "Iniciando restauração de backup…",
     );
 
@@ -176,6 +231,7 @@ router.post(
     await db.transaction(async (tx) => {
       await tx.delete(fretesTable);
       await tx.delete(abastecimentosTable);
+      await tx.delete(despesasTable);
 
       if (fretesRows.length > 0) {
         // Insert in batches of 500 to stay within pg parameter limits
@@ -188,16 +244,22 @@ router.post(
           await tx.insert(abastecimentosTable).values(abastRows.slice(i, i + 500));
         }
       }
+      if (despesasRows.length > 0) {
+        for (let i = 0; i < despesasRows.length; i += 500) {
+          await tx.insert(despesasTable).values(despesasRows.slice(i, i + 500));
+        }
+      }
     });
 
     req.log.info(
-      { fretes: fretesRows.length, abastecimentos: abastRows.length },
+      { fretes: fretesRows.length, abastecimentos: abastRows.length, despesas: despesasRows.length },
       "Restauração concluída",
     );
 
     res.json({
       fretes: fretesRows.length,
       abastecimentos: abastRows.length,
+      despesas: despesasRows.length,
       message: "Dados restaurados com sucesso",
     });
   },

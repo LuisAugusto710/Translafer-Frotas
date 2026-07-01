@@ -33,12 +33,12 @@ async function bootstrap(): Promise<void> {
 
     logger.info({ port }, "Server listening");
 
-    // ── Daily backup at 02:00 ───────────────────────────────────────────────
-    // Runs every day at 02:00 AM server time.
-    cron.schedule("0 2 * * *", () => {
-      logger.info("Cron: iniciando backup diário agendado…");
+    // ── Weekly backup at 02:00 on Monday ───────────────────────────────────
+    // Runs every Monday at 02:00 AM server time.
+    cron.schedule("0 2 * * 1", () => {
+      logger.info("Cron: iniciando backup semanal agendado…");
       generateBackup().catch((err) => {
-        logger.error({ err }, "Cron: falha no backup diário agendado");
+        logger.error({ err }, "Cron: falha no backup semanal agendado");
       });
     });
 

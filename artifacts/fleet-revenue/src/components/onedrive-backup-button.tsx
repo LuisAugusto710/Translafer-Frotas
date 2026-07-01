@@ -21,7 +21,7 @@ import {
   Loader2,
   RefreshCw,
   Download,
-  Trash2,
+  RotateCcw,
   ExternalLink,
   WifiOff,
 } from "lucide-react";
@@ -347,11 +347,12 @@ export function OneDriveBackupButton() {
         const result = (await res.json()) as {
           fretes: number;
           abastecimentos: number;
+          despesas: number;
         };
 
         toast({
           title: "Restauração concluída",
-          description: `${result.fretes} fretes e ${result.abastecimentos} abastecimentos restaurados.`,
+          description: `${result.fretes} fretes, ${result.abastecimentos} abastecimentos e ${result.despesas} despesas restaurados.`,
         });
         // Invalidate all queries so the UI refreshes
         await queryClient.invalidateQueries();
@@ -678,7 +679,7 @@ export function OneDriveBackupButton() {
                                       className="h-7 w-7 text-destructive hover:text-destructive"
                                       onClick={() => setRestoreTarget(f)}
                                     >
-                                      <Trash2 className="h-3.5 w-3.5" />
+                                      <RotateCcw className="h-3.5 w-3.5" />
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent side="left" className="text-xs">
