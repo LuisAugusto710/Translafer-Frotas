@@ -108,7 +108,7 @@ export function AbastecimentoFormModal({
     if (!payload.data || !payload.placa || !payload.litros || !payload.precoLitro) {
       toast({
         title: "Erro de Validação",
-        description: "Preencha placa, data, litros e R$/L.",
+        description: "Preencha frota, data, litros e R$/L.",
         variant: "destructive",
       });
       return;
@@ -179,10 +179,10 @@ export function AbastecimentoFormModal({
               />
             </div>
 
-            {/* Placa */}
+            {/* Frota */}
             <div className="space-y-2">
               <Label>
-                Placa <span className="text-red-500">*</span>
+                Frota <span className="text-red-500">*</span>
               </Label>
               <Input
                 name="placa"

@@ -76,7 +76,7 @@ export function Diesel() {
         <div className="relative flex-1 min-w-[160px] max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar (placa, posto)..."
+            placeholder="Buscar (frota, posto)..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 w-full"
@@ -116,7 +116,7 @@ export function Diesel() {
                 <TableHead className="whitespace-nowrap">REQ</TableHead>
                 <TableHead className="whitespace-nowrap">Posto</TableHead>
                 <TableHead className="whitespace-nowrap">Data</TableHead>
-                <TableHead className="whitespace-nowrap">Placa</TableHead>
+                <TableHead className="whitespace-nowrap">Frota</TableHead>
                 <TableHead className="text-right whitespace-nowrap">Litros</TableHead>
                 <TableHead className="text-right whitespace-nowrap">R$/L</TableHead>
                 <TableHead className="text-right font-bold text-[#0a192f] whitespace-nowrap">Total (R$)</TableHead>
