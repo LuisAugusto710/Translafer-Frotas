@@ -13,6 +13,7 @@ tags:
   - name: abastecimentos
   - name: despesas
   - name: dashboard
+  - name: fleet-configs
 paths:
   /healthz:
     get:
@@ -541,6 +542,58 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/DespesaMensal"
+
+  /dashboard/diesel-avg-price:
+    get:
+      operationId: getDieselAvgPrice
+      tags: [dashboard]
+      summary: Average diesel price per litre across all fuel records
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DieselAvgPrice"
+
+  /fleet-configs:
+    get:
+      operationId: listFleetConfigs
+      tags: [fleet-configs]
+      summary: List all fleet configurations
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FleetConfig"
+
+  /fleet-configs/{frota}:
+    put:
+      operationId: upsertFleetConfig
+      tags: [fleet-configs]
+      summary: Create or update a fleet configuration
+      parameters:
+        - name: frota
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FleetConfigInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FleetConfig"
 
 components:
   schemas:
@@ -1237,3 +1290,30 @@ components:
         registros:
           type: integer
       required: [mes, frete, custos, lucro, registros]
+
+    FleetConfig:
+      type: object
+      properties:
+        frota:
+          type: string
+        kmPorLitro:
+          type: number
+          nullable: true
+      required: [frota]
+
+    FleetConfigInput:
+      type: object
+      properties:
+        kmPorLitro:
+          type: number
+      required: [kmPorLitro]
+
+    DieselAvgPrice:
+      type: object
+      properties:
+        avgPrecoPorLitro:
+          type: number
+          nullable: true
+        totalRecords:
+          type: integer
+      required: [totalRecords]

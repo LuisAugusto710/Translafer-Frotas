@@ -7,6 +7,7 @@ import despesasRouter from "./despesas";
 import dashboardRouter from "./dashboard";
 import backupRouter from "./backup";
 import restoreRouter from "./restore";
+import fleetConfigsRouter from "./fleet-configs";
 import { requireAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
@@ -23,5 +24,6 @@ router.use(despesasRouter);
 router.use(dashboardRouter);
 router.use(backupRouter);
 router.use(restoreRouter);
+router.use(fleetConfigsRouter);
 
 export default router;

@@ -333,6 +333,20 @@ export interface DespesaMensal {
   registros: number;
 }
 
+export interface FleetConfig {
+  frota: string;
+  kmPorLitro?: number | null;
+}
+
+export interface FleetConfigInput {
+  kmPorLitro: number;
+}
+
+export interface DieselAvgPrice {
+  avgPrecoPorLitro?: number | null;
+  totalRecords: number;
+}
+
 export type ListFretesParams = {
 frota?: string;
 cliente?: string;

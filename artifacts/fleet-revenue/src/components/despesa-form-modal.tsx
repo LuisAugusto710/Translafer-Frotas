@@ -5,7 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MaskedDateInput } from "@/components/masked-date-input";
-import { useCreateDespesa, useUpdateDespesa, useListFretes, getListFretesQueryKey, useListAbastecimentos, getListAbastecimentosQueryKey } from "@workspace/api-client-react";
+import {
+  useCreateDespesa, useUpdateDespesa,
+  useListFretes, getListFretesQueryKey,
+  useListAbastecimentos, getListAbastecimentosQueryKey,
+  useListFleetConfigs, useUpsertFleetConfig,
+  useGetDieselAvgPrice,
+} from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
@@ -70,11 +76,17 @@ export function DespesaFormModal({
   const queryClient = useQueryClient();
   const createMutation = useCreateDespesa();
   const updateMutation = useUpdateDespesa();
+  const upsertFleetConfig = useUpsertFleetConfig();
 
   const [formData, setFormData] = useState<FormData>(emptyForm());
+  const [kmPorLitro, setKmPorLitro] = useState<string>("");
 
   const isEditing = !!despesa?.id;
   const canAutoFetch = open && !isEditing && !!formData.data && !!formData.frota;
+
+  // Always fetch fleet configs and avg diesel price (light queries, cached)
+  const { data: fleetConfigs } = useListFleetConfigs();
+  const { data: dieselAvgData } = useGetDieselAvgPrice();
 
   const { data: fretesDodia } = useListFretes(
     { frota: formData.frota, dateFrom: formData.data, dateTo: formData.data, limit: 1000 },
@@ -112,6 +124,38 @@ export function DespesaFormModal({
     }));
   }, [abastecimentosDaFrota, formData.data]);
 
+  // Populate kmPorLitro from fleet configs when frota changes
+  useEffect(() => {
+    if (!formData.frota || !fleetConfigs) return;
+    const cfg = fleetConfigs.find((c) => c.frota === formData.frota);
+    if (cfg?.kmPorLitro != null) {
+      setKmPorLitro(String(cfg.kmPorLitro));
+    }
+  }, [formData.frota, fleetConfigs]);
+
+  // Formula: when KM is entered and no real diesel records exist, calculate diesel fields
+  useEffect(() => {
+    if (!canAutoFetch) return;
+    const km = parseFloat(formData.km);
+    const kml = parseFloat(kmPorLitro);
+    if (!km || km <= 0 || !kml || kml <= 0) return;
+
+    // Only use formula when diesel records didn't already provide the data
+    const matching = (abastecimentosDaFrota?.abastecimentos ?? []).filter(
+      (a) => a.data?.split("T")[0] === formData.data
+    );
+    const hasDieselRecords = matching.some((a) => (a.kmPercorrido ?? 0) > 0);
+    if (hasDieselRecords) return;
+
+    const lt = km / kml;
+    const updates: Record<string, string> = { dieselLt: lt.toFixed(3) };
+    const avgPreco = dieselAvgData?.avgPrecoPorLitro;
+    if (avgPreco != null && avgPreco > 0) {
+      updates.dieselRs = (lt * avgPreco).toFixed(2);
+    }
+    setFormData((prev) => ({ ...prev, ...updates }));
+  }, [formData.km, formData.data, kmPorLitro, dieselAvgData, abastecimentosDaFrota, canAutoFetch]);
+
   useEffect(() => {
     if (!open) return;
     if (despesa) {
@@ -130,6 +174,7 @@ export function DespesaFormModal({
       setFormData(next);
     } else {
       setFormData({ ...emptyForm(), data: new Date().toISOString().split("T")[0] });
+      setKmPorLitro("");
     }
   }, [despesa, open]);
 
@@ -155,6 +200,12 @@ export function DespesaFormModal({
         variant: "destructive",
       });
       return;
+    }
+
+    // Persist KM/L config for this fleet (fire and forget)
+    const kml = parseFloat(kmPorLitro);
+    if (formData.frota && kml > 0) {
+      upsertFleetConfig.mutate({ frota: formData.frota, data: { kmPorLitro: kml } });
     }
 
     const payload: Record<string, unknown> = {
@@ -312,9 +363,41 @@ export function DespesaFormModal({
               />
             </div>
 
-            {/* Remaining numeric fields (frete, motorista, ajudante rendered above) */}
+            {/* KM — rendered separately so KM/L config appears right after */}
+            <div className="space-y-2">
+              <Label htmlFor="km">KM</Label>
+              <Input
+                type="number"
+                step="0.01"
+                id="km"
+                name="km"
+                value={formData.km}
+                onChange={handleChange}
+              />
+            </div>
+
+            {/* KM/L — fuel efficiency config (persisted per fleet) */}
+            <div className="space-y-2">
+              <Label htmlFor="kmPorLitro">
+                KM/L (eficiência)
+              </Label>
+              <Input
+                type="number"
+                step="0.01"
+                id="kmPorLitro"
+                value={kmPorLitro}
+                onChange={(e) => setKmPorLitro(e.target.value)}
+                placeholder={
+                  !kmPorLitro && formData.frota
+                    ? "Configure para calcular diesel"
+                    : "Ex: 2.5"
+                }
+              />
+            </div>
+
+            {/* Remaining numeric fields (km, frete, motorista, ajudante rendered above) */}
             {NUMERIC_FIELDS.filter(
-              (f) => f.name !== "frete" && f.name !== "motorista" && f.name !== "ajudante"
+              (f) => f.name !== "frete" && f.name !== "motorista" && f.name !== "ajudante" && f.name !== "km"
             ).map((f) => (
               <div className="space-y-2" key={f.name}>
                 <Label htmlFor={f.name}>{f.label}</Label>

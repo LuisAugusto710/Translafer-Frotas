@@ -262,4 +262,16 @@ router.get("/dashboard/despesas-mensal", async (req, res) => {
   }));
 });
 
+router.get("/dashboard/diesel-avg-price", async (_req, res) => {
+  const [row] = await db.select({
+    avgPreco: sql<number>`avg(${abastecimentosTable.precoLitro})`,
+    totalRecords: sql<number>`count(*)`,
+  }).from(abastecimentosTable);
+
+  res.json({
+    avgPrecoPorLitro: row?.avgPreco != null ? Math.round(Number(row.avgPreco) * 10000) / 10000 : null,
+    totalRecords: Number(row?.totalRecords ?? 0),
+  });
+});
+
 export default router;

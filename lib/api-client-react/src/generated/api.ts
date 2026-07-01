@@ -35,8 +35,11 @@ import type {
   DespesaMensal,
   DespesaUpdate,
   DespesasResumo,
+  DieselAvgPrice,
   DieselByPlaca,
   ErrorResponse,
+  FleetConfig,
+  FleetConfigInput,
   Frete,
   FreteInput,
   FreteListResponse,
@@ -1963,4 +1966,229 @@ export function useGetDespesasMensal<TData = Awaited<ReturnType<typeof getDespes
 
 
 
+
+export const getGetDieselAvgPriceUrl = () => {
+
+
+
+
+  return `/api/dashboard/diesel-avg-price`
+}
+
+/**
+ * @summary Average diesel price per litre across all fuel records
+ */
+export const getDieselAvgPrice = async ( options?: RequestInit): Promise<DieselAvgPrice> => {
+
+  return customFetch<DieselAvgPrice>(getGetDieselAvgPriceUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDieselAvgPriceQueryKey = () => {
+    return [
+    `/api/dashboard/diesel-avg-price`
+    ] as const;
+    }
+
+
+export const getGetDieselAvgPriceQueryOptions = <TData = Awaited<ReturnType<typeof getDieselAvgPrice>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDieselAvgPrice>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDieselAvgPriceQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDieselAvgPrice>>> = ({ signal }) => getDieselAvgPrice({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDieselAvgPrice>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDieselAvgPriceQueryResult = NonNullable<Awaited<ReturnType<typeof getDieselAvgPrice>>>
+export type GetDieselAvgPriceQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Average diesel price per litre across all fuel records
+ */
+
+export function useGetDieselAvgPrice<TData = Awaited<ReturnType<typeof getDieselAvgPrice>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDieselAvgPrice>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDieselAvgPriceQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListFleetConfigsUrl = () => {
+
+
+
+
+  return `/api/fleet-configs`
+}
+
+/**
+ * @summary List all fleet configurations
+ */
+export const listFleetConfigs = async ( options?: RequestInit): Promise<FleetConfig[]> => {
+
+  return customFetch<FleetConfig[]>(getListFleetConfigsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListFleetConfigsQueryKey = () => {
+    return [
+    `/api/fleet-configs`
+    ] as const;
+    }
+
+
+export const getListFleetConfigsQueryOptions = <TData = Awaited<ReturnType<typeof listFleetConfigs>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFleetConfigs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListFleetConfigsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listFleetConfigs>>> = ({ signal }) => listFleetConfigs({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listFleetConfigs>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListFleetConfigsQueryResult = NonNullable<Awaited<ReturnType<typeof listFleetConfigs>>>
+export type ListFleetConfigsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all fleet configurations
+ */
+
+export function useListFleetConfigs<TData = Awaited<ReturnType<typeof listFleetConfigs>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFleetConfigs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListFleetConfigsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpsertFleetConfigUrl = (frota: string,) => {
+
+
+
+
+  return `/api/fleet-configs/${frota}`
+}
+
+/**
+ * @summary Create or update a fleet configuration
+ */
+export const upsertFleetConfig = async (frota: string,
+    fleetConfigInput: FleetConfigInput, options?: RequestInit): Promise<FleetConfig> => {
+
+  return customFetch<FleetConfig>(getUpsertFleetConfigUrl(frota),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(fleetConfigInput)
+  }
+);}
+
+
+
+
+export const getUpsertFleetConfigMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertFleetConfig>>, TError,{frota: string;data: BodyType<FleetConfigInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof upsertFleetConfig>>, TError,{frota: string;data: BodyType<FleetConfigInput>}, TContext> => {
+
+const mutationKey = ['upsertFleetConfig'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof upsertFleetConfig>>, {frota: string;data: BodyType<FleetConfigInput>}> = (props) => {
+          const {frota,data} = props ?? {};
+
+          return  upsertFleetConfig(frota,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpsertFleetConfigMutationResult = NonNullable<Awaited<ReturnType<typeof upsertFleetConfig>>>
+    export type UpsertFleetConfigMutationBody = BodyType<FleetConfigInput>
+    export type UpsertFleetConfigMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create or update a fleet configuration
+ */
+export const useUpsertFleetConfig = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertFleetConfig>>, TError,{frota: string;data: BodyType<FleetConfigInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof upsertFleetConfig>>,
+        TError,
+        {frota: string;data: BodyType<FleetConfigInput>},
+        TContext
+      > => {
+      return useMutation(getUpsertFleetConfigMutationOptions(options));
+    }
 

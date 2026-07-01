@@ -748,3 +748,39 @@ export const GetDespesasMensalResponseItem = zod.object({
 export const GetDespesasMensalResponse = zod.array(GetDespesasMensalResponseItem)
 
 
+/**
+ * @summary Average diesel price per litre across all fuel records
+ */
+export const GetDieselAvgPriceResponse = zod.object({
+  "avgPrecoPorLitro": zod.number().nullish(),
+  "totalRecords": zod.number()
+})
+
+
+/**
+ * @summary List all fleet configurations
+ */
+export const ListFleetConfigsResponseItem = zod.object({
+  "frota": zod.string(),
+  "kmPorLitro": zod.number().nullish()
+})
+export const ListFleetConfigsResponse = zod.array(ListFleetConfigsResponseItem)
+
+
+/**
+ * @summary Create or update a fleet configuration
+ */
+export const UpsertFleetConfigParams = zod.object({
+  "frota": zod.coerce.string()
+})
+
+export const UpsertFleetConfigBody = zod.object({
+  "kmPorLitro": zod.number()
+})
+
+export const UpsertFleetConfigResponse = zod.object({
+  "frota": zod.string(),
+  "kmPorLitro": zod.number().nullish()
+})
+
+
