@@ -9,7 +9,11 @@ import {
   useGetMensalComparativo,
   getGetMensalComparativoQueryKey,
   useGetDieselByPlaca,
-  getGetDieselByPlacaQueryKey
+  getGetDieselByPlacaQueryKey,
+  useGetDespesasResumo,
+  getGetDespesasResumoQueryKey,
+  useGetDespesasMensal,
+  getGetDespesasMensalQueryKey
 } from "@workspace/api-client-react";
 import { 
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -51,6 +55,14 @@ export function Dashboard() {
 
   const { data: dieselData, isLoading: loadingDiesel } = useGetDieselByPlaca({ ano }, {
     query: { queryKey: getGetDieselByPlacaQueryKey({ ano }) }
+  });
+
+  const { data: despesasResumo, isLoading: loadingDespResumo } = useGetDespesasResumo({ ano }, {
+    query: { queryKey: getGetDespesasResumoQueryKey({ ano }) }
+  });
+
+  const { data: despesasMensal, isLoading: loadingDespMensal } = useGetDespesasMensal({ ano }, {
+    query: { queryKey: getGetDespesasMensalQueryKey({ ano }) }
   });
 
   return (
@@ -232,6 +244,86 @@ export function Dashboard() {
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
                   Nenhum dado para o ano selecionado
+                </div>
+              )
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ── Despesas section ─────────────────────────────────────────── */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-lg shadow-sm border">
+        <h2 className="text-lg sm:text-xl font-bold text-[#0a192f] dark:text-white">
+          Análise de Despesas ({ano})
+        </h2>
+      </div>
+
+      {/* Despesas KPI Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        <KpiCard title="Frete (Despesas)"   value={despesasResumo ? formatCurrency(despesasResumo.totalFrete) : "R$ 0,00"}  loading={loadingDespResumo} />
+        <KpiCard title="Total Custos"        value={despesasResumo ? formatCurrency(despesasResumo.totalCustos) : "R$ 0,00"} valueColor="text-red-500" loading={loadingDespResumo} />
+        <KpiCard title="Lucro Líquido"       value={despesasResumo ? formatCurrency(despesasResumo.totalLucro) : "R$ 0,00"}  valueColor={despesasResumo && despesasResumo.totalLucro >= 0 ? "text-[#2ecc71]" : "text-red-500"} loading={loadingDespResumo} />
+        <KpiCard title="Registros"           value={despesasResumo?.totalRegistros?.toString() || "0"}                       loading={loadingDespResumo} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        {/* Despesas por Categoria */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm sm:text-base">Despesas por Categoria</CardTitle>
+            <CardDescription>Distribuição dos custos ({ano})</CardDescription>
+          </CardHeader>
+          <CardContent className="h-64 sm:h-80 p-2 sm:p-6">
+            {loadingDespResumo ? <Skeleton className="w-full h-full" /> : (
+              despesasResumo && despesasResumo.categorias.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={despesasResumo.categorias} layout="vertical" margin={{ top: 10, right: 8, left: 20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="hsl(var(--border))" />
+                    <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(val) => `R$${(val / 1000).toFixed(0)}k`} />
+                    <YAxis type="category" dataKey="categoria" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} width={72} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
+                      formatter={(value: number) => formatCurrency(value)}
+                    />
+                    <Bar dataKey="valor" name="Valor" fill="#e74c3c" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                  Nenhuma despesa para o ano selecionado
+                </div>
+              )
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Despesas Mensais */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm sm:text-base">Frete vs Custos vs Lucro</CardTitle>
+            <CardDescription>Evolução mensal ({ano})</CardDescription>
+          </CardHeader>
+          <CardContent className="h-64 sm:h-80 p-2 sm:p-6">
+            {loadingDespMensal ? <Skeleton className="w-full h-full" /> : (
+              despesasMensal && despesasMensal.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={despesasMensal} margin={{ top: 10, right: 8, left: 10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                    <XAxis dataKey="mes" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} width={50} tickFormatter={(val) => `R$${(val / 1000).toFixed(0)}k`} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
+                      formatter={(value: number) => formatCurrency(value)}
+                    />
+                    <Legend />
+                    <Bar dataKey="frete"  name="Frete"  fill="#0a192f" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="custos" name="Custos" fill="#e74c3c" radius={[4, 4, 0, 0]} />
+                    <Line type="monotone" dataKey="lucro" name="Lucro" stroke="#2ecc71" strokeWidth={3} dot={{ r: 4 }} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                  Nenhuma despesa para o ano selecionado
                 </div>
               )
             )}

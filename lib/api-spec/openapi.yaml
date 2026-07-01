@@ -11,6 +11,7 @@ tags:
   - name: health
   - name: fretes
   - name: abastecimentos
+  - name: despesas
   - name: dashboard
 paths:
   /healthz:
@@ -382,6 +383,170 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/MensalComparativo"
+
+  /despesas:
+    get:
+      operationId: listDespesas
+      tags: [despesas]
+      summary: List expense records
+      parameters:
+        - name: frota
+          in: query
+          schema: { type: string }
+        - name: cidade
+          in: query
+          schema: { type: string }
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 1000 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DespesaListResponse"
+    post:
+      operationId: createDespesa
+      tags: [despesas]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DespesaInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Despesa"
+
+  /despesas/bulk:
+    post:
+      operationId: bulkCreateDespesas
+      tags: [despesas]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkDespesaInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BulkDespesaResult"
+
+  /despesas/{id}:
+    get:
+      operationId: getDespesa
+      tags: [despesas]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Despesa"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateDespesa
+      tags: [despesas]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DespesaUpdate"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Despesa"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteDespesa
+      tags: [despesas]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+
+  /dashboard/despesas-resumo:
+    get:
+      operationId: getDespesasResumo
+      tags: [dashboard]
+      parameters:
+        - name: ano
+          in: query
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DespesasResumo"
+
+  /dashboard/despesas-mensal:
+    get:
+      operationId: getDespesasMensal
+      tags: [dashboard]
+      parameters:
+        - name: ano
+          in: query
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DespesaMensal"
 
 components:
   schemas:
@@ -822,3 +987,257 @@ components:
         viagens:
           type: integer
       required: [mes, frete, pedagio, diesel, lucroLiquido, viagens]
+
+    Despesa:
+      type: object
+      properties:
+        id:
+          type: integer
+        data:
+          type: string
+          format: date
+        frota:
+          type: string
+        cidade:
+          type: string
+        frete:
+          type: number
+        km:
+          type: number
+        dieselLt:
+          type: number
+        dieselRs:
+          type: number
+        das:
+          type: number
+        motorista:
+          type: number
+        almoco:
+          type: number
+        ajudante:
+          type: number
+        pedagio:
+          type: number
+        unimed:
+          type: number
+        seguro:
+          type: number
+        gasto:
+          type: number
+        rastreador:
+          type: number
+        inss:
+          type: number
+        escritorio:
+          type: number
+        ipva:
+          type: number
+        bsoft:
+          type: number
+        totalDespesa:
+          type: number
+        lucro:
+          type: number
+        obs:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - data
+        - frota
+        - cidade
+        - frete
+        - km
+        - dieselLt
+        - dieselRs
+        - das
+        - motorista
+        - almoco
+        - ajudante
+        - pedagio
+        - unimed
+        - seguro
+        - gasto
+        - rastreador
+        - inss
+        - escritorio
+        - ipva
+        - bsoft
+        - totalDespesa
+        - lucro
+        - createdAt
+        - updatedAt
+
+    DespesaInput:
+      type: object
+      properties:
+        data:
+          type: string
+          format: date
+        frota:
+          type: string
+        cidade:
+          type: string
+        frete:
+          type: number
+        km:
+          type: number
+        dieselLt:
+          type: number
+        dieselRs:
+          type: number
+        das:
+          type: number
+        motorista:
+          type: number
+        almoco:
+          type: number
+        ajudante:
+          type: number
+        pedagio:
+          type: number
+        unimed:
+          type: number
+        seguro:
+          type: number
+        gasto:
+          type: number
+        rastreador:
+          type: number
+        inss:
+          type: number
+        escritorio:
+          type: number
+        ipva:
+          type: number
+        bsoft:
+          type: number
+        obs:
+          type: string
+      required:
+        - data
+        - frota
+
+    DespesaUpdate:
+      type: object
+      properties:
+        data:
+          type: string
+          format: date
+        frota:
+          type: string
+        cidade:
+          type: string
+        frete:
+          type: number
+        km:
+          type: number
+        dieselLt:
+          type: number
+        dieselRs:
+          type: number
+        das:
+          type: number
+        motorista:
+          type: number
+        almoco:
+          type: number
+        ajudante:
+          type: number
+        pedagio:
+          type: number
+        unimed:
+          type: number
+        seguro:
+          type: number
+        gasto:
+          type: number
+        rastreador:
+          type: number
+        inss:
+          type: number
+        escritorio:
+          type: number
+        ipva:
+          type: number
+        bsoft:
+          type: number
+        obs:
+          type: string
+
+    DespesaListResponse:
+      type: object
+      properties:
+        despesas:
+          type: array
+          items:
+            $ref: "#/components/schemas/Despesa"
+        total:
+          type: integer
+      required: [despesas, total]
+
+    BulkDespesaInput:
+      type: object
+      properties:
+        despesas:
+          type: array
+          items:
+            $ref: "#/components/schemas/DespesaInput"
+      required: [despesas]
+
+    BulkDespesaResult:
+      type: object
+      properties:
+        created:
+          type: integer
+        despesas:
+          type: array
+          items:
+            $ref: "#/components/schemas/Despesa"
+      required: [created, despesas]
+
+    DespesaCategoria:
+      type: object
+      properties:
+        categoria:
+          type: string
+        valor:
+          type: number
+      required: [categoria, valor]
+
+    DespesasResumo:
+      type: object
+      properties:
+        totalFrete:
+          type: number
+        totalCustos:
+          type: number
+        totalLucro:
+          type: number
+        totalRegistros:
+          type: integer
+        categorias:
+          type: array
+          items:
+            $ref: "#/components/schemas/DespesaCategoria"
+      required: [totalFrete, totalCustos, totalLucro, totalRegistros, categorias]
+
+    DespesaMensal:
+      type: object
+      properties:
+        mes:
+          type: string
+        frete:
+          type: number
+        custos:
+          type: number
+        lucro:
+          type: number
+        registros:
+          type: integer
+      required: [mes, frete, custos, lucro, registros]

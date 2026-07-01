@@ -445,3 +445,294 @@ export const GetMensalComparativoResponseItem = zod.object({
 export const GetMensalComparativoResponse = zod.array(GetMensalComparativoResponseItem)
 
 
+/**
+ * @summary List expense records
+ */
+export const listDespesasQueryLimitDefault = 1000;
+export const listDespesasQueryOffsetDefault = 0;
+
+export const ListDespesasQueryParams = zod.object({
+  "frota": zod.coerce.string().optional(),
+  "cidade": zod.coerce.string().optional(),
+  "dateFrom": zod.date().optional(),
+  "dateTo": zod.date().optional(),
+  "search": zod.coerce.string().optional(),
+  "limit": zod.coerce.number().default(listDespesasQueryLimitDefault),
+  "offset": zod.coerce.number().default(listDespesasQueryOffsetDefault)
+})
+
+export const ListDespesasResponse = zod.object({
+  "despesas": zod.array(zod.object({
+  "id": zod.number(),
+  "data": zod.coerce.date(),
+  "frota": zod.string(),
+  "cidade": zod.string(),
+  "frete": zod.number(),
+  "km": zod.number(),
+  "dieselLt": zod.number(),
+  "dieselRs": zod.number(),
+  "das": zod.number(),
+  "motorista": zod.number(),
+  "almoco": zod.number(),
+  "ajudante": zod.number(),
+  "pedagio": zod.number(),
+  "unimed": zod.number(),
+  "seguro": zod.number(),
+  "gasto": zod.number(),
+  "rastreador": zod.number(),
+  "inss": zod.number(),
+  "escritorio": zod.number(),
+  "ipva": zod.number(),
+  "bsoft": zod.number(),
+  "totalDespesa": zod.number(),
+  "lucro": zod.number(),
+  "obs": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})),
+  "total": zod.number()
+})
+
+
+export const CreateDespesaBody = zod.object({
+  "data": zod.coerce.date(),
+  "frota": zod.string(),
+  "cidade": zod.string().optional(),
+  "frete": zod.number().optional(),
+  "km": zod.number().optional(),
+  "dieselLt": zod.number().optional(),
+  "dieselRs": zod.number().optional(),
+  "das": zod.number().optional(),
+  "motorista": zod.number().optional(),
+  "almoco": zod.number().optional(),
+  "ajudante": zod.number().optional(),
+  "pedagio": zod.number().optional(),
+  "unimed": zod.number().optional(),
+  "seguro": zod.number().optional(),
+  "gasto": zod.number().optional(),
+  "rastreador": zod.number().optional(),
+  "inss": zod.number().optional(),
+  "escritorio": zod.number().optional(),
+  "ipva": zod.number().optional(),
+  "bsoft": zod.number().optional(),
+  "obs": zod.string().optional()
+})
+
+export const CreateDespesaResponse = zod.object({
+  "id": zod.number(),
+  "data": zod.coerce.date(),
+  "frota": zod.string(),
+  "cidade": zod.string(),
+  "frete": zod.number(),
+  "km": zod.number(),
+  "dieselLt": zod.number(),
+  "dieselRs": zod.number(),
+  "das": zod.number(),
+  "motorista": zod.number(),
+  "almoco": zod.number(),
+  "ajudante": zod.number(),
+  "pedagio": zod.number(),
+  "unimed": zod.number(),
+  "seguro": zod.number(),
+  "gasto": zod.number(),
+  "rastreador": zod.number(),
+  "inss": zod.number(),
+  "escritorio": zod.number(),
+  "ipva": zod.number(),
+  "bsoft": zod.number(),
+  "totalDespesa": zod.number(),
+  "lucro": zod.number(),
+  "obs": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const BulkCreateDespesasBody = zod.object({
+  "despesas": zod.array(zod.object({
+  "data": zod.coerce.date(),
+  "frota": zod.string(),
+  "cidade": zod.string().optional(),
+  "frete": zod.number().optional(),
+  "km": zod.number().optional(),
+  "dieselLt": zod.number().optional(),
+  "dieselRs": zod.number().optional(),
+  "das": zod.number().optional(),
+  "motorista": zod.number().optional(),
+  "almoco": zod.number().optional(),
+  "ajudante": zod.number().optional(),
+  "pedagio": zod.number().optional(),
+  "unimed": zod.number().optional(),
+  "seguro": zod.number().optional(),
+  "gasto": zod.number().optional(),
+  "rastreador": zod.number().optional(),
+  "inss": zod.number().optional(),
+  "escritorio": zod.number().optional(),
+  "ipva": zod.number().optional(),
+  "bsoft": zod.number().optional(),
+  "obs": zod.string().optional()
+}))
+})
+
+export const BulkCreateDespesasResponse = zod.object({
+  "created": zod.number(),
+  "despesas": zod.array(zod.object({
+  "id": zod.number(),
+  "data": zod.coerce.date(),
+  "frota": zod.string(),
+  "cidade": zod.string(),
+  "frete": zod.number(),
+  "km": zod.number(),
+  "dieselLt": zod.number(),
+  "dieselRs": zod.number(),
+  "das": zod.number(),
+  "motorista": zod.number(),
+  "almoco": zod.number(),
+  "ajudante": zod.number(),
+  "pedagio": zod.number(),
+  "unimed": zod.number(),
+  "seguro": zod.number(),
+  "gasto": zod.number(),
+  "rastreador": zod.number(),
+  "inss": zod.number(),
+  "escritorio": zod.number(),
+  "ipva": zod.number(),
+  "bsoft": zod.number(),
+  "totalDespesa": zod.number(),
+  "lucro": zod.number(),
+  "obs": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
+export const GetDespesaParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetDespesaResponse = zod.object({
+  "id": zod.number(),
+  "data": zod.coerce.date(),
+  "frota": zod.string(),
+  "cidade": zod.string(),
+  "frete": zod.number(),
+  "km": zod.number(),
+  "dieselLt": zod.number(),
+  "dieselRs": zod.number(),
+  "das": zod.number(),
+  "motorista": zod.number(),
+  "almoco": zod.number(),
+  "ajudante": zod.number(),
+  "pedagio": zod.number(),
+  "unimed": zod.number(),
+  "seguro": zod.number(),
+  "gasto": zod.number(),
+  "rastreador": zod.number(),
+  "inss": zod.number(),
+  "escritorio": zod.number(),
+  "ipva": zod.number(),
+  "bsoft": zod.number(),
+  "totalDespesa": zod.number(),
+  "lucro": zod.number(),
+  "obs": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const UpdateDespesaParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateDespesaBody = zod.object({
+  "data": zod.coerce.date().optional(),
+  "frota": zod.string().optional(),
+  "cidade": zod.string().optional(),
+  "frete": zod.number().optional(),
+  "km": zod.number().optional(),
+  "dieselLt": zod.number().optional(),
+  "dieselRs": zod.number().optional(),
+  "das": zod.number().optional(),
+  "motorista": zod.number().optional(),
+  "almoco": zod.number().optional(),
+  "ajudante": zod.number().optional(),
+  "pedagio": zod.number().optional(),
+  "unimed": zod.number().optional(),
+  "seguro": zod.number().optional(),
+  "gasto": zod.number().optional(),
+  "rastreador": zod.number().optional(),
+  "inss": zod.number().optional(),
+  "escritorio": zod.number().optional(),
+  "ipva": zod.number().optional(),
+  "bsoft": zod.number().optional(),
+  "obs": zod.string().optional()
+})
+
+export const UpdateDespesaResponse = zod.object({
+  "id": zod.number(),
+  "data": zod.coerce.date(),
+  "frota": zod.string(),
+  "cidade": zod.string(),
+  "frete": zod.number(),
+  "km": zod.number(),
+  "dieselLt": zod.number(),
+  "dieselRs": zod.number(),
+  "das": zod.number(),
+  "motorista": zod.number(),
+  "almoco": zod.number(),
+  "ajudante": zod.number(),
+  "pedagio": zod.number(),
+  "unimed": zod.number(),
+  "seguro": zod.number(),
+  "gasto": zod.number(),
+  "rastreador": zod.number(),
+  "inss": zod.number(),
+  "escritorio": zod.number(),
+  "ipva": zod.number(),
+  "bsoft": zod.number(),
+  "totalDespesa": zod.number(),
+  "lucro": zod.number(),
+  "obs": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const DeleteDespesaParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteDespesaResponse = zod.void()
+
+
+export const GetDespesasResumoQueryParams = zod.object({
+  "ano": zod.coerce.number().optional()
+})
+
+export const GetDespesasResumoResponse = zod.object({
+  "totalFrete": zod.number(),
+  "totalCustos": zod.number(),
+  "totalLucro": zod.number(),
+  "totalRegistros": zod.number(),
+  "categorias": zod.array(zod.object({
+  "categoria": zod.string(),
+  "valor": zod.number()
+}))
+})
+
+
+export const GetDespesasMensalQueryParams = zod.object({
+  "ano": zod.coerce.number().optional()
+})
+
+export const GetDespesasMensalResponseItem = zod.object({
+  "mes": zod.string(),
+  "frete": zod.number(),
+  "custos": zod.number(),
+  "lucro": zod.number(),
+  "registros": zod.number()
+})
+export const GetDespesasMensalResponse = zod.array(GetDespesasMensalResponseItem)
+
+

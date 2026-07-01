@@ -1,1 +1,1 @@
-- [esbuild bundling breaks runtime asset reads](esbuild-runtime-assets.md) — libs that read data files via `__dirname` at runtime (e.g. connect-pg-simple `createTableIfMissing`) fail in the bundled api-server; do the work explicitly instead.
+- [Drizzle column-array typing & XLSX buffer read](drizzle-column-arrays.md) — annotate column arrays as AnyPgColumn; read .xlsx via XLSX.read(buffer) not readFile.

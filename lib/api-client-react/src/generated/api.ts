@@ -24,9 +24,17 @@ import type {
   AbastecimentoInput,
   AbastecimentoListResponse,
   AbastecimentoUpdate,
+  BulkDespesaInput,
+  BulkDespesaResult,
   BulkFreteInput,
   BulkFreteResult,
   DashboardResumo,
+  Despesa,
+  DespesaInput,
+  DespesaListResponse,
+  DespesaMensal,
+  DespesaUpdate,
+  DespesasResumo,
   DieselByPlaca,
   ErrorResponse,
   Frete,
@@ -36,12 +44,15 @@ import type {
   FrotaRevenue,
   FrotaSummary,
   GetDashboardResumoParams,
+  GetDespesasMensalParams,
+  GetDespesasResumoParams,
   GetDieselByPlacaParams,
   GetMensalComparativoParams,
   GetRevenueByFrotaParams,
   GetRevenueByPeriodoParams,
   HealthStatus,
   ListAbastecimentosParams,
+  ListDespesasParams,
   ListFretesParams,
   MensalComparativo,
   PeriodoRevenue,
@@ -1373,6 +1384,574 @@ export function useGetMensalComparativo<TData = Awaited<ReturnType<typeof getMen
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetMensalComparativoQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListDespesasUrl = (params?: ListDespesasParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/despesas?${stringifiedParams}` : `/api/despesas`
+}
+
+/**
+ * @summary List expense records
+ */
+export const listDespesas = async (params?: ListDespesasParams, options?: RequestInit): Promise<DespesaListResponse> => {
+
+  return customFetch<DespesaListResponse>(getListDespesasUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListDespesasQueryKey = (params?: ListDespesasParams,) => {
+    return [
+    `/api/despesas`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListDespesasQueryOptions = <TData = Awaited<ReturnType<typeof listDespesas>>, TError = ErrorType<unknown>>(params?: ListDespesasParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDespesas>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListDespesasQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDespesas>>> = ({ signal }) => listDespesas(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDespesas>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListDespesasQueryResult = NonNullable<Awaited<ReturnType<typeof listDespesas>>>
+export type ListDespesasQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List expense records
+ */
+
+export function useListDespesas<TData = Awaited<ReturnType<typeof listDespesas>>, TError = ErrorType<unknown>>(
+ params?: ListDespesasParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDespesas>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListDespesasQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateDespesaUrl = () => {
+
+
+
+
+  return `/api/despesas`
+}
+
+export const createDespesa = async (despesaInput: DespesaInput, options?: RequestInit): Promise<Despesa> => {
+
+  return customFetch<Despesa>(getCreateDespesaUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(despesaInput)
+  }
+);}
+
+
+
+
+export const getCreateDespesaMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDespesa>>, TError,{data: BodyType<DespesaInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createDespesa>>, TError,{data: BodyType<DespesaInput>}, TContext> => {
+
+const mutationKey = ['createDespesa'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createDespesa>>, {data: BodyType<DespesaInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createDespesa(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateDespesaMutationResult = NonNullable<Awaited<ReturnType<typeof createDespesa>>>
+    export type CreateDespesaMutationBody = BodyType<DespesaInput>
+    export type CreateDespesaMutationError = ErrorType<unknown>
+
+    export const useCreateDespesa = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDespesa>>, TError,{data: BodyType<DespesaInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createDespesa>>,
+        TError,
+        {data: BodyType<DespesaInput>},
+        TContext
+      > => {
+      return useMutation(getCreateDespesaMutationOptions(options));
+    }
+
+export const getBulkCreateDespesasUrl = () => {
+
+
+
+
+  return `/api/despesas/bulk`
+}
+
+export const bulkCreateDespesas = async (bulkDespesaInput: BulkDespesaInput, options?: RequestInit): Promise<BulkDespesaResult> => {
+
+  return customFetch<BulkDespesaResult>(getBulkCreateDespesasUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(bulkDespesaInput)
+  }
+);}
+
+
+
+
+export const getBulkCreateDespesasMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkCreateDespesas>>, TError,{data: BodyType<BulkDespesaInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof bulkCreateDespesas>>, TError,{data: BodyType<BulkDespesaInput>}, TContext> => {
+
+const mutationKey = ['bulkCreateDespesas'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof bulkCreateDespesas>>, {data: BodyType<BulkDespesaInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  bulkCreateDespesas(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BulkCreateDespesasMutationResult = NonNullable<Awaited<ReturnType<typeof bulkCreateDespesas>>>
+    export type BulkCreateDespesasMutationBody = BodyType<BulkDespesaInput>
+    export type BulkCreateDespesasMutationError = ErrorType<unknown>
+
+    export const useBulkCreateDespesas = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkCreateDespesas>>, TError,{data: BodyType<BulkDespesaInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof bulkCreateDespesas>>,
+        TError,
+        {data: BodyType<BulkDespesaInput>},
+        TContext
+      > => {
+      return useMutation(getBulkCreateDespesasMutationOptions(options));
+    }
+
+export const getGetDespesaUrl = (id: number,) => {
+
+
+
+
+  return `/api/despesas/${id}`
+}
+
+export const getDespesa = async (id: number, options?: RequestInit): Promise<Despesa> => {
+
+  return customFetch<Despesa>(getGetDespesaUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDespesaQueryKey = (id: number,) => {
+    return [
+    `/api/despesas/${id}`
+    ] as const;
+    }
+
+
+export const getGetDespesaQueryOptions = <TData = Awaited<ReturnType<typeof getDespesa>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDespesa>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDespesaQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDespesa>>> = ({ signal }) => getDespesa(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDespesa>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDespesaQueryResult = NonNullable<Awaited<ReturnType<typeof getDespesa>>>
+export type GetDespesaQueryError = ErrorType<ErrorResponse>
+
+
+
+export function useGetDespesa<TData = Awaited<ReturnType<typeof getDespesa>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDespesa>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDespesaQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateDespesaUrl = (id: number,) => {
+
+
+
+
+  return `/api/despesas/${id}`
+}
+
+export const updateDespesa = async (id: number,
+    despesaUpdate: DespesaUpdate, options?: RequestInit): Promise<Despesa> => {
+
+  return customFetch<Despesa>(getUpdateDespesaUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(despesaUpdate)
+  }
+);}
+
+
+
+
+export const getUpdateDespesaMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDespesa>>, TError,{id: number;data: BodyType<DespesaUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateDespesa>>, TError,{id: number;data: BodyType<DespesaUpdate>}, TContext> => {
+
+const mutationKey = ['updateDespesa'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateDespesa>>, {id: number;data: BodyType<DespesaUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateDespesa(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateDespesaMutationResult = NonNullable<Awaited<ReturnType<typeof updateDespesa>>>
+    export type UpdateDespesaMutationBody = BodyType<DespesaUpdate>
+    export type UpdateDespesaMutationError = ErrorType<ErrorResponse>
+
+    export const useUpdateDespesa = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDespesa>>, TError,{id: number;data: BodyType<DespesaUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateDespesa>>,
+        TError,
+        {id: number;data: BodyType<DespesaUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateDespesaMutationOptions(options));
+    }
+
+export const getDeleteDespesaUrl = (id: number,) => {
+
+
+
+
+  return `/api/despesas/${id}`
+}
+
+export const deleteDespesa = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteDespesaUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteDespesaMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDespesa>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteDespesa>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteDespesa'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDespesa>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteDespesa(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteDespesaMutationResult = NonNullable<Awaited<ReturnType<typeof deleteDespesa>>>
+
+    export type DeleteDespesaMutationError = ErrorType<unknown>
+
+    export const useDeleteDespesa = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDespesa>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteDespesa>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteDespesaMutationOptions(options));
+    }
+
+export const getGetDespesasResumoUrl = (params?: GetDespesasResumoParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/dashboard/despesas-resumo?${stringifiedParams}` : `/api/dashboard/despesas-resumo`
+}
+
+export const getDespesasResumo = async (params?: GetDespesasResumoParams, options?: RequestInit): Promise<DespesasResumo> => {
+
+  return customFetch<DespesasResumo>(getGetDespesasResumoUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDespesasResumoQueryKey = (params?: GetDespesasResumoParams,) => {
+    return [
+    `/api/dashboard/despesas-resumo`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetDespesasResumoQueryOptions = <TData = Awaited<ReturnType<typeof getDespesasResumo>>, TError = ErrorType<unknown>>(params?: GetDespesasResumoParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDespesasResumo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDespesasResumoQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDespesasResumo>>> = ({ signal }) => getDespesasResumo(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDespesasResumo>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDespesasResumoQueryResult = NonNullable<Awaited<ReturnType<typeof getDespesasResumo>>>
+export type GetDespesasResumoQueryError = ErrorType<unknown>
+
+
+
+export function useGetDespesasResumo<TData = Awaited<ReturnType<typeof getDespesasResumo>>, TError = ErrorType<unknown>>(
+ params?: GetDespesasResumoParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDespesasResumo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDespesasResumoQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetDespesasMensalUrl = (params?: GetDespesasMensalParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/dashboard/despesas-mensal?${stringifiedParams}` : `/api/dashboard/despesas-mensal`
+}
+
+export const getDespesasMensal = async (params?: GetDespesasMensalParams, options?: RequestInit): Promise<DespesaMensal[]> => {
+
+  return customFetch<DespesaMensal[]>(getGetDespesasMensalUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDespesasMensalQueryKey = (params?: GetDespesasMensalParams,) => {
+    return [
+    `/api/dashboard/despesas-mensal`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetDespesasMensalQueryOptions = <TData = Awaited<ReturnType<typeof getDespesasMensal>>, TError = ErrorType<unknown>>(params?: GetDespesasMensalParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDespesasMensal>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDespesasMensalQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDespesasMensal>>> = ({ signal }) => getDespesasMensal(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDespesasMensal>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDespesasMensalQueryResult = NonNullable<Awaited<ReturnType<typeof getDespesasMensal>>>
+export type GetDespesasMensalQueryError = ErrorType<unknown>
+
+
+
+export function useGetDespesasMensal<TData = Awaited<ReturnType<typeof getDespesasMensal>>, TError = ErrorType<unknown>>(
+ params?: GetDespesasMensalParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDespesasMensal>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDespesasMensalQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

@@ -217,6 +217,119 @@ export interface MensalComparativo {
   viagens: number;
 }
 
+export interface Despesa {
+  id: number;
+  data: string;
+  frota: string;
+  cidade: string;
+  frete: number;
+  km: number;
+  dieselLt: number;
+  dieselRs: number;
+  das: number;
+  motorista: number;
+  almoco: number;
+  ajudante: number;
+  pedagio: number;
+  unimed: number;
+  seguro: number;
+  gasto: number;
+  rastreador: number;
+  inss: number;
+  escritorio: number;
+  ipva: number;
+  bsoft: number;
+  totalDespesa: number;
+  lucro: number;
+  /** @nullable */
+  obs?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DespesaInput {
+  data: string;
+  frota: string;
+  cidade?: string;
+  frete?: number;
+  km?: number;
+  dieselLt?: number;
+  dieselRs?: number;
+  das?: number;
+  motorista?: number;
+  almoco?: number;
+  ajudante?: number;
+  pedagio?: number;
+  unimed?: number;
+  seguro?: number;
+  gasto?: number;
+  rastreador?: number;
+  inss?: number;
+  escritorio?: number;
+  ipva?: number;
+  bsoft?: number;
+  obs?: string;
+}
+
+export interface DespesaUpdate {
+  data?: string;
+  frota?: string;
+  cidade?: string;
+  frete?: number;
+  km?: number;
+  dieselLt?: number;
+  dieselRs?: number;
+  das?: number;
+  motorista?: number;
+  almoco?: number;
+  ajudante?: number;
+  pedagio?: number;
+  unimed?: number;
+  seguro?: number;
+  gasto?: number;
+  rastreador?: number;
+  inss?: number;
+  escritorio?: number;
+  ipva?: number;
+  bsoft?: number;
+  obs?: string;
+}
+
+export interface DespesaListResponse {
+  despesas: Despesa[];
+  total: number;
+}
+
+export interface BulkDespesaInput {
+  despesas: DespesaInput[];
+}
+
+export interface BulkDespesaResult {
+  created: number;
+  despesas: Despesa[];
+}
+
+export interface DespesaCategoria {
+  categoria: string;
+  valor: number;
+}
+
+export interface DespesasResumo {
+  totalFrete: number;
+  totalCustos: number;
+  totalLucro: number;
+  totalRegistros: number;
+  categorias: DespesaCategoria[];
+}
+
+export interface DespesaMensal {
+  mes: string;
+  frete: number;
+  custos: number;
+  lucro: number;
+  registros: number;
+}
+
 export type ListFretesParams = {
 frota?: string;
 cliente?: string;
@@ -270,6 +383,24 @@ ano?: number;
 };
 
 export type GetMensalComparativoParams = {
+ano?: number;
+};
+
+export type ListDespesasParams = {
+frota?: string;
+cidade?: string;
+dateFrom?: string;
+dateTo?: string;
+search?: string;
+limit?: number;
+offset?: number;
+};
+
+export type GetDespesasResumoParams = {
+ano?: number;
+};
+
+export type GetDespesasMensalParams = {
 ano?: number;
 };
 

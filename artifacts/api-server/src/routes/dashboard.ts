@@ -1,8 +1,29 @@
 import { Router } from "express";
-import { db, fretesTable, abastecimentosTable } from "@workspace/db";
+import { db, fretesTable, abastecimentosTable, despesasTable } from "@workspace/db";
 import { gte, lte, and, eq, sql } from "drizzle-orm";
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
 
 const router = Router();
+
+// Cost columns that make up "total despesa" (KM and Diesel LT are metrics, not costs).
+const DESPESA_CATEGORIAS: Array<{ label: string; col: AnyPgColumn }> = [
+  { label: "Diesel", col: despesasTable.dieselRs },
+  { label: "DAS", col: despesasTable.das },
+  { label: "Motorista", col: despesasTable.motorista },
+  { label: "Almoço", col: despesasTable.almoco },
+  { label: "Ajudante", col: despesasTable.ajudante },
+  { label: "Pedágio", col: despesasTable.pedagio },
+  { label: "Unimed", col: despesasTable.unimed },
+  { label: "Seguro", col: despesasTable.seguro },
+  { label: "Gasto", col: despesasTable.gasto },
+  { label: "Rastreador", col: despesasTable.rastreador },
+  { label: "INSS", col: despesasTable.inss },
+  { label: "Escritório", col: despesasTable.escritorio },
+  { label: "IPVA", col: despesasTable.ipva },
+  { label: "Bsoft", col: despesasTable.bsoft },
+];
+
+const despesaCustosSql = sql<number>`coalesce(${despesasTable.dieselRs},0)+coalesce(${despesasTable.das},0)+coalesce(${despesasTable.motorista},0)+coalesce(${despesasTable.almoco},0)+coalesce(${despesasTable.ajudante},0)+coalesce(${despesasTable.pedagio},0)+coalesce(${despesasTable.unimed},0)+coalesce(${despesasTable.seguro},0)+coalesce(${despesasTable.gasto},0)+coalesce(${despesasTable.rastreador},0)+coalesce(${despesasTable.inss},0)+coalesce(${despesasTable.escritorio},0)+coalesce(${despesasTable.ipva},0)+coalesce(${despesasTable.bsoft},0)`;
 
 function toDateStr(v: unknown): string | undefined {
   if (!v) return undefined;
@@ -174,6 +195,69 @@ router.get("/dashboard/mensal", async (req, res) => {
       diesel,
       lucroLiquido: frete + pedagio - diesel,
       viagens: Number(r.viagens),
+    };
+  }));
+});
+
+router.get("/dashboard/despesas-resumo", async (req, res) => {
+  const ano = req.query.ano ? Number(req.query.ano) : new Date().getFullYear();
+  const dateFrom = `${ano}-01-01`;
+  const dateTo = `${ano}-12-31`;
+  const where = and(gte(despesasTable.data, dateFrom), lte(despesasTable.data, dateTo));
+
+  const [summary] = await db.select({
+    totalFrete: sql<number>`coalesce(sum(${despesasTable.frete}), 0)`,
+    totalCustos: sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
+    totalLucro: sql<number>`coalesce(sum(${despesasTable.lucro}), 0)`,
+    totalRegistros: sql<number>`count(*)`,
+  }).from(despesasTable).where(where);
+
+  const catSelect: Record<string, ReturnType<typeof sql<number>>> = {};
+  DESPESA_CATEGORIAS.forEach((c, i) => {
+    catSelect[`c${i}`] = sql<number>`coalesce(sum(${c.col}), 0)`;
+  });
+  const [catRow] = await db.select(catSelect).from(despesasTable).where(where);
+
+  const categorias = DESPESA_CATEGORIAS
+    .map((c, i) => ({ categoria: c.label, valor: Number(catRow[`c${i}`] ?? 0) }))
+    .filter((c) => c.valor > 0)
+    .sort((a, b) => b.valor - a.valor);
+
+  res.json({
+    totalFrete: Number(summary.totalFrete),
+    totalCustos: Number(summary.totalCustos),
+    totalLucro: Number(summary.totalLucro),
+    totalRegistros: Number(summary.totalRegistros),
+    categorias,
+  });
+});
+
+router.get("/dashboard/despesas-mensal", async (req, res) => {
+  const ano = req.query.ano ? Number(req.query.ano) : new Date().getFullYear();
+  const dateFrom = `${ano}-01-01`;
+  const dateTo = `${ano}-12-31`;
+  const where = and(gte(despesasTable.data, dateFrom), lte(despesasTable.data, dateTo));
+
+  const result = await db.select({
+    mes: sql<string>`to_char(date_trunc('month', ${despesasTable.data}::date), 'YYYY-MM')`,
+    frete: sql<number>`coalesce(sum(${despesasTable.frete}), 0)`,
+    custos: sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
+    lucro: sql<number>`coalesce(sum(${despesasTable.lucro}), 0)`,
+    registros: sql<number>`count(*)`,
+  }).from(despesasTable).where(where)
+    .groupBy(sql`date_trunc('month', ${despesasTable.data}::date)`)
+    .orderBy(sql`date_trunc('month', ${despesasTable.data}::date)`);
+
+  const MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+
+  res.json(result.map(r => {
+    const monthIdx = parseInt(r.mes.split("-")[1]) - 1;
+    return {
+      mes: MONTHS[monthIdx] ?? r.mes,
+      frete: Number(r.frete ?? 0),
+      custos: Number(r.custos ?? 0),
+      lucro: Number(r.lucro ?? 0),
+      registros: Number(r.registros),
     };
   }));
 });

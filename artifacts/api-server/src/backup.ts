@@ -13,7 +13,7 @@
 
 import path from "node:path";
 import fs from "node:fs/promises";
-import { db, fretesTable, abastecimentosTable } from "@workspace/db";
+import { db, fretesTable, abastecimentosTable, despesasTable } from "@workspace/db";
 import { asc } from "drizzle-orm";
 import * as XLSX from "xlsx";
 import { logger } from "./lib/logger";
@@ -50,10 +50,16 @@ export async function generateBackup(): Promise<string> {
   logger.info("Iniciando geração de backup diário…");
 
   // ── Fetch all data in parallel ─────────────────────────────────────────────
-  const [fretesData, dieselData] = await Promise.all([
+  const [fretesData, dieselData, despesasData] = await Promise.all([
     db.select().from(fretesTable).orderBy(asc(fretesTable.dataCte)),
     db.select().from(abastecimentosTable).orderBy(asc(abastecimentosTable.data)),
+    db.select().from(despesasTable).orderBy(asc(despesasTable.data)),
   ]);
+
+  const DESPESA_COST_KEYS = [
+    "dieselRs", "das", "motorista", "almoco", "ajudante", "pedagio",
+    "unimed", "seguro", "gasto", "rastreador", "inss", "escritorio", "ipva", "bsoft",
+  ] as const;
 
   // ── Build workbook ─────────────────────────────────────────────────────────
   const wb = XLSX.utils.book_new();
@@ -117,10 +123,54 @@ export async function generateBackup(): Promise<string> {
   }
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dieselRows), "Diesel");
 
-  // Sheet 3 — Resumo
+  // Sheet 3 — Despesas
+  const despesasRows: (string | number)[][] = [
+    [
+      "Data", "Frota", "Cidade", "Frete (R$)", "KM", "Diesel (LT)", "Diesel (R$)",
+      "DAS", "Motorista", "Almoço", "Ajudante", "Pedágio", "Unimed", "Seguro",
+      "Gasto", "Rastreador", "INSS", "Escritório", "IPVA", "Bsoft",
+      "Total Despesa (R$)", "Lucro (R$)", "Obs",
+    ],
+  ];
+  for (const d of despesasData) {
+    const totalDespesa = DESPESA_COST_KEYS.reduce((s, k) => s + Number(d[k] ?? 0), 0);
+    despesasRows.push([
+      fmtDate(d.data),
+      d.frota,
+      d.cidade,
+      Number(d.frete ?? 0),
+      Number(d.km ?? 0),
+      Number(d.dieselLt ?? 0),
+      Number(d.dieselRs ?? 0),
+      Number(d.das ?? 0),
+      Number(d.motorista ?? 0),
+      Number(d.almoco ?? 0),
+      Number(d.ajudante ?? 0),
+      Number(d.pedagio ?? 0),
+      Number(d.unimed ?? 0),
+      Number(d.seguro ?? 0),
+      Number(d.gasto ?? 0),
+      Number(d.rastreador ?? 0),
+      Number(d.inss ?? 0),
+      Number(d.escritorio ?? 0),
+      Number(d.ipva ?? 0),
+      Number(d.bsoft ?? 0),
+      Math.round(totalDespesa * 100) / 100,
+      Number(d.lucro ?? 0),
+      d.obs ?? "",
+    ]);
+  }
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(despesasRows), "Despesas");
+
+  // Sheet 4 — Resumo
   const totalFrete   = fretesData.reduce((s, f) => s + Number(f.frete   ?? 0), 0);
   const totalPedagio = fretesData.reduce((s, f) => s + Number(f.pedagio ?? 0), 0);
   const totalDiesel  = dieselData.reduce((s, a) => s + Number(a.totalPago ?? 0), 0);
+
+  const despFrete  = despesasData.reduce((s, d) => s + Number(d.frete ?? 0), 0);
+  const despCustos = despesasData.reduce(
+    (s, d) => s + DESPESA_COST_KEYS.reduce((ss, k) => ss + Number(d[k] ?? 0), 0), 0);
+  const despLucro  = despesasData.reduce((s, d) => s + Number(d.lucro ?? 0), 0);
 
   const resumoRows: (string | number | Date)[][] = [
     ["Métrica", "Valor"],
@@ -132,6 +182,11 @@ export async function generateBackup(): Promise<string> {
     ["Total de Abastecimentos (registros)", dieselData.length],
     ["Total Diesel (R$)",           totalDiesel],
     ["", ""],
+    ["Total de Despesas (registros)", despesasData.length],
+    ["Despesas — Frete (R$)",       despFrete],
+    ["Despesas — Custos (R$)",      despCustos],
+    ["Despesas — Lucro (R$)",       despLucro],
+    ["", ""],
     ["Data do Backup",              new Date().toLocaleString("pt-BR")],
   ];
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(resumoRows), "Resumo");
@@ -142,7 +197,7 @@ export async function generateBackup(): Promise<string> {
   await fs.rename(tempPath, filepath);
 
   logger.info(
-    { filename, fretes: fretesData.length, abastecimentos: dieselData.length },
+    { filename, fretes: fretesData.length, abastecimentos: dieselData.length, despesas: despesasData.length },
     "Backup gerado com sucesso",
   );
   return filename;
