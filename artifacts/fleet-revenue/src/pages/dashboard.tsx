@@ -438,16 +438,19 @@ export function Dashboard() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-5">
+    /* -mt-3 sm:-mt-6 negates the scroll container's p-3/p-6 top padding so
+       the filter bar sits flush at y=0, directly below the app header       */
+    <div className="space-y-5 -mt-3 sm:-mt-6">
 
-      {/* Sentinel — 1 px element; when it scrolls out of the container the
-          IntersectionObserver flips isStuck, triggering the elevated shadow  */}
+      {/* Sentinel — at y=0 of the scroll container; going out of view signals
+          the filter bar is stuck so we can show the elevated shadow         */}
       <div ref={sentinelRef} className="h-px w-full -mb-px pointer-events-none select-none" aria-hidden />
 
       {/* ── Global Filters (sticky header-style) ───────────────────────── */}
       <div
         className={[
           "sticky top-0 z-50",
+          "!mt-0",          /* cancel the space-y-5 gap — filter bar is flush */
           "-mx-3 sm:-mx-6 px-4 sm:px-6",
           "py-2.5",
           "bg-white dark:bg-slate-900",
