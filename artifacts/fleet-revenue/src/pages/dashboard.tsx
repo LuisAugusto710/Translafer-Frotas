@@ -444,77 +444,72 @@ export function Dashboard() {
           IntersectionObserver flips isStuck, triggering the elevated shadow  */}
       <div ref={sentinelRef} className="h-px w-full -mb-px pointer-events-none select-none" aria-hidden />
 
-      {/* ── Global Filters (sticky) ─────────────────────────────────────── */}
+      {/* ── Global Filters (sticky header-style) ───────────────────────── */}
       <div
         className={[
           "sticky top-0 z-50",
-          "-mx-3 sm:-mx-6 px-3 sm:px-6",
-          "pt-2 pb-3",
-          "bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-sm",
-          "transition-[box-shadow,border-color] duration-200",
-          isStuck
-            ? "shadow-[0_4px_12px_-2px_rgba(0,0,0,0.10),0_1px_0_0_hsl(var(--border))]"
-            : "shadow-none border-b border-transparent",
+          "-mx-3 sm:-mx-6 px-4 sm:px-6",
+          "py-2.5",
+          "bg-white dark:bg-slate-900",
+          "border-b border-border",
+          "transition-shadow duration-200",
+          isStuck ? "shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)]" : "",
         ].join(" ")}
       >
-        <Card className="border shadow-sm">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex flex-wrap items-end gap-3">
-              {/* Year */}
-              <div className="flex flex-col gap-1">
-                <Label className="text-xs text-muted-foreground">Ano</Label>
-                <Select value={ano.toString()} onValueChange={v => { setAno(parseInt(v)); resetDates(); }}>
-                  <SelectTrigger className="w-[90px] h-8"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {YEARS.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              {/* Custom date from */}
-              <div className="flex flex-col gap-1">
-                <Label className="text-xs text-muted-foreground">De</Label>
-                <Input
-                  type="date"
-                  className="h-8 w-[140px] text-xs"
-                  value={customFrom}
-                  onChange={e => setCustomFrom(e.target.value)}
-                />
-              </div>
-              {/* Custom date to */}
-              <div className="flex flex-col gap-1">
-                <Label className="text-xs text-muted-foreground">Até</Label>
-                <Input
-                  type="date"
-                  className="h-8 w-[140px] text-xs"
-                  value={customTo}
-                  onChange={e => setCustomTo(e.target.value)}
-                />
-              </div>
-              {/* Frota filter */}
-              <div className="flex flex-col gap-1">
-                <Label className="text-xs text-muted-foreground">Frota</Label>
-                <Select value={frotaFilter} onValueChange={setFrotaFilter}>
-                  <SelectTrigger className="w-[110px] h-8"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__all__">Todas</SelectItem>
-                    {(frotasList ?? []).map(f => <SelectItem key={f.frota} value={f.frota}>{f.frota}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              {/* Reset */}
-              {(customFrom || customTo || frotaFilter !== "__all__") && (
-                <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { resetDates(); setFrotaFilter("__all__"); }}>
-                  Limpar filtros
-                </Button>
-              )}
-              <div className="ml-auto text-xs text-muted-foreground hidden sm:block">
-                {customFrom || customTo
-                  ? `${customFrom || "—"} → ${customTo || "—"}`
-                  : `Jan–Dez ${ano}`}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex flex-wrap items-end gap-3">
+          {/* Year */}
+          <div className="flex flex-col gap-1">
+            <Label className="text-xs text-muted-foreground">Ano</Label>
+            <Select value={ano.toString()} onValueChange={v => { setAno(parseInt(v)); resetDates(); }}>
+              <SelectTrigger className="w-[90px] h-8"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {YEARS.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          {/* Custom date from */}
+          <div className="flex flex-col gap-1">
+            <Label className="text-xs text-muted-foreground">De</Label>
+            <Input
+              type="date"
+              className="h-8 w-[140px] text-xs"
+              value={customFrom}
+              onChange={e => setCustomFrom(e.target.value)}
+            />
+          </div>
+          {/* Custom date to */}
+          <div className="flex flex-col gap-1">
+            <Label className="text-xs text-muted-foreground">Até</Label>
+            <Input
+              type="date"
+              className="h-8 w-[140px] text-xs"
+              value={customTo}
+              onChange={e => setCustomTo(e.target.value)}
+            />
+          </div>
+          {/* Frota filter */}
+          <div className="flex flex-col gap-1">
+            <Label className="text-xs text-muted-foreground">Frota</Label>
+            <Select value={frotaFilter} onValueChange={setFrotaFilter}>
+              <SelectTrigger className="w-[110px] h-8"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">Todas</SelectItem>
+                {(frotasList ?? []).map(f => <SelectItem key={f.frota} value={f.frota}>{f.frota}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          {/* Reset */}
+          {(customFrom || customTo || frotaFilter !== "__all__") && (
+            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { resetDates(); setFrotaFilter("__all__"); }}>
+              Limpar filtros
+            </Button>
+          )}
+          <div className="ml-auto text-xs text-muted-foreground hidden sm:block">
+            {customFrom || customTo
+              ? `${customFrom || "—"} → ${customTo || "—"}`
+              : `Jan–Dez ${ano}`}
+          </div>
+        </div>
       </div>
 
       {/* ── KPI Summary Row ────────────────────────────────────────────── */}
