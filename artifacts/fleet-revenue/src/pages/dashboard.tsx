@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   AreaChart, Area, BarChart, Bar, ComposedChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -335,31 +335,6 @@ export function Dashboard() {
   const [frotaFilter, setFrotaFilter] = useState("__all__");
   const [period, setPeriod] = useState<"diario" | "semanal" | "mensal" | "trimestral" | "anual">("mensal");
 
-  // ── Sticky filter bar detection ────────────────────────────────────────────
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  const [isStuck, setIsStuck] = useState(false);
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-
-    // Find nearest scrollable ancestor to use as IntersectionObserver root
-    let root: Element | null = null;
-    let el: HTMLElement | null = sentinel.parentElement;
-    while (el && el !== document.documentElement) {
-      const { overflowY } = window.getComputedStyle(el);
-      if (overflowY === "auto" || overflowY === "scroll") { root = el; break; }
-      el = el.parentElement;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsStuck(!entry.isIntersecting),
-      { root, threshold: 0 },
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, []);
-
   const dateFrom: any = customFrom || `${ano}-01-01`;
   const dateTo:   any = customTo   || `${ano}-12-31`;
   const frotaParam = frotaFilter !== "__all__" ? frotaFilter : undefined;
@@ -438,27 +413,10 @@ export function Dashboard() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    /* -mt-3 sm:-mt-6 negates the scroll container's p-3/p-6 top padding so
-       the filter bar sits flush at y=0, directly below the app header       */
-    <div className="space-y-5 -mt-3 sm:-mt-6">
+    <div className="space-y-5">
 
-      {/* Sentinel — at y=0 of the scroll container; going out of view signals
-          the filter bar is stuck so we can show the elevated shadow         */}
-      <div ref={sentinelRef} className="h-px w-full -mb-px pointer-events-none select-none" aria-hidden />
-
-      {/* ── Global Filters (sticky header-style) ───────────────────────── */}
-      <div
-        className={[
-          "sticky top-0 z-50",
-          "!mt-0",          /* cancel the space-y-5 gap — filter bar is flush */
-          "-mx-3 sm:-mx-6 px-4 sm:px-6",
-          "py-2.5",
-          "bg-white dark:bg-slate-900",
-          "border-b border-border",
-          "transition-shadow duration-200",
-          isStuck ? "shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)]" : "",
-        ].join(" ")}
-      >
+      {/* ── Global Filters ──────────────────────────────────────────────── */}
+      <div className="px-4 sm:px-6 py-2.5 bg-white dark:bg-slate-900 border-b border-border -mx-3 sm:-mx-6">
         <div className="flex flex-wrap items-end gap-3">
           {/* Year */}
           <div className="flex flex-col gap-1">
