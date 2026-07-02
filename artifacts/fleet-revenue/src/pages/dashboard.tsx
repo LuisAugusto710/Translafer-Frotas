@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import {
   AreaChart, Area, BarChart, Bar, ComposedChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -335,6 +335,31 @@ export function Dashboard() {
   const [frotaFilter, setFrotaFilter] = useState("__all__");
   const [period, setPeriod] = useState<"diario" | "semanal" | "mensal" | "trimestral" | "anual">("mensal");
 
+  // ── Sticky filter bar detection ────────────────────────────────────────────
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const [isStuck, setIsStuck] = useState(false);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    // Find nearest scrollable ancestor to use as IntersectionObserver root
+    let root: Element | null = null;
+    let el: HTMLElement | null = sentinel.parentElement;
+    while (el && el !== document.documentElement) {
+      const { overflowY } = window.getComputedStyle(el);
+      if (overflowY === "auto" || overflowY === "scroll") { root = el; break; }
+      el = el.parentElement;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsStuck(!entry.isIntersecting),
+      { root, threshold: 0 },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, []);
+
   const dateFrom: any = customFrom || `${ano}-01-01`;
   const dateTo:   any = customTo   || `${ano}-12-31`;
   const frotaParam = frotaFilter !== "__all__" ? frotaFilter : undefined;
@@ -415,65 +440,82 @@ export function Dashboard() {
   return (
     <div className="space-y-5">
 
-      {/* ── Global Filters ─────────────────────────────────────────────── */}
-      <Card className="border shadow-sm">
-        <CardContent className="p-3 sm:p-4">
-          <div className="flex flex-wrap items-end gap-3">
-            {/* Year */}
-            <div className="flex flex-col gap-1">
-              <Label className="text-xs text-muted-foreground">Ano</Label>
-              <Select value={ano.toString()} onValueChange={v => { setAno(parseInt(v)); resetDates(); }}>
-                <SelectTrigger className="w-[90px] h-8"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {YEARS.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
-                </SelectContent>
-              </Select>
+      {/* Sentinel — 1 px element; when it scrolls out of the container the
+          IntersectionObserver flips isStuck, triggering the elevated shadow  */}
+      <div ref={sentinelRef} className="h-px w-full -mb-px pointer-events-none select-none" aria-hidden />
+
+      {/* ── Global Filters (sticky) ─────────────────────────────────────── */}
+      <div
+        className={[
+          "sticky top-0 z-50",
+          "-mx-3 sm:-mx-6 px-3 sm:px-6",
+          "pt-2 pb-3",
+          "bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-sm",
+          "transition-[box-shadow,border-color] duration-200",
+          isStuck
+            ? "shadow-[0_4px_12px_-2px_rgba(0,0,0,0.10),0_1px_0_0_hsl(var(--border))]"
+            : "shadow-none border-b border-transparent",
+        ].join(" ")}
+      >
+        <Card className="border shadow-sm">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-wrap items-end gap-3">
+              {/* Year */}
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs text-muted-foreground">Ano</Label>
+                <Select value={ano.toString()} onValueChange={v => { setAno(parseInt(v)); resetDates(); }}>
+                  <SelectTrigger className="w-[90px] h-8"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {YEARS.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Custom date from */}
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs text-muted-foreground">De</Label>
+                <Input
+                  type="date"
+                  className="h-8 w-[140px] text-xs"
+                  value={customFrom}
+                  onChange={e => setCustomFrom(e.target.value)}
+                />
+              </div>
+              {/* Custom date to */}
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs text-muted-foreground">Até</Label>
+                <Input
+                  type="date"
+                  className="h-8 w-[140px] text-xs"
+                  value={customTo}
+                  onChange={e => setCustomTo(e.target.value)}
+                />
+              </div>
+              {/* Frota filter */}
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs text-muted-foreground">Frota</Label>
+                <Select value={frotaFilter} onValueChange={setFrotaFilter}>
+                  <SelectTrigger className="w-[110px] h-8"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all__">Todas</SelectItem>
+                    {(frotasList ?? []).map(f => <SelectItem key={f.frota} value={f.frota}>{f.frota}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Reset */}
+              {(customFrom || customTo || frotaFilter !== "__all__") && (
+                <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { resetDates(); setFrotaFilter("__all__"); }}>
+                  Limpar filtros
+                </Button>
+              )}
+              <div className="ml-auto text-xs text-muted-foreground hidden sm:block">
+                {customFrom || customTo
+                  ? `${customFrom || "—"} → ${customTo || "—"}`
+                  : `Jan–Dez ${ano}`}
+              </div>
             </div>
-            {/* Custom date from */}
-            <div className="flex flex-col gap-1">
-              <Label className="text-xs text-muted-foreground">De</Label>
-              <Input
-                type="date"
-                className="h-8 w-[140px] text-xs"
-                value={customFrom}
-                onChange={e => setCustomFrom(e.target.value)}
-              />
-            </div>
-            {/* Custom date to */}
-            <div className="flex flex-col gap-1">
-              <Label className="text-xs text-muted-foreground">Até</Label>
-              <Input
-                type="date"
-                className="h-8 w-[140px] text-xs"
-                value={customTo}
-                onChange={e => setCustomTo(e.target.value)}
-              />
-            </div>
-            {/* Frota filter */}
-            <div className="flex flex-col gap-1">
-              <Label className="text-xs text-muted-foreground">Frota</Label>
-              <Select value={frotaFilter} onValueChange={setFrotaFilter}>
-                <SelectTrigger className="w-[110px] h-8"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__all__">Todas</SelectItem>
-                  {(frotasList ?? []).map(f => <SelectItem key={f.frota} value={f.frota}>{f.frota}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            {/* Reset */}
-            {(customFrom || customTo || frotaFilter !== "__all__") && (
-              <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { resetDates(); setFrotaFilter("__all__"); }}>
-                Limpar filtros
-              </Button>
-            )}
-            <div className="ml-auto text-xs text-muted-foreground hidden sm:block">
-              {customFrom || customTo
-                ? `${customFrom || "—"} → ${customTo || "—"}`
-                : `Jan–Dez ${ano}`}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* ── KPI Summary Row ────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3">
