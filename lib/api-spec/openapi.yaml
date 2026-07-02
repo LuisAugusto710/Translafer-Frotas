@@ -556,6 +556,128 @@ paths:
               schema:
                 $ref: "#/components/schemas/DieselAvgPrice"
 
+  /dashboard/top-clientes:
+    get:
+      operationId: getTopClientes
+      tags: [dashboard]
+      parameters:
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+        - name: frota
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TopCliente"
+
+  /dashboard/top-cidades:
+    get:
+      operationId: getTopCidades
+      tags: [dashboard]
+      parameters:
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+        - name: frota
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TopCidade"
+
+  /dashboard/por-transportadora:
+    get:
+      operationId: getByTransportadora
+      tags: [dashboard]
+      parameters:
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransportadoraStats"
+
+  /dashboard/fleet-performance:
+    get:
+      operationId: getFleetPerformance
+      tags: [dashboard]
+      parameters:
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FleetPerformance"
+
+  /dashboard/upcoming-receivables:
+    get:
+      operationId: getUpcomingReceivables
+      tags: [dashboard]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UpcomingReceivable"
+
+  /dashboard/recent-fretes:
+    get:
+      operationId: getRecentFretes
+      tags: [dashboard]
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecentFrete"
+
   /fleet-configs:
     get:
       operationId: listFleetConfigs
@@ -1317,3 +1439,119 @@ components:
         totalRecords:
           type: integer
       required: [totalRecords]
+
+    TopCliente:
+      type: object
+      properties:
+        cliente:
+          type: string
+        totalFrete:
+          type: number
+        totalPedagio:
+          type: number
+        totalGeral:
+          type: number
+        viagens:
+          type: integer
+        mediaFrete:
+          type: number
+      required: [cliente, totalFrete, totalPedagio, totalGeral, viagens, mediaFrete]
+
+    TopCidade:
+      type: object
+      properties:
+        cidade:
+          type: string
+        viagens:
+          type: integer
+        totalFrete:
+          type: number
+        totalPedagio:
+          type: number
+        totalGeral:
+          type: number
+      required: [cidade, viagens, totalFrete, totalPedagio, totalGeral]
+
+    TransportadoraStats:
+      type: object
+      properties:
+        transp:
+          type: string
+        viagens:
+          type: integer
+        totalFrete:
+          type: number
+        totalPedagio:
+          type: number
+        totalGeral:
+          type: number
+        pctTotal:
+          type: number
+      required: [transp, viagens, totalFrete, totalPedagio, totalGeral, pctTotal]
+
+    FleetPerformance:
+      type: object
+      properties:
+        frota:
+          type: string
+        totalReceita:
+          type: number
+        totalCustos:
+          type: number
+        lucro:
+          type: number
+        viagens:
+          type: integer
+        km:
+          type: number
+        totalPeso:
+          type: number
+        receitaPerKm:
+          type: ["number", "null"]
+        lucroPerKm:
+          type: ["number", "null"]
+      required: [frota, totalReceita, totalCustos, lucro, viagens, km, totalPeso]
+
+    UpcomingReceivable:
+      type: object
+      properties:
+        id:
+          type: integer
+        dataCte:
+          type: string
+        cliente:
+          type: string
+        frota:
+          type: string
+        cidade:
+          type: string
+        totalGeral:
+          type: number
+        vencimento:
+          type: ["string", "null"]
+        diasFaltando:
+          type: ["integer", "null"]
+      required: [id, dataCte, cliente, frota, cidade, totalGeral]
+
+    RecentFrete:
+      type: object
+      properties:
+        id:
+          type: integer
+        dataCte:
+          type: string
+        cliente:
+          type: string
+        frota:
+          type: string
+        cidade:
+          type: string
+        frete:
+          type: number
+        pedagio:
+          type: number
+        totalGeral:
+          type: number
+        transp:
+          type: ["string", "null"]
+      required: [id, dataCte, cliente, frota, cidade, frete, pedagio, totalGeral]

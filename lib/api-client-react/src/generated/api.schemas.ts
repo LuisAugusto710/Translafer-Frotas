@@ -347,6 +347,72 @@ export interface DieselAvgPrice {
   totalRecords: number;
 }
 
+export interface TopCliente {
+  cliente: string;
+  totalFrete: number;
+  totalPedagio: number;
+  totalGeral: number;
+  viagens: number;
+  mediaFrete: number;
+}
+
+export interface TopCidade {
+  cidade: string;
+  viagens: number;
+  totalFrete: number;
+  totalPedagio: number;
+  totalGeral: number;
+}
+
+export interface TransportadoraStats {
+  transp: string;
+  viagens: number;
+  totalFrete: number;
+  totalPedagio: number;
+  totalGeral: number;
+  pctTotal: number;
+}
+
+export interface FleetPerformance {
+  frota: string;
+  totalReceita: number;
+  totalCustos: number;
+  lucro: number;
+  viagens: number;
+  km: number;
+  totalPeso: number;
+  /** @nullable */
+  receitaPerKm?: number | null;
+  /** @nullable */
+  lucroPerKm?: number | null;
+}
+
+export interface UpcomingReceivable {
+  id: number;
+  dataCte: string;
+  cliente: string;
+  frota: string;
+  cidade: string;
+  totalGeral: number;
+  /** @nullable */
+  vencimento?: string | null;
+  /** @nullable */
+  diasFaltando?: number | null;
+}
+
+export interface RecentFrete {
+  id: number;
+  dataCte: string;
+  cliente: string;
+  frota: string;
+  cidade: string;
+  frete: number;
+  pedagio: number;
+  totalGeral: number;
+  /** @nullable */
+  transp?: string | null;
+}
+
 export type ListFretesParams = {
 frota?: string;
 cliente?: string;
@@ -417,5 +483,31 @@ ano?: number;
 
 export type GetDespesasMensalParams = {
 ano?: number;
+};
+
+export type GetTopClientesParams = {
+dateFrom?: string;
+dateTo?: string;
+frota?: string;
+};
+
+export type GetTopCidadesParams = {
+dateFrom?: string;
+dateTo?: string;
+frota?: string;
+};
+
+export type GetByTransportadoraParams = {
+dateFrom?: string;
+dateTo?: string;
+};
+
+export type GetFleetPerformanceParams = {
+dateFrom?: string;
+dateTo?: string;
+};
+
+export type GetRecentFretesParams = {
+limit?: number;
 };
 

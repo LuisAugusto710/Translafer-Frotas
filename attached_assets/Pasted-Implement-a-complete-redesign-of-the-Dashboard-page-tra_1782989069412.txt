@@ -1,0 +1,300 @@
+Implement a complete redesign of the **Dashboard** page, transforming it into a modern management dashboard for the transport company while keeping the existing visual identity of the application.
+
+## General Requirements
+
+* Keep the current design language, spacing, typography, colors, buttons, cards, and visual hierarchy consistent with the rest of the application.
+* Do **not** modify any pages other than the Dashboard.
+* Do **not** make unnecessary UI or structural changes outside of what is requested.
+* The dashboard should feel like a natural extension of the current application.
+* The interface must be clean, elegant, professional, and easy to understand.
+* Prioritize readability and quick access to important information.
+* Ensure the layout is fully responsive for desktop, tablet, and mobile devices.
+
+---
+
+# Dynamic Data
+
+Every dashboard component must update automatically whenever data changes in any part of the system.
+
+The Dashboard must always reflect the current data from:
+
+* Freight table
+* Expenses table
+* Diesel table
+* Any other related operational data
+
+All calculations must be generated dynamically.
+
+Do not use hardcoded values.
+
+Any record added, edited, or deleted anywhere in the application must immediately update every dashboard metric, chart, ranking, and table.
+
+---
+
+# Top Summary Cards
+
+Create a row of summary cards displaying:
+
+* Total Revenue
+* Total Expenses
+* Net Profit
+* Profit Margin (%)
+* Number of Freight Trips
+* Active Fleet
+* Total Diesel Cost
+* Average Freight Value
+
+Each card should include:
+
+* Appropriate icon
+* Large highlighted value
+* Small descriptive label
+* Clean and modern appearance
+
+---
+
+# Revenue Over Time
+
+Create a line chart showing:
+
+* Revenue by month
+
+Include the ability to automatically adapt to the selected date range.
+
+---
+
+# Revenue vs Expenses
+
+Create a bar chart comparing:
+
+* Revenue
+* Expenses
+* Net Profit
+
+---
+
+# Fleet Performance Ranking
+
+Create a sortable ranking showing each fleet vehicle with:
+
+* Fleet Number
+* Total Revenue
+* Total Expenses
+* Net Profit
+* Number of Trips
+* Revenue per KM
+* Profit per KM
+
+Allow sorting by any column.
+
+---
+
+# Top Customers
+
+Display the customers generating the highest revenue.
+
+Include:
+
+* Customer Name
+* Total Revenue
+* Number of Trips
+* Average Freight Value
+
+---
+
+# Most Served Destinations
+
+Display the most frequent destination cities.
+
+Include:
+
+* Number of Deliveries
+* Total Revenue
+
+A bar chart is preferred.
+
+---
+
+# Transport Company Statistics
+
+If the data exists, display:
+
+* Revenue by Transport Company
+* Number of Freight Trips
+* Percentage of total revenue
+
+---
+
+# Diesel Analytics
+
+Create a dedicated section showing:
+
+Summary cards:
+
+* Total Liters
+* Total Diesel Cost
+* Average KM/L
+* Total Distance
+
+Charts:
+
+* Fuel Consumption by Fleet
+* Cost per KM
+* KM/L by Fleet
+
+---
+
+# Expense Analysis
+
+Create a pie chart showing expense distribution by category.
+
+Examples:
+
+* Driver
+* Helper
+* Diesel
+* Toll
+* Meals
+* Maintenance
+* Other
+
+If categories are dynamic, calculate them automatically.
+
+---
+
+# Profit Per Trip
+
+Create a horizontal bar chart displaying:
+
+* Most profitable trips
+* Least profitable trips
+
+Allow filtering by period.
+
+---
+
+# Operational KPIs
+
+Display additional performance indicators:
+
+* Revenue per KM
+* Profit per KM
+* Revenue per Ton
+* Revenue per Liter of Diesel
+* Cost per KM
+
+---
+
+# Upcoming Receivables
+
+Create a widget displaying:
+
+* Payments due in the next few days
+* Payments due this week
+* Payments due this month
+
+Include:
+
+* Customer
+* Due Date
+* Amount
+
+Sort by nearest due date.
+
+---
+
+# Recent Freight Activity
+
+Display a table containing the latest freight entries.
+
+Columns:
+
+* Date
+* Customer
+* Fleet
+* Destination
+* Freight Value
+
+---
+
+# Fleet Comparison
+
+Allow selecting two fleet vehicles and compare:
+
+* Revenue
+* Expenses
+* Profit
+* Distance
+* Trips
+* Revenue per KM
+* Profit per KM
+* Fuel Efficiency
+
+Display the comparison visually.
+
+---
+
+# Smart Insights
+
+Create an automatically generated "Insights" section.
+
+Examples:
+
+* Most profitable fleet
+* Highest revenue customer
+* Most served city
+* Largest freight
+* Best fuel efficiency
+* Fleet with highest expenses
+* Lowest profitability
+* Highest expense category
+
+These insights must be generated dynamically.
+
+---
+
+# Global Filters
+
+At the top of the dashboard, add filters that affect every widget simultaneously.
+
+Include:
+
+* Date Range
+* Fleet
+* Customer
+* Transport Company
+* Destination
+* CTe Number
+* Weight Range
+
+All charts, cards, rankings, and tables must react instantly to these filters.
+
+---
+
+# User Experience
+
+* Use loading skeletons while data is loading.
+* Animate chart updates smoothly.
+* Cards should have subtle hover effects.
+* Avoid visual clutter.
+* Keep spacing consistent with the existing application.
+* Use responsive grids.
+* Maintain accessibility best practices.
+
+---
+
+# Performance
+
+Optimize calculations to avoid unnecessary database queries.
+
+Reuse computed values whenever possible.
+
+Charts should remain responsive even with a large amount of data.
+
+---
+
+# Final Goal
+
+The Dashboard should become the central management page of the application, allowing the user to understand the company's financial and operational performance at a glance.
+
+It should provide an executive-level overview while remaining simple, intuitive, elegant, and fully integrated with the application's existing design system.

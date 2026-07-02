@@ -274,4 +274,232 @@ router.get("/dashboard/diesel-avg-price", async (_req, res) => {
   });
 });
 
+// ── helpers shared by new routes ───────────────────────────────────────────────
+
+function fullWhere(
+  table: typeof fretesTable,
+  dateFrom?: string,
+  dateTo?: string,
+  frota?: string,
+) {
+  const c = [];
+  if (dateFrom) c.push(gte(table.dataCte, dateFrom));
+  if (dateTo)   c.push(lte(table.dataCte, dateTo));
+  if (frota)    c.push(eq(table.frota, frota));
+  return c.length ? and(...c) : undefined;
+}
+
+// ── Top customers ──────────────────────────────────────────────────────────────
+router.get("/dashboard/top-clientes", async (req, res) => {
+  const dateFrom = toDateStr(req.query.dateFrom);
+  const dateTo   = toDateStr(req.query.dateTo);
+  const frota    = req.query.frota ? String(req.query.frota) : undefined;
+  const where    = fullWhere(fretesTable, dateFrom, dateTo, frota);
+
+  const rows = await db.select({
+    cliente:      fretesTable.cliente,
+    totalFrete:   sql<number>`sum(${fretesTable.frete})`,
+    totalPedagio: sql<number>`sum(${fretesTable.pedagio})`,
+    viagens:      sql<number>`count(*)`,
+  }).from(fretesTable).where(where)
+    .groupBy(fretesTable.cliente)
+    .orderBy(sql`sum(${fretesTable.frete}) desc`)
+    .limit(10);
+
+  res.json(rows.map(r => {
+    const totalFrete   = Number(r.totalFrete   ?? 0);
+    const totalPedagio = Number(r.totalPedagio ?? 0);
+    const viagens      = Number(r.viagens);
+    return {
+      cliente:    r.cliente,
+      totalFrete,
+      totalPedagio,
+      totalGeral: totalFrete + totalPedagio,
+      viagens,
+      mediaFrete: viagens > 0 ? Math.round((totalFrete / viagens) * 100) / 100 : 0,
+    };
+  }));
+});
+
+// ── Top destinations ───────────────────────────────────────────────────────────
+router.get("/dashboard/top-cidades", async (req, res) => {
+  const dateFrom = toDateStr(req.query.dateFrom);
+  const dateTo   = toDateStr(req.query.dateTo);
+  const frota    = req.query.frota ? String(req.query.frota) : undefined;
+  const where    = fullWhere(fretesTable, dateFrom, dateTo, frota);
+
+  const rows = await db.select({
+    cidade:       fretesTable.cidade,
+    viagens:      sql<number>`count(*)`,
+    totalFrete:   sql<number>`sum(${fretesTable.frete})`,
+    totalPedagio: sql<number>`sum(${fretesTable.pedagio})`,
+  }).from(fretesTable).where(where)
+    .groupBy(fretesTable.cidade)
+    .orderBy(sql`count(*) desc`)
+    .limit(10);
+
+  res.json(rows.map(r => ({
+    cidade:       r.cidade,
+    viagens:      Number(r.viagens),
+    totalFrete:   Number(r.totalFrete   ?? 0),
+    totalPedagio: Number(r.totalPedagio ?? 0),
+    totalGeral:   Number(r.totalFrete   ?? 0) + Number(r.totalPedagio ?? 0),
+  })));
+});
+
+// ── Transport company stats ────────────────────────────────────────────────────
+router.get("/dashboard/por-transportadora", async (req, res) => {
+  const dateFrom = toDateStr(req.query.dateFrom);
+  const dateTo   = toDateStr(req.query.dateTo);
+  const where    = freteWhere(dateFrom, dateTo);
+
+  const rows = await db.select({
+    transp:       fretesTable.transp,
+    viagens:      sql<number>`count(*)`,
+    totalFrete:   sql<number>`sum(${fretesTable.frete})`,
+    totalPedagio: sql<number>`sum(${fretesTable.pedagio})`,
+  }).from(fretesTable).where(where)
+    .groupBy(fretesTable.transp)
+    .orderBy(sql`sum(${fretesTable.frete}) desc`);
+
+  const totalGeral = rows.reduce(
+    (s, r) => s + Number(r.totalFrete ?? 0) + Number(r.totalPedagio ?? 0), 0,
+  );
+
+  res.json(rows.map(r => {
+    const totalFrete   = Number(r.totalFrete   ?? 0);
+    const totalPedagio = Number(r.totalPedagio ?? 0);
+    const tGeral       = totalFrete + totalPedagio;
+    return {
+      transp:       r.transp ?? "Sem Transportadora",
+      viagens:      Number(r.viagens),
+      totalFrete,
+      totalPedagio,
+      totalGeral:   tGeral,
+      pctTotal:     totalGeral > 0 ? Math.round((tGeral / totalGeral) * 1000) / 10 : 0,
+    };
+  }));
+});
+
+// ── Fleet performance (fretes revenue + despesas costs per frota) ──────────────
+router.get("/dashboard/fleet-performance", async (req, res) => {
+  const dateFrom = toDateStr(req.query.dateFrom);
+  const dateTo   = toDateStr(req.query.dateTo);
+
+  const freteC: ReturnType<typeof gte>[] = [];
+  if (dateFrom) freteC.push(gte(fretesTable.dataCte, dateFrom));
+  if (dateTo)   freteC.push(lte(fretesTable.dataCte, dateTo));
+  const freteW = freteC.length ? and(...freteC) : undefined;
+
+  const despC: ReturnType<typeof gte>[] = [];
+  if (dateFrom) despC.push(gte(despesasTable.data, dateFrom));
+  if (dateTo)   despC.push(lte(despesasTable.data, dateTo));
+  const despW = despC.length ? and(...despC) : undefined;
+
+  const [fretesPerFrota, despesasPerFrota] = await Promise.all([
+    db.select({
+      frota:        fretesTable.frota,
+      totalFrete:   sql<number>`sum(${fretesTable.frete})`,
+      totalPedagio: sql<number>`sum(${fretesTable.pedagio})`,
+      viagens:      sql<number>`count(*)`,
+      totalPeso:    sql<number>`coalesce(sum(${fretesTable.peso}), 0)`,
+    }).from(fretesTable).where(freteW).groupBy(fretesTable.frota),
+
+    db.select({
+      frota:       despesasTable.frota,
+      totalCustos: sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
+      totalKm:     sql<number>`coalesce(sum(${despesasTable.km}), 0)`,
+    }).from(despesasTable).where(despW).groupBy(despesasTable.frota),
+  ]);
+
+  const despMap: Record<string, { custos: number; km: number }> = {};
+  for (const d of despesasPerFrota) {
+    despMap[d.frota] = { custos: Number(d.totalCustos ?? 0), km: Number(d.totalKm ?? 0) };
+  }
+
+  const result = fretesPerFrota.map(f => {
+    const receita = Number(f.totalFrete ?? 0) + Number(f.totalPedagio ?? 0);
+    const custos  = despMap[f.frota]?.custos ?? 0;
+    const km      = despMap[f.frota]?.km     ?? 0;
+    const viagens = Number(f.viagens);
+    const lucro   = receita - custos;
+    return {
+      frota:        f.frota,
+      totalReceita: receita,
+      totalCustos:  custos,
+      lucro,
+      viagens,
+      km,
+      totalPeso:    Number(f.totalPeso ?? 0),
+      receitaPerKm: km > 0 ? Math.round((receita / km) * 100) / 100 : null,
+      lucroPerKm:   km > 0 ? Math.round((lucro   / km) * 100) / 100 : null,
+    };
+  }).sort((a, b) => b.totalReceita - a.totalReceita);
+
+  res.json(result);
+});
+
+// ── Upcoming receivables (next 30 days) ────────────────────────────────────────
+router.get("/dashboard/upcoming-receivables", async (_req, res) => {
+  const today    = new Date().toISOString().slice(0, 10);
+  const in30days = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+  const rows = await db.select({
+    id:         fretesTable.id,
+    dataCte:    fretesTable.dataCte,
+    cliente:    fretesTable.cliente,
+    frota:      fretesTable.frota,
+    cidade:     fretesTable.cidade,
+    frete:      fretesTable.frete,
+    pedagio:    fretesTable.pedagio,
+    vencimento: fretesTable.vencimento,
+  }).from(fretesTable)
+    .where(sql`${fretesTable.vencimento} is not null and ${fretesTable.vencimento} >= ${today} and ${fretesTable.vencimento} <= ${in30days}`)
+    .orderBy(sql`${fretesTable.vencimento}`)
+    .limit(20);
+
+  res.json(rows.map(r => ({
+    id:           r.id,
+    dataCte:      r.dataCte,
+    cliente:      r.cliente,
+    frota:        r.frota,
+    cidade:       r.cidade,
+    totalGeral:   Number(r.frete ?? 0) + Number(r.pedagio ?? 0),
+    vencimento:   r.vencimento ?? null,
+    diasFaltando: r.vencimento
+      ? Math.ceil((new Date(r.vencimento).getTime() - new Date(today).getTime()) / 86400000)
+      : null,
+  })));
+});
+
+// ── Recent freight entries ─────────────────────────────────────────────────────
+router.get("/dashboard/recent-fretes", async (req, res) => {
+  const limit = req.query.limit ? Math.min(Number(req.query.limit), 20) : 10;
+
+  const rows = await db.select({
+    id:      fretesTable.id,
+    dataCte: fretesTable.dataCte,
+    cliente: fretesTable.cliente,
+    frota:   fretesTable.frota,
+    cidade:  fretesTable.cidade,
+    frete:   fretesTable.frete,
+    pedagio: fretesTable.pedagio,
+    transp:  fretesTable.transp,
+  }).from(fretesTable)
+    .orderBy(sql`${fretesTable.dataCte} desc, ${fretesTable.id} desc`)
+    .limit(limit);
+
+  res.json(rows.map(r => ({
+    id:         r.id,
+    dataCte:    r.dataCte,
+    cliente:    r.cliente,
+    frota:      r.frota,
+    cidade:     r.cidade,
+    frete:      Number(r.frete   ?? 0),
+    pedagio:    Number(r.pedagio ?? 0),
+    totalGeral: Number(r.frete   ?? 0) + Number(r.pedagio ?? 0),
+    transp:     r.transp ?? null,
+  })));
+});
+
 export default router;

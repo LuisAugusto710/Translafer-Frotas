@@ -757,6 +757,105 @@ export const GetDieselAvgPriceResponse = zod.object({
 })
 
 
+export const GetTopClientesQueryParams = zod.object({
+  "dateFrom": zod.date().optional(),
+  "dateTo": zod.date().optional(),
+  "frota": zod.coerce.string().optional()
+})
+
+export const GetTopClientesResponseItem = zod.object({
+  "cliente": zod.string(),
+  "totalFrete": zod.number(),
+  "totalPedagio": zod.number(),
+  "totalGeral": zod.number(),
+  "viagens": zod.number(),
+  "mediaFrete": zod.number()
+})
+export const GetTopClientesResponse = zod.array(GetTopClientesResponseItem)
+
+
+export const GetTopCidadesQueryParams = zod.object({
+  "dateFrom": zod.date().optional(),
+  "dateTo": zod.date().optional(),
+  "frota": zod.coerce.string().optional()
+})
+
+export const GetTopCidadesResponseItem = zod.object({
+  "cidade": zod.string(),
+  "viagens": zod.number(),
+  "totalFrete": zod.number(),
+  "totalPedagio": zod.number(),
+  "totalGeral": zod.number()
+})
+export const GetTopCidadesResponse = zod.array(GetTopCidadesResponseItem)
+
+
+export const GetByTransportadoraQueryParams = zod.object({
+  "dateFrom": zod.date().optional(),
+  "dateTo": zod.date().optional()
+})
+
+export const GetByTransportadoraResponseItem = zod.object({
+  "transp": zod.string(),
+  "viagens": zod.number(),
+  "totalFrete": zod.number(),
+  "totalPedagio": zod.number(),
+  "totalGeral": zod.number(),
+  "pctTotal": zod.number()
+})
+export const GetByTransportadoraResponse = zod.array(GetByTransportadoraResponseItem)
+
+
+export const GetFleetPerformanceQueryParams = zod.object({
+  "dateFrom": zod.date().optional(),
+  "dateTo": zod.date().optional()
+})
+
+export const GetFleetPerformanceResponseItem = zod.object({
+  "frota": zod.string(),
+  "totalReceita": zod.number(),
+  "totalCustos": zod.number(),
+  "lucro": zod.number(),
+  "viagens": zod.number(),
+  "km": zod.number(),
+  "totalPeso": zod.number(),
+  "receitaPerKm": zod.number().nullish(),
+  "lucroPerKm": zod.number().nullish()
+})
+export const GetFleetPerformanceResponse = zod.array(GetFleetPerformanceResponseItem)
+
+
+export const GetUpcomingReceivablesResponseItem = zod.object({
+  "id": zod.number(),
+  "dataCte": zod.string(),
+  "cliente": zod.string(),
+  "frota": zod.string(),
+  "cidade": zod.string(),
+  "totalGeral": zod.number(),
+  "vencimento": zod.string().nullish(),
+  "diasFaltando": zod.number().nullish()
+})
+export const GetUpcomingReceivablesResponse = zod.array(GetUpcomingReceivablesResponseItem)
+
+
+export const GetRecentFretesQueryParams = zod.object({
+  "limit": zod.coerce.number().optional()
+})
+
+export const GetRecentFretesResponseItem = zod.object({
+  "id": zod.number(),
+  "dataCte": zod.string(),
+  "cliente": zod.string(),
+  "frota": zod.string(),
+  "cidade": zod.string(),
+  "frete": zod.number(),
+  "pedagio": zod.number(),
+  "totalGeral": zod.number(),
+  "transp": zod.string().nullish()
+})
+export const GetRecentFretesResponse = zod.array(GetRecentFretesResponseItem)
+
+
 /**
  * @summary List all fleet configurations
  */

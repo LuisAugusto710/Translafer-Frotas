@@ -40,26 +40,37 @@ import type {
   ErrorResponse,
   FleetConfig,
   FleetConfigInput,
+  FleetPerformance,
   Frete,
   FreteInput,
   FreteListResponse,
   FreteUpdate,
   FrotaRevenue,
   FrotaSummary,
+  GetByTransportadoraParams,
   GetDashboardResumoParams,
   GetDespesasMensalParams,
   GetDespesasResumoParams,
   GetDieselByPlacaParams,
+  GetFleetPerformanceParams,
   GetMensalComparativoParams,
+  GetRecentFretesParams,
   GetRevenueByFrotaParams,
   GetRevenueByPeriodoParams,
+  GetTopCidadesParams,
+  GetTopClientesParams,
   HealthStatus,
   ListAbastecimentosParams,
   ListDespesasParams,
   ListFretesParams,
   MensalComparativo,
   PeriodoRevenue,
-  PlacaSummary
+  PlacaSummary,
+  RecentFrete,
+  TopCidade,
+  TopCliente,
+  TransportadoraStats,
+  UpcomingReceivable
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -2032,6 +2043,467 @@ export function useGetDieselAvgPrice<TData = Awaited<ReturnType<typeof getDiesel
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetDieselAvgPriceQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetTopClientesUrl = (params?: GetTopClientesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/dashboard/top-clientes?${stringifiedParams}` : `/api/dashboard/top-clientes`
+}
+
+export const getTopClientes = async (params?: GetTopClientesParams, options?: RequestInit): Promise<TopCliente[]> => {
+
+  return customFetch<TopCliente[]>(getGetTopClientesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTopClientesQueryKey = (params?: GetTopClientesParams,) => {
+    return [
+    `/api/dashboard/top-clientes`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetTopClientesQueryOptions = <TData = Awaited<ReturnType<typeof getTopClientes>>, TError = ErrorType<unknown>>(params?: GetTopClientesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTopClientes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTopClientesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTopClientes>>> = ({ signal }) => getTopClientes(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTopClientes>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTopClientesQueryResult = NonNullable<Awaited<ReturnType<typeof getTopClientes>>>
+export type GetTopClientesQueryError = ErrorType<unknown>
+
+
+
+export function useGetTopClientes<TData = Awaited<ReturnType<typeof getTopClientes>>, TError = ErrorType<unknown>>(
+ params?: GetTopClientesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTopClientes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTopClientesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetTopCidadesUrl = (params?: GetTopCidadesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/dashboard/top-cidades?${stringifiedParams}` : `/api/dashboard/top-cidades`
+}
+
+export const getTopCidades = async (params?: GetTopCidadesParams, options?: RequestInit): Promise<TopCidade[]> => {
+
+  return customFetch<TopCidade[]>(getGetTopCidadesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTopCidadesQueryKey = (params?: GetTopCidadesParams,) => {
+    return [
+    `/api/dashboard/top-cidades`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetTopCidadesQueryOptions = <TData = Awaited<ReturnType<typeof getTopCidades>>, TError = ErrorType<unknown>>(params?: GetTopCidadesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTopCidades>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTopCidadesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTopCidades>>> = ({ signal }) => getTopCidades(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTopCidades>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTopCidadesQueryResult = NonNullable<Awaited<ReturnType<typeof getTopCidades>>>
+export type GetTopCidadesQueryError = ErrorType<unknown>
+
+
+
+export function useGetTopCidades<TData = Awaited<ReturnType<typeof getTopCidades>>, TError = ErrorType<unknown>>(
+ params?: GetTopCidadesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTopCidades>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTopCidadesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetByTransportadoraUrl = (params?: GetByTransportadoraParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/dashboard/por-transportadora?${stringifiedParams}` : `/api/dashboard/por-transportadora`
+}
+
+export const getByTransportadora = async (params?: GetByTransportadoraParams, options?: RequestInit): Promise<TransportadoraStats[]> => {
+
+  return customFetch<TransportadoraStats[]>(getGetByTransportadoraUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetByTransportadoraQueryKey = (params?: GetByTransportadoraParams,) => {
+    return [
+    `/api/dashboard/por-transportadora`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetByTransportadoraQueryOptions = <TData = Awaited<ReturnType<typeof getByTransportadora>>, TError = ErrorType<unknown>>(params?: GetByTransportadoraParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getByTransportadora>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetByTransportadoraQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getByTransportadora>>> = ({ signal }) => getByTransportadora(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getByTransportadora>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetByTransportadoraQueryResult = NonNullable<Awaited<ReturnType<typeof getByTransportadora>>>
+export type GetByTransportadoraQueryError = ErrorType<unknown>
+
+
+
+export function useGetByTransportadora<TData = Awaited<ReturnType<typeof getByTransportadora>>, TError = ErrorType<unknown>>(
+ params?: GetByTransportadoraParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getByTransportadora>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetByTransportadoraQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetFleetPerformanceUrl = (params?: GetFleetPerformanceParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/dashboard/fleet-performance?${stringifiedParams}` : `/api/dashboard/fleet-performance`
+}
+
+export const getFleetPerformance = async (params?: GetFleetPerformanceParams, options?: RequestInit): Promise<FleetPerformance[]> => {
+
+  return customFetch<FleetPerformance[]>(getGetFleetPerformanceUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFleetPerformanceQueryKey = (params?: GetFleetPerformanceParams,) => {
+    return [
+    `/api/dashboard/fleet-performance`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetFleetPerformanceQueryOptions = <TData = Awaited<ReturnType<typeof getFleetPerformance>>, TError = ErrorType<unknown>>(params?: GetFleetPerformanceParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFleetPerformance>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFleetPerformanceQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFleetPerformance>>> = ({ signal }) => getFleetPerformance(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFleetPerformance>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFleetPerformanceQueryResult = NonNullable<Awaited<ReturnType<typeof getFleetPerformance>>>
+export type GetFleetPerformanceQueryError = ErrorType<unknown>
+
+
+
+export function useGetFleetPerformance<TData = Awaited<ReturnType<typeof getFleetPerformance>>, TError = ErrorType<unknown>>(
+ params?: GetFleetPerformanceParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFleetPerformance>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFleetPerformanceQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetUpcomingReceivablesUrl = () => {
+
+
+
+
+  return `/api/dashboard/upcoming-receivables`
+}
+
+export const getUpcomingReceivables = async ( options?: RequestInit): Promise<UpcomingReceivable[]> => {
+
+  return customFetch<UpcomingReceivable[]>(getGetUpcomingReceivablesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetUpcomingReceivablesQueryKey = () => {
+    return [
+    `/api/dashboard/upcoming-receivables`
+    ] as const;
+    }
+
+
+export const getGetUpcomingReceivablesQueryOptions = <TData = Awaited<ReturnType<typeof getUpcomingReceivables>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUpcomingReceivables>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUpcomingReceivablesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUpcomingReceivables>>> = ({ signal }) => getUpcomingReceivables({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUpcomingReceivables>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetUpcomingReceivablesQueryResult = NonNullable<Awaited<ReturnType<typeof getUpcomingReceivables>>>
+export type GetUpcomingReceivablesQueryError = ErrorType<unknown>
+
+
+
+export function useGetUpcomingReceivables<TData = Awaited<ReturnType<typeof getUpcomingReceivables>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUpcomingReceivables>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetUpcomingReceivablesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetRecentFretesUrl = (params?: GetRecentFretesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/dashboard/recent-fretes?${stringifiedParams}` : `/api/dashboard/recent-fretes`
+}
+
+export const getRecentFretes = async (params?: GetRecentFretesParams, options?: RequestInit): Promise<RecentFrete[]> => {
+
+  return customFetch<RecentFrete[]>(getGetRecentFretesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetRecentFretesQueryKey = (params?: GetRecentFretesParams,) => {
+    return [
+    `/api/dashboard/recent-fretes`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetRecentFretesQueryOptions = <TData = Awaited<ReturnType<typeof getRecentFretes>>, TError = ErrorType<unknown>>(params?: GetRecentFretesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRecentFretes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetRecentFretesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRecentFretes>>> = ({ signal }) => getRecentFretes(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRecentFretes>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetRecentFretesQueryResult = NonNullable<Awaited<ReturnType<typeof getRecentFretes>>>
+export type GetRecentFretesQueryError = ErrorType<unknown>
+
+
+
+export function useGetRecentFretes<TData = Awaited<ReturnType<typeof getRecentFretes>>, TError = ErrorType<unknown>>(
+ params?: GetRecentFretesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRecentFretes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetRecentFretesQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
