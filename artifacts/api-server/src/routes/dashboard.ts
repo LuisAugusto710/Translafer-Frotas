@@ -351,16 +351,51 @@ router.get("/dashboard/top-cidades", async (req, res) => {
 router.get("/dashboard/por-transportadora", async (req, res) => {
   const dateFrom = toDateStr(req.query.dateFrom);
   const dateTo   = toDateStr(req.query.dateTo);
-  const where    = freteWhere(dateFrom, dateTo);
+  const freteW   = freteWhere(dateFrom, dateTo);
 
-  const rows = await db.select({
-    transp:       fretesTable.transp,
-    viagens:      sql<number>`count(*)`,
-    totalFrete:   sql<number>`sum(${fretesTable.frete})`,
-    totalPedagio: sql<number>`sum(${fretesTable.pedagio})`,
-  }).from(fretesTable).where(where)
-    .groupBy(fretesTable.transp)
-    .orderBy(sql`sum(${fretesTable.frete}) desc`);
+  // Despesas date filter (mirrors freteWhere but on despesasTable.data)
+  const despC: ReturnType<typeof gte>[] = [];
+  if (dateFrom) despC.push(gte(despesasTable.data, dateFrom));
+  if (dateTo)   despC.push(lte(despesasTable.data, dateTo));
+  const despW = despC.length ? and(...despC) : undefined;
+
+  const [rows, frotaTranspPairs, despPerFrota] = await Promise.all([
+    // Revenue grouped by carrier
+    db.select({
+      transp:       fretesTable.transp,
+      viagens:      sql<number>`count(*)`,
+      totalFrete:   sql<number>`sum(${fretesTable.frete})`,
+      totalPedagio: sql<number>`sum(${fretesTable.pedagio})`,
+    }).from(fretesTable).where(freteW)
+      .groupBy(fretesTable.transp)
+      .orderBy(sql`sum(${fretesTable.frete}) desc`),
+
+    // Distinct (transp, frota) pairs — to know which frotas belong to each carrier
+    db.selectDistinct({
+      transp: fretesTable.transp,
+      frota:  fretesTable.frota,
+    }).from(fretesTable).where(freteW),
+
+    // Total expenses per frota for the same period
+    db.select({
+      frota:        despesasTable.frota,
+      totalCustos:  sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
+    }).from(despesasTable).where(despW).groupBy(despesasTable.frota),
+  ]);
+
+  // Build frota → expenses lookup
+  const despMap: Record<string, number> = {};
+  for (const d of despPerFrota) {
+    despMap[d.frota] = Number(d.totalCustos ?? 0);
+  }
+
+  // Build carrier → set of frotas
+  const transpFrotas: Record<string, Set<string>> = {};
+  for (const { transp, frota } of frotaTranspPairs) {
+    const key = transp ?? "Sem Transportadora";
+    if (!transpFrotas[key]) transpFrotas[key] = new Set();
+    transpFrotas[key].add(frota);
+  }
 
   const totalGeral = rows.reduce(
     (s, r) => s + Number(r.totalFrete ?? 0) + Number(r.totalPedagio ?? 0), 0,
@@ -370,12 +405,17 @@ router.get("/dashboard/por-transportadora", async (req, res) => {
     const totalFrete   = Number(r.totalFrete   ?? 0);
     const totalPedagio = Number(r.totalPedagio ?? 0);
     const tGeral       = totalFrete + totalPedagio;
+    const key          = r.transp ?? "Sem Transportadora";
+    const totalDespesas = [...(transpFrotas[key] ?? [])].reduce(
+      (s, f) => s + (despMap[f] ?? 0), 0,
+    );
     return {
-      transp:       r.transp ?? "Sem Transportadora",
+      transp:       key,
       viagens:      Number(r.viagens),
       totalFrete,
       totalPedagio,
       totalGeral:   tGeral,
+      totalDespesas,
       pctTotal:     totalGeral > 0 ? Math.round((tGeral / totalGeral) * 1000) / 10 : 0,
     };
   }));

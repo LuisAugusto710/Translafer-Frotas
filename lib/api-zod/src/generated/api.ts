@@ -801,6 +801,7 @@ export const GetByTransportadoraResponseItem = zod.object({
   "totalFrete": zod.number(),
   "totalPedagio": zod.number(),
   "totalGeral": zod.number(),
+  "totalDespesas": zod.number(),
   "pctTotal": zod.number()
 })
 export const GetByTransportadoraResponse = zod.array(GetByTransportadoraResponseItem)

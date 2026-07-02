@@ -1485,9 +1485,11 @@ components:
           type: number
         totalGeral:
           type: number
+        totalDespesas:
+          type: number
         pctTotal:
           type: number
-      required: [transp, viagens, totalFrete, totalPedagio, totalGeral, pctTotal]
+      required: [transp, viagens, totalFrete, totalPedagio, totalGeral, totalDespesas, pctTotal]
 
     FleetPerformance:
       type: object

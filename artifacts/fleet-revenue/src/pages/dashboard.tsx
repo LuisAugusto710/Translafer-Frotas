@@ -675,6 +675,7 @@ export function Dashboard() {
                     <th className="px-3 py-2 text-left text-xs font-semibold text-muted-foreground">Transportadora</th>
                     <th className="px-3 py-2 text-right text-xs font-semibold text-muted-foreground">Viagens</th>
                     <th className="px-3 py-2 text-right text-xs font-semibold text-muted-foreground">Receita Total</th>
+                    <th className="px-3 py-2 text-right text-xs font-semibold text-muted-foreground">Total Despesas</th>
                     <th className="px-3 py-2 text-right text-xs font-semibold text-muted-foreground">% Total</th>
                     <th className="px-3 py-2 text-left text-xs font-semibold text-muted-foreground w-32">Participação</th>
                   </tr>
@@ -685,6 +686,7 @@ export function Dashboard() {
                       <td className="px-3 py-2 font-medium">{t.transp}</td>
                       <td className="px-3 py-2 text-right">{t.viagens}</td>
                       <td className="px-3 py-2 text-right">{formatCurrency(t.totalGeral)}</td>
+                      <td className="px-3 py-2 text-right text-red-600 dark:text-red-400">{formatCurrency(t.totalDespesas)}</td>
                       <td className="px-3 py-2 text-right font-semibold">{formatNumber(t.pctTotal, 1)}%</td>
                       <td className="px-3 py-2">
                         <div className="h-2 bg-muted rounded-full overflow-hidden">

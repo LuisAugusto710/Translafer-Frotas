@@ -12,5 +12,6 @@ export interface TransportadoraStats {
   totalFrete: number;
   totalPedagio: number;
   totalGeral: number;
+  totalDespesas: number;
   pctTotal: number;
 }
