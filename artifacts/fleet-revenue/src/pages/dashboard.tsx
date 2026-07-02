@@ -35,7 +35,8 @@ import { formatCurrency, formatNumber, formatDate } from "@/lib/utils";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const YEARS = [2022, 2023, 2024, 2025, 2026, 2027];
+const THIS_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: THIS_YEAR - 2021 }, (_, i) => 2022 + i);
 
 const PIE_COLORS = [
   "#0a192f", "#e74c3c", "#2ecc71", "#f39c12", "#3498db",

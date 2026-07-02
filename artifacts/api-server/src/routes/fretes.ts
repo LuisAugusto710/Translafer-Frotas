@@ -34,7 +34,18 @@ router.get("/fretes", async (req, res) => {
   if (dateFrom) conditions.push(gte(fretesTable.dataCte, toDateStr(dateFrom)!));
   if (dateTo) conditions.push(lte(fretesTable.dataCte, toDateStr(dateTo)!));
   if (search) {
-    const like = `%${search}%`;
+    const like = `%${search.trim()}%`;
+    // Helper: emit all date-format variants for a date column so users can
+    // search 2026-07-01, 01/07/2026, 01-07-2026, 1/7/2026, 07/2026, Jul, July
+    const dateClauses = (col: typeof fretesTable.dataCte) => [
+      sql`CAST(${col} AS TEXT)              ILIKE ${like}`,
+      sql`TO_CHAR(${col}, 'DD/MM/YYYY')     ILIKE ${like}`,
+      sql`TO_CHAR(${col}, 'DD-MM-YYYY')     ILIKE ${like}`,
+      sql`TO_CHAR(${col}, 'FMDD/FMMM/YYYY') ILIKE ${like}`,
+      sql`TO_CHAR(${col}, 'MM/YYYY')        ILIKE ${like}`,
+      sql`TO_CHAR(${col}, 'Mon')            ILIKE ${like}`,
+      sql`TO_CHAR(${col}, 'Month')          ILIKE ${like}`,
+    ];
     conditions.push(or(
       ilike(fretesTable.frota,      like),
       ilike(fretesTable.cliente,    like),
@@ -44,12 +55,12 @@ router.get("/fretes", async (req, res) => {
       ilike(fretesTable.transporte, like),
       ilike(fretesTable.transp,     like),
       ilike(fretesTable.obs,        like),
-      sql`CAST(${fretesTable.dataCte}   AS TEXT) ILIKE ${like}`,
-      sql`CAST(${fretesTable.dtaFrete}  AS TEXT) ILIKE ${like}`,
-      sql`CAST(${fretesTable.vencimento} AS TEXT) ILIKE ${like}`,
-      sql`CAST(${fretesTable.frete}     AS TEXT) ILIKE ${like}`,
-      sql`CAST(${fretesTable.pedagio}   AS TEXT) ILIKE ${like}`,
-      sql`CAST(${fretesTable.peso}      AS TEXT) ILIKE ${like}`,
+      sql`CAST(${fretesTable.frete}   AS TEXT) ILIKE ${like}`,
+      sql`CAST(${fretesTable.pedagio} AS TEXT) ILIKE ${like}`,
+      sql`CAST(${fretesTable.peso}    AS TEXT) ILIKE ${like}`,
+      ...dateClauses(fretesTable.dataCte),
+      ...dateClauses(fretesTable.dtaFrete),
+      ...dateClauses(fretesTable.vencimento),
     )!);
   }
 

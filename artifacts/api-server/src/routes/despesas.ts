@@ -72,19 +72,27 @@ router.get("/despesas", async (req, res) => {
   if (dateFrom) conditions.push(gte(despesasTable.data, toDateStr(dateFrom)!));
   if (dateTo) conditions.push(lte(despesasTable.data, toDateStr(dateTo)!));
   if (search) {
-    const like = `%${search}%`;
+    const like = `%${search.trim()}%`;
     conditions.push(or(
-      ilike(despesasTable.frota, like),
-      ilike(despesasTable.cidade, like),
-      ilike(despesasTable.motoristaNome, like),
-      ilike(despesasTable.ajudanteNome, like),
+      ilike(despesasTable.frota,           like),
+      ilike(despesasTable.cidade,          like),
+      ilike(despesasTable.motoristaNome,   like),
+      ilike(despesasTable.ajudanteNome,    like),
       ilike(despesasTable.trocaOleoParcela, like),
-      ilike(despesasTable.obs, like),
-      sql`CAST(${despesasTable.data} AS TEXT) ILIKE ${like}`,
-      sql`CAST(${despesasTable.frete} AS TEXT) ILIKE ${like}`,
+      ilike(despesasTable.obs,             like),
+      sql`CAST(${despesasTable.frete}    AS TEXT) ILIKE ${like}`,
       sql`CAST(${despesasTable.dieselRs} AS TEXT) ILIKE ${like}`,
-      sql`CAST(${despesasTable.lucro} AS TEXT) ILIKE ${like}`,
-      sql`CAST(${despesasTable.km} AS TEXT) ILIKE ${like}`,
+      sql`CAST(${despesasTable.lucro}    AS TEXT) ILIKE ${like}`,
+      sql`CAST(${despesasTable.km}       AS TEXT) ILIKE ${like}`,
+      // Date variants: ISO (2026-07-01), BR (01/07/2026), dashes, short (1/7/2026),
+      // month/year (07/2026), abbreviated month (Jul), full month name (July)
+      sql`CAST(${despesasTable.data} AS TEXT)               ILIKE ${like}`,
+      sql`TO_CHAR(${despesasTable.data}, 'DD/MM/YYYY')      ILIKE ${like}`,
+      sql`TO_CHAR(${despesasTable.data}, 'DD-MM-YYYY')      ILIKE ${like}`,
+      sql`TO_CHAR(${despesasTable.data}, 'FMDD/FMMM/YYYY')  ILIKE ${like}`,
+      sql`TO_CHAR(${despesasTable.data}, 'MM/YYYY')         ILIKE ${like}`,
+      sql`TO_CHAR(${despesasTable.data}, 'Mon')             ILIKE ${like}`,
+      sql`TO_CHAR(${despesasTable.data}, 'Month')           ILIKE ${like}`,
     )!);
   }
 

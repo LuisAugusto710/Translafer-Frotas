@@ -1,0 +1,121 @@
+**Prompt:**
+
+Please investigate and fix the following issues **without changing the application's design, layout, or existing workflow**.
+
+## 1. Investigate incorrect 2027 data in the Dashboard
+
+There appears to be data from **2027** being displayed in the Dashboard, even though it should not exist.
+
+Please perform a thorough investigation to determine the cause.
+
+### Verification checklist
+
+* Check the database for records with dates in 2027.
+* Verify whether any imported freight or expense records contain incorrect dates.
+* Check if the Dashboard calculations are incorrectly parsing or converting dates.
+* Verify that time zone conversions are not causing dates to shift into 2027.
+* Check for default values or placeholder dates being interpreted as valid records.
+* Inspect all queries used by the Dashboard.
+* Ensure the selected date filter is being correctly applied to every Dashboard widget.
+* Verify that charts, KPIs, and summary cards are using the correct date field.
+* Remove or correct any invalid 2027 records if they are found.
+* If no legitimate 2027 data exists, ensure nothing from that year is displayed anywhere in the Dashboard.
+
+## 2. Improve the search functionality across all tables
+
+The search bars are currently not working correctly.
+
+For example, when searching for a date, no matching records are returned even though they exist.
+
+Please redesign the search logic while keeping the current user interface unchanged.
+
+### Requirements
+
+The search should work across **all tables** in the application, including but not limited to:
+
+* Freights
+* Expenses
+* Any future data tables
+
+### Search behavior
+
+The search must:
+
+* Search every searchable column.
+* Support partial matches.
+* Be case-insensitive.
+* Ignore leading and trailing spaces.
+* Update results instantly while typing.
+* Return all matching records regardless of whether they are currently loaded on screen.
+
+### Date search
+
+Date searching must be significantly improved.
+
+The system should recognize dates in multiple formats, for example:
+
+* `01/07/2026`
+* `1/7/2026`
+* `01-07-2026`
+* `2026-07-01`
+* `07/2026`
+* `Jul`
+* `July`
+* `2026`
+
+If a user searches for:
+
+* a complete date → return records from that exact date.
+* a month → return every record from that month.
+* a year → return every record from that year.
+* part of a date → return every matching record.
+
+### Numeric search
+
+Numeric searches should work for:
+
+* Fleet Number
+* Freight Number
+* CTe Number
+* Revenue
+* Expenses
+* Weight
+* Any other numeric field
+
+Partial numeric matches should also be supported.
+
+### Text search
+
+Text searches should work for:
+
+* Cities
+* Drivers
+* Assistants
+* Customers
+* Status
+* Notes
+* Any text field
+
+Support partial text matching and ignore uppercase/lowercase differences.
+
+### Search highlighting
+
+Continue highlighting the exact matching value inside each returned record using the existing subtle highlight effect.
+
+### Performance
+
+The improved search must:
+
+* Work with lazy loading.
+* Work with infinite scrolling.
+* Search the entire database, not just the visible records.
+* Remain fast even with large datasets.
+* Avoid unnecessary database queries.
+* Keep scrolling smooth.
+
+## Important
+
+* Do **not** redesign the interface.
+* Do **not** change the existing layout.
+* Preserve all current functionality.
+* Focus on fixing the incorrect 2027 data and implementing a robust, flexible, and reliable search system that works consistently across every table in the application.
