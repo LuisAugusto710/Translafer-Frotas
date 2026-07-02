@@ -1,0 +1,68 @@
+**Prompt:**
+
+Please **reset the application's database** by removing all existing data while **preserving the database structure, schema, relationships, indexes, and application functionality**.
+
+## Requirements
+
+* Delete **all records** from every application table, including but not limited to:
+
+  * Freights
+  * Expenses
+  * Dashboard-related data
+  * Reports
+  * Temporary tables
+  * Any other user-generated data
+
+* **Do not** delete or modify:
+
+  * Database schema
+  * Tables
+  * Columns
+  * Constraints
+  * Relationships
+  * Indexes
+  * Stored procedures (if any)
+  * Application settings
+  * User accounts and authentication (unless explicitly requested)
+
+## Reset behavior
+
+* The database should behave as if it were a fresh installation.
+* All auto-increment/identity sequences should be reset so that new records start again from their initial values (where applicable).
+* Remove orphaned records and clear any cached data related to the deleted records.
+* Ensure no residual data remains that could affect the Dashboard, reports, filters, or searches.
+
+## Dashboard
+
+After the reset:
+
+* The Dashboard should display zero values or appropriate empty states.
+* Charts should show no data instead of errors.
+* KPIs should correctly reflect an empty database.
+* Reports should return no records.
+
+## Search and Filters
+
+* All searches should return no results until new records are added.
+* Filters should remain fully functional.
+
+## Backups
+
+* Do **not** delete existing backup files (local or OneDrive).
+* Do **not** modify the backup configuration.
+* Only clear the active application database.
+
+## Final Verification
+
+After the reset, verify that:
+
+* The database contains no freight or expense records.
+* The application starts normally.
+* New records can be created without errors.
+* The Dashboard, tables, charts, and reports function correctly with an empty database.
+
+## Important
+
+* This operation should **only delete the data**, not the database structure.
+* Do **not** redesign the application or modify any unrelated functionality.
+* Ensure the reset is performed safely and transactionally to avoid leaving the database in an inconsistent state.
