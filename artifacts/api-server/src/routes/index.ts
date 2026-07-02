@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import healthRouter from "./health";
 import authRouter from "./auth";
+import adminResetRouter from "./admin-reset";
 import fretesRouter from "./fretes";
 import abastecimentosRouter from "./abastecimentos";
 import despesasRouter from "./despesas";
@@ -15,6 +16,7 @@ const router: IRouter = Router();
 // Public routes
 router.use(healthRouter);
 router.use(authRouter);
+router.use(adminResetRouter);
 
 // Everything below requires an authenticated session
 router.use(requireAuth);
