@@ -753,10 +753,12 @@ export const GetDespesasMotoristaAjudanteQueryParams = zod.object({
   "dateTo": zod.date().optional()
 })
 
-export const GetDespesasMotoristaAjudanteResponse = zod.object({
-  "totalMotorista": zod.number(),
-  "totalAjudante": zod.number()
+export const GetDespesasMotoristaAjudanteResponseItem = zod.object({
+  "nome": zod.string(),
+  "total": zod.number(),
+  "tipo": zod.enum(['Motorista', 'Ajudante'])
 })
+export const GetDespesasMotoristaAjudanteResponse = zod.array(GetDespesasMotoristaAjudanteResponseItem)
 
 
 /**

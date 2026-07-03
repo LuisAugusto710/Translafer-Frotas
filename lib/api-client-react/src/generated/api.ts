@@ -65,7 +65,7 @@ import type {
   ListDespesasParams,
   ListFretesParams,
   MensalComparativo,
-  MotoristaAjudanteResumo,
+  MotoristaAjudanteItem,
   PeriodoRevenue,
   PlacaSummary,
   RecentFrete,
@@ -1995,9 +1995,9 @@ export const getGetDespesasMotoristaAjudanteUrl = (params?: GetDespesasMotorista
   return stringifiedParams.length > 0 ? `/api/dashboard/motorista-ajudante?${stringifiedParams}` : `/api/dashboard/motorista-ajudante`
 }
 
-export const getDespesasMotoristaAjudante = async (params?: GetDespesasMotoristaAjudanteParams, options?: RequestInit): Promise<MotoristaAjudanteResumo> => {
+export const getDespesasMotoristaAjudante = async (params?: GetDespesasMotoristaAjudanteParams, options?: RequestInit): Promise<MotoristaAjudanteItem[]> => {
 
-  return customFetch<MotoristaAjudanteResumo>(getGetDespesasMotoristaAjudanteUrl(params),
+  return customFetch<MotoristaAjudanteItem[]>(getGetDespesasMotoristaAjudanteUrl(params),
   {
     ...options,
     method: 'GET'

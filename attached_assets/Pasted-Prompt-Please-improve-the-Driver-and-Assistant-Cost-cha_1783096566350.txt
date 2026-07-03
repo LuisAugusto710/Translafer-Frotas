@@ -1,0 +1,103 @@
+Prompt:
+
+Please improve the Driver and Assistant Cost chart on the Dashboard without changing the application’s design, layout, or existing functionality.
+
+Replace the category grouping with employee names
+
+The current chart groups expenses by the categories “Driver” and “Assistant”.
+
+Instead, I want the chart to group the data by the actual employee names.
+
+The goal is to know how much each individual driver and each individual assistant has cost during the selected period.
+
+Example
+
+Instead of displaying:
+
+* Driver → €8,500
+* Assistant → €4,200
+
+The chart should display something like:
+
+* João Silva → €2,150
+* Carlos Santos → €1,980
+* Pedro Oliveira → €1,720
+* Rafael Costa → €1,650
+* Marcos Lima → €1,430
+* …
+
+The same should apply to assistants.
+
+Data source
+
+Use the values stored in:
+
+* Driver Name
+* Driver Payment
+* Assistant Name
+* Assistant Payment
+
+The system must:
+
+* Sum all payments made to each individual driver.
+* Sum all payments made to each individual assistant.
+* Merge multiple expense records belonging to the same person into a single total.
+
+Date filter integration
+
+The chart must continue to respect the Dashboard’s date filter.
+
+When the selected period changes, recalculate the totals using only records within that date range.
+
+Examples:
+
+* Current month
+* Current year
+* Custom date range
+
+Chart behavior
+
+* Group records by employee name, not by role.
+* Exclude empty or null names.
+* If two records belong to the same person, combine them into a single total.
+* Sort the chart by the highest total cost in descending order.
+* Support a large number of employees.
+* If there are many names, allow vertical scrolling or dynamic resizing while keeping the chart readable.
+
+Display
+
+Each bar should represent:
+
+* One Driver or Assistant.
+* The total amount paid to that individual during the selected period.
+
+Show:
+
+* Employee name.
+* Total amount paid.
+* Currency formatting consistent with the rest of the Dashboard.
+* Tooltips displaying the exact payment amount.
+
+Real-time updates
+
+The chart must automatically update whenever:
+
+* A new expense is created.
+* An expense is edited.
+* An expense is deleted.
+* Expenses are imported.
+* The Dashboard date filter changes.
+
+No manual refresh should be required.
+
+Performance
+
+* Use aggregated database queries (GROUP BY employee name) whenever possible.
+* Avoid recalculating unnecessary data.
+* Keep the chart responsive even with thousands of expense records.
+
+Important
+
+* Do not redesign the Dashboard.
+* Keep the existing visual style.
+* Only change the grouping logic from role (Driver/Assistant) to individual employee names, so it becomes possible to see exactly how much each driver and each assistant has cost during the selected period.

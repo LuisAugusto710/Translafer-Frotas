@@ -401,9 +401,18 @@ export interface UpcomingReceivable {
   diasFaltando?: number | null;
 }
 
-export interface MotoristaAjudanteResumo {
-  totalMotorista: number;
-  totalAjudante: number;
+export type MotoristaAjudanteItemTipo = typeof MotoristaAjudanteItemTipo[keyof typeof MotoristaAjudanteItemTipo];
+
+
+export const MotoristaAjudanteItemTipo = {
+  Motorista: 'Motorista',
+  Ajudante: 'Ajudante',
+} as const;
+
+export interface MotoristaAjudanteItem {
+  nome: string;
+  total: number;
+  tipo: MotoristaAjudanteItemTipo;
 }
 
 export interface RecentFrete {

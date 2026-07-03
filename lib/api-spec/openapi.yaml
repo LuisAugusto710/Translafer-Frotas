@@ -560,7 +560,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MotoristaAjudanteResumo"
+                type: array
+                items:
+                  $ref: "#/components/schemas/MotoristaAjudanteItem"
 
   /dashboard/diesel-avg-price:
     get:
@@ -1554,14 +1556,17 @@ components:
           type: ["integer", "null"]
       required: [id, dataCte, cliente, frota, cidade, totalGeral]
 
-    MotoristaAjudanteResumo:
+    MotoristaAjudanteItem:
       type: object
-      required: [totalMotorista, totalAjudante]
+      required: [nome, total, tipo]
       properties:
-        totalMotorista:
+        nome:
+          type: string
+        total:
           type: number
-        totalAjudante:
-          type: number
+        tipo:
+          type: string
+          enum: [Motorista, Ajudante]
 
     RecentFrete:
       type: object

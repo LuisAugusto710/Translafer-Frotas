@@ -772,44 +772,68 @@ export function Dashboard() {
       </div>
 
       {/* ── Driver & Assistant Costs Chart ─────────────────────────────── */}
-      {(motAjud && (motAjud.totalMotorista > 0 || motAjud.totalAjudante > 0)) || l13 ? (
+      {(motAjud && motAjud.length > 0) || l13 ? (
         <Card className="shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-              <Users className="h-4 w-4 text-[#0a192f]" /> Custos de Motoristas e Ajudantes
+              <Users className="h-4 w-4 text-[#0a192f]" /> Custos por Motorista e Ajudante
             </CardTitle>
             <CardDescription>
-              Total pago a motoristas e ajudantes no período
+              Total pago por pessoa no período — ordenado pelo maior valor
             </CardDescription>
           </CardHeader>
-          <CardContent className="h-48 sm:h-56 p-2 sm:p-6 pt-0 sm:pt-0">
-            {l13 ? <Skeleton className="w-full h-full" /> : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={[
-                    { nome: "Motoristas", valor: motAjud?.totalMotorista ?? 0, fill: "#0a192f" },
-                    { nome: "Ajudantes",  valor: motAjud?.totalAjudante  ?? 0, fill: "#3498db" },
-                  ]}
-                  margin={{ top: 8, right: 24, left: 8, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                  <XAxis dataKey="nome" fontSize={12} tickLine={false} axisLine={false} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis fontSize={10} tickLine={false} axisLine={false} width={64} stroke="hsl(var(--muted-foreground))" tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} />
-                  <Tooltip
-                    {...CHART_STYLE}
-                    formatter={(v: number) => [formatCurrency(v), "Total pago"]}
-                  />
-                  <Bar dataKey="valor" name="Total pago" radius={[6, 6, 0, 0]}>
-                    {[
-                      { nome: "Motoristas", valor: motAjud?.totalMotorista ?? 0, fill: "#0a192f" },
-                      { nome: "Ajudantes",  valor: motAjud?.totalAjudante  ?? 0, fill: "#3498db" },
-                    ].map((entry, i) => (
-                      <Cell key={i} fill={entry.fill} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            )}
+          <CardContent className="p-2 sm:p-6 pt-0 sm:pt-0">
+            {l13 ? <Skeleton className="w-full h-48" /> : motAjud && motAjud.length > 0 ? (
+              <>
+                <div className="flex items-center gap-4 mb-2 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1.5"><span className="inline-block w-3 h-3 rounded-sm" style={{ background: "#0a192f" }} />Motorista</span>
+                  <span className="flex items-center gap-1.5"><span className="inline-block w-3 h-3 rounded-sm" style={{ background: "#3498db" }} />Ajudante</span>
+                </div>
+                <div className="overflow-y-auto" style={{ maxHeight: 400 }}>
+                  <div style={{ height: Math.max(180, motAjud.length * 36) }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={motAjud}
+                        layout="vertical"
+                        margin={{ top: 4, right: 80, left: 4, bottom: 4 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
+                        <XAxis
+                          type="number"
+                          fontSize={10}
+                          tickLine={false}
+                          axisLine={false}
+                          stroke="hsl(var(--muted-foreground))"
+                          tickFormatter={v => `R$${(v / 1000).toFixed(0)}k`}
+                        />
+                        <YAxis
+                          type="category"
+                          dataKey="nome"
+                          fontSize={11}
+                          tickLine={false}
+                          axisLine={false}
+                          width={130}
+                          stroke="hsl(var(--muted-foreground))"
+                          tick={{ fill: "hsl(var(--foreground))" }}
+                        />
+                        <Tooltip
+                          {...CHART_STYLE}
+                          formatter={(v: number, _name: string, props: any) => [
+                            formatCurrency(v),
+                            props?.payload?.tipo ?? "Total pago",
+                          ]}
+                        />
+                        <Bar dataKey="total" name="Total pago" radius={[0, 4, 4, 0]} label={{ position: "right", fontSize: 10, formatter: (v: number) => formatCurrency(v) }}>
+                          {motAjud.map((entry, i) => (
+                            <Cell key={i} fill={entry.tipo === "Motorista" ? "#0a192f" : "#3498db"} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </>
+            ) : <EmptyChart message="Nenhum dado de motorista ou ajudante para o período" />}
           </CardContent>
         </Card>
       ) : null}

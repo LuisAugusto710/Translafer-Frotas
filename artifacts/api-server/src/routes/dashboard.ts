@@ -269,17 +269,30 @@ router.get("/dashboard/motorista-ajudante", async (req, res) => {
   const c: ReturnType<typeof gte>[] = [];
   if (dateFrom) c.push(gte(despesasTable.data, dateFrom));
   if (dateTo)   c.push(lte(despesasTable.data, dateTo));
-  const where = c.length ? and(...c) : undefined;
+  const dateWhere = c.length ? and(...c) : undefined;
 
-  const [row] = await db.select({
-    totalMotorista: sql<number>`coalesce(sum(${despesasTable.motorista}), 0)`,
-    totalAjudante:  sql<number>`coalesce(sum(${despesasTable.ajudante}),  0)`,
-  }).from(despesasTable).where(where);
+  const [motoristas, ajudantes] = await Promise.all([
+    db.select({
+      nome:  despesasTable.motoristaNome,
+      total: sql<number>`coalesce(sum(${despesasTable.motorista}), 0)`,
+    }).from(despesasTable)
+      .where(and(dateWhere, sql`coalesce(trim(${despesasTable.motoristaNome}), '') <> ''`))
+      .groupBy(despesasTable.motoristaNome),
 
-  res.json({
-    totalMotorista: Math.round(Number(row?.totalMotorista ?? 0) * 100) / 100,
-    totalAjudante:  Math.round(Number(row?.totalAjudante  ?? 0) * 100) / 100,
-  });
+    db.select({
+      nome:  despesasTable.ajudanteNome,
+      total: sql<number>`coalesce(sum(${despesasTable.ajudante}), 0)`,
+    }).from(despesasTable)
+      .where(and(dateWhere, sql`coalesce(trim(${despesasTable.ajudanteNome}), '') <> ''`))
+      .groupBy(despesasTable.ajudanteNome),
+  ]);
+
+  const combined = [
+    ...motoristas.map(r => ({ nome: r.nome ?? "", total: Math.round(Number(r.total) * 100) / 100, tipo: "Motorista" as const })),
+    ...ajudantes.map(r => ({ nome: r.nome ?? "", total: Math.round(Number(r.total) * 100) / 100, tipo: "Ajudante"  as const })),
+  ].sort((a, b) => b.total - a.total);
+
+  res.json(combined);
 });
 
 router.get("/dashboard/diesel-avg-price", async (_req, res) => {
