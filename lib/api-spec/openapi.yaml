@@ -543,6 +543,25 @@ paths:
                 items:
                   $ref: "#/components/schemas/DespesaMensal"
 
+  /dashboard/motorista-ajudante:
+    get:
+      operationId: getDespesasMotoristaAjudante
+      tags: [dashboard]
+      parameters:
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MotoristaAjudanteResumo"
+
   /dashboard/diesel-avg-price:
     get:
       operationId: getDieselAvgPrice
@@ -1534,6 +1553,15 @@ components:
         diasFaltando:
           type: ["integer", "null"]
       required: [id, dataCte, cliente, frota, cidade, totalGeral]
+
+    MotoristaAjudanteResumo:
+      type: object
+      required: [totalMotorista, totalAjudante]
+      properties:
+        totalMotorista:
+          type: number
+        totalAjudante:
+          type: number
 
     RecentFrete:
       type: object

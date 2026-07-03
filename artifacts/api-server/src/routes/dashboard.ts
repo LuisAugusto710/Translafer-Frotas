@@ -262,6 +262,26 @@ router.get("/dashboard/despesas-mensal", async (req, res) => {
   }));
 });
 
+router.get("/dashboard/motorista-ajudante", async (req, res) => {
+  const dateFrom = toDateStr(req.query.dateFrom);
+  const dateTo   = toDateStr(req.query.dateTo);
+
+  const c: ReturnType<typeof gte>[] = [];
+  if (dateFrom) c.push(gte(despesasTable.data, dateFrom));
+  if (dateTo)   c.push(lte(despesasTable.data, dateTo));
+  const where = c.length ? and(...c) : undefined;
+
+  const [row] = await db.select({
+    totalMotorista: sql<number>`coalesce(sum(${despesasTable.motorista}), 0)`,
+    totalAjudante:  sql<number>`coalesce(sum(${despesasTable.ajudante}),  0)`,
+  }).from(despesasTable).where(where);
+
+  res.json({
+    totalMotorista: Math.round(Number(row?.totalMotorista ?? 0) * 100) / 100,
+    totalAjudante:  Math.round(Number(row?.totalAjudante  ?? 0) * 100) / 100,
+  });
+});
+
 router.get("/dashboard/diesel-avg-price", async (_req, res) => {
   const [row] = await db.select({
     avgPreco: sql<number>`avg(${abastecimentosTable.precoLitro})`,

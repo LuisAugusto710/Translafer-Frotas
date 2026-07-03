@@ -50,6 +50,7 @@ import type {
   GetByTransportadoraParams,
   GetDashboardResumoParams,
   GetDespesasMensalParams,
+  GetDespesasMotoristaAjudanteParams,
   GetDespesasResumoParams,
   GetDieselByPlacaParams,
   GetFleetPerformanceParams,
@@ -64,6 +65,7 @@ import type {
   ListDespesasParams,
   ListFretesParams,
   MensalComparativo,
+  MotoristaAjudanteResumo,
   PeriodoRevenue,
   PlacaSummary,
   RecentFrete,
@@ -1966,6 +1968,84 @@ export function useGetDespesasMensal<TData = Awaited<ReturnType<typeof getDespes
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetDespesasMensalQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetDespesasMotoristaAjudanteUrl = (params?: GetDespesasMotoristaAjudanteParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/dashboard/motorista-ajudante?${stringifiedParams}` : `/api/dashboard/motorista-ajudante`
+}
+
+export const getDespesasMotoristaAjudante = async (params?: GetDespesasMotoristaAjudanteParams, options?: RequestInit): Promise<MotoristaAjudanteResumo> => {
+
+  return customFetch<MotoristaAjudanteResumo>(getGetDespesasMotoristaAjudanteUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDespesasMotoristaAjudanteQueryKey = (params?: GetDespesasMotoristaAjudanteParams,) => {
+    return [
+    `/api/dashboard/motorista-ajudante`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetDespesasMotoristaAjudanteQueryOptions = <TData = Awaited<ReturnType<typeof getDespesasMotoristaAjudante>>, TError = ErrorType<unknown>>(params?: GetDespesasMotoristaAjudanteParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDespesasMotoristaAjudante>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDespesasMotoristaAjudanteQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDespesasMotoristaAjudante>>> = ({ signal }) => getDespesasMotoristaAjudante(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDespesasMotoristaAjudante>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDespesasMotoristaAjudanteQueryResult = NonNullable<Awaited<ReturnType<typeof getDespesasMotoristaAjudante>>>
+export type GetDespesasMotoristaAjudanteQueryError = ErrorType<unknown>
+
+
+
+export function useGetDespesasMotoristaAjudante<TData = Awaited<ReturnType<typeof getDespesasMotoristaAjudante>>, TError = ErrorType<unknown>>(
+ params?: GetDespesasMotoristaAjudanteParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDespesasMotoristaAjudante>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDespesasMotoristaAjudanteQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

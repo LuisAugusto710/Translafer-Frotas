@@ -748,6 +748,17 @@ export const GetDespesasMensalResponseItem = zod.object({
 export const GetDespesasMensalResponse = zod.array(GetDespesasMensalResponseItem)
 
 
+export const GetDespesasMotoristaAjudanteQueryParams = zod.object({
+  "dateFrom": zod.date().optional(),
+  "dateTo": zod.date().optional()
+})
+
+export const GetDespesasMotoristaAjudanteResponse = zod.object({
+  "totalMotorista": zod.number(),
+  "totalAjudante": zod.number()
+})
+
+
 /**
  * @summary Average diesel price per litre across all fuel records
  */

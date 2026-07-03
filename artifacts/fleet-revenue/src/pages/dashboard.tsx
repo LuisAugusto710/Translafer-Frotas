@@ -15,6 +15,7 @@ import {
   useGetDieselByPlaca, getGetDieselByPlacaQueryKey,
   useGetDespesasResumo, getGetDespesasResumoQueryKey,
   useGetDespesasMensal, getGetDespesasMensalQueryKey,
+  useGetDespesasMotoristaAjudante, getGetDespesasMotoristaAjudanteQueryKey,
   useGetTopClientes, getGetTopClientesQueryKey,
   useGetTopCidades, getGetTopCidadesQueryKey,
   useGetByTransportadora, getGetByTransportadoraQueryKey,
@@ -349,6 +350,7 @@ export function Dashboard() {
   const { data: dieselData,    isLoading: l4 } = useGetDieselByPlaca({ ano }, { query: { queryKey: getGetDieselByPlacaQueryKey({ ano }) } });
   const { data: despResumo,    isLoading: l5 } = useGetDespesasResumo({ ano }, { query: { queryKey: getGetDespesasResumoQueryKey({ ano }) } });
   const { data: despMensal,    isLoading: l6 } = useGetDespesasMensal({ ano }, { query: { queryKey: getGetDespesasMensalQueryKey({ ano }) } });
+  const { data: motAjud,       isLoading: l13} = useGetDespesasMotoristaAjudante({ dateFrom, dateTo }, { query: { queryKey: getGetDespesasMotoristaAjudanteQueryKey({ dateFrom, dateTo }) } });
   const { data: clientesData,  isLoading: l7 } = useGetTopClientes({ dateFrom, dateTo, frota: frotaParam as any }, { query: { queryKey: getGetTopClientesQueryKey({ dateFrom, dateTo, frota: frotaParam as any }) } });
   const { data: cidadesData,   isLoading: l8 } = useGetTopCidades({ dateFrom, dateTo, frota: frotaParam as any }, { query: { queryKey: getGetTopCidadesQueryKey({ dateFrom, dateTo, frota: frotaParam as any }) } });
   const { data: transpData,    isLoading: l9 } = useGetByTransportadora({ dateFrom, dateTo }, { query: { queryKey: getGetByTransportadoraQueryKey({ dateFrom, dateTo }) } });
@@ -768,6 +770,49 @@ export function Dashboard() {
         <KpiCard title="Lucro Operacional"   icon={<DollarSign className="h-5 w-5" />}   value={despResumo ? formatCurrency(despResumo.totalLucro)  : "—"} valueColor={despResumo && despResumo.totalLucro >= 0 ? "text-emerald-600" : "text-red-500"} loading={l5} />
         <KpiCard title="Registros"           icon={<BarChart2 className="h-5 w-5" />}    value={despResumo ? String(despResumo.totalRegistros)      : "0"} loading={l5} />
       </div>
+
+      {/* ── Driver & Assistant Costs Chart ─────────────────────────────── */}
+      {(motAjud && (motAjud.totalMotorista > 0 || motAjud.totalAjudante > 0)) || l13 ? (
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <Users className="h-4 w-4 text-[#0a192f]" /> Custos de Motoristas e Ajudantes
+            </CardTitle>
+            <CardDescription>
+              Total pago a motoristas e ajudantes no período
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="h-48 sm:h-56 p-2 sm:p-6 pt-0 sm:pt-0">
+            {l13 ? <Skeleton className="w-full h-full" /> : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={[
+                    { nome: "Motoristas", valor: motAjud?.totalMotorista ?? 0, fill: "#0a192f" },
+                    { nome: "Ajudantes",  valor: motAjud?.totalAjudante  ?? 0, fill: "#3498db" },
+                  ]}
+                  margin={{ top: 8, right: 24, left: 8, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                  <XAxis dataKey="nome" fontSize={12} tickLine={false} axisLine={false} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis fontSize={10} tickLine={false} axisLine={false} width={64} stroke="hsl(var(--muted-foreground))" tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} />
+                  <Tooltip
+                    {...CHART_STYLE}
+                    formatter={(v: number) => [formatCurrency(v), "Total pago"]}
+                  />
+                  <Bar dataKey="valor" name="Total pago" radius={[6, 6, 0, 0]}>
+                    {[
+                      { nome: "Motoristas", valor: motAjud?.totalMotorista ?? 0, fill: "#0a192f" },
+                      { nome: "Ajudantes",  valor: motAjud?.totalAjudante  ?? 0, fill: "#3498db" },
+                    ].map((entry, i) => (
+                      <Cell key={i} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      ) : null}
 
       {/* ── Smart Insights ─────────────────────────────────────────────── */}
       {insights.length > 0 && (

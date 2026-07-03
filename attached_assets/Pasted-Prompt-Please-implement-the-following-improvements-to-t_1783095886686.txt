@@ -1,0 +1,99 @@
+Prompt:
+
+Please implement the following improvements to the Expenses module and Dashboard without changing the application’s design, layout, or existing workflow.
+
+1. Reorder the “Oil Change Installment” column
+
+On the Expenses page, reposition the Oil Change Installment column.
+
+The column order should be:
+
+* Fleet Number
+* Freight
+* …
+* Oil Change Installment
+* Total Expense
+* Remaining columns
+
+In other words, the Oil Change Installment column must appear immediately before the “Total Expense” column in the table.
+
+The same order should also be maintained in:
+
+* Add Expense form (where applicable)
+* Edit Expense form
+* Excel exports
+* Printed reports
+
+2. Add a Driver and Assistant Cost chart to the Dashboard
+
+Create a new Dashboard chart that displays the total amount paid to Drivers and Assistants.
+
+Requirements
+
+* The chart must calculate:
+    * Total Driver Payments
+    * Total Assistant Payments
+* Use the values stored in the Driver Payment and Assistant Payment fields from the Expenses module.
+* Aggregate the data according to the currently selected date range.
+
+Date filter integration
+
+The chart must fully respect the Dashboard’s date filter.
+
+Whenever the user changes the selected period (day, month, year, or custom range), the chart must automatically refresh and recalculate using only the records within the selected period.
+
+Examples:
+
+* Current month → Show only payments made during that month.
+* Current year → Show totals for the year.
+* Custom date range → Show only payments within that interval.
+
+3. Chart design
+
+The chart should match the application’s existing Dashboard style.
+
+Suggested chart types:
+
+* Bar Chart (preferred)
+* Stacked Bar Chart
+* Column Chart
+
+The chart should clearly compare:
+
+* Driver Costs
+* Assistant Costs
+
+Display
+
+Show:
+
+* Total amount paid to drivers.
+* Total amount paid to assistants.
+* Currency formatting consistent with the rest of the Dashboard.
+* Tooltips showing the exact values when hovering.
+
+4. Real-time updates
+
+The chart must update automatically whenever:
+
+* A new expense is created.
+* An expense is edited.
+* An expense is deleted.
+* Expense data is imported.
+* The Dashboard date filter changes.
+
+No manual page refresh should be required.
+
+5. Performance
+
+* Use aggregated queries whenever possible.
+* Avoid unnecessary recalculations.
+* Ensure the chart remains responsive even with large datasets.
+* Keep calculations synchronized with the Dashboard’s existing data source.
+
+Important
+
+* Do not redesign the Dashboard.
+* Do not modify existing charts unless necessary for consistency.
+* Keep the visual style identical to the rest of the application.
+* Ensure the new chart is fully integrated with the Dashboard’s filtering, reporting, and real-time update system.

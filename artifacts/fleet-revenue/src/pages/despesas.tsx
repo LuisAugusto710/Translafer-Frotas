@@ -264,9 +264,9 @@ export function Despesas() {
                 <TableHead className="text-right min-w-[80px] whitespace-nowrap">Escritório</TableHead>
                 <TableHead className="text-right min-w-[60px] whitespace-nowrap">IPVA</TableHead>
                 <TableHead className="text-right min-w-[64px] whitespace-nowrap">Bsoft</TableHead>
+                <TableHead className="min-w-[110px] leading-tight">Parcela Troca Óleo</TableHead>
                 <TableHead className="text-right font-bold text-red-600 min-w-[100px] leading-tight">Total Despesa</TableHead>
                 <TableHead className="text-right font-bold text-[#0a192f] min-w-[80px] leading-tight">Lucro (R$)</TableHead>
-                <TableHead className="min-w-[110px] leading-tight">Parcela Troca Óleo</TableHead>
                 <TableHead className="min-w-[80px] whitespace-nowrap">Obs</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
@@ -324,14 +324,14 @@ export function Despesas() {
                         <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.escritorio))}</TableCell>
                         <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.ipva))}</TableCell>
                         <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.bsoft))}</TableCell>
+                        <TableCell className="whitespace-nowrap" title={d.trocaOleoParcela}>
+                          {hl(d.trocaOleoParcela || "-")}
+                        </TableCell>
                         <TableCell className="text-right font-bold text-red-600 bg-red-500/10 whitespace-nowrap">
                           {hl(formatCurrency(d.totalDespesa))}
                         </TableCell>
                         <TableCell className={`text-right font-bold whitespace-nowrap ${d.lucro >= 0 ? "text-[#2ecc71] bg-[#2ecc71]/10" : "text-red-600 bg-red-500/10"}`}>
                           {hl(formatCurrency(d.lucro))}
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap" title={d.trocaOleoParcela}>
-                          {hl(d.trocaOleoParcela || "-")}
                         </TableCell>
                         <TableCell className="truncate max-w-[100px]" title={d.obs || ""}>
                           {hl(d.obs || "-")}

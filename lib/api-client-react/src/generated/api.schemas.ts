@@ -401,6 +401,11 @@ export interface UpcomingReceivable {
   diasFaltando?: number | null;
 }
 
+export interface MotoristaAjudanteResumo {
+  totalMotorista: number;
+  totalAjudante: number;
+}
+
 export interface RecentFrete {
   id: number;
   dataCte: string;
@@ -484,6 +489,11 @@ ano?: number;
 
 export type GetDespesasMensalParams = {
 ano?: number;
+};
+
+export type GetDespesasMotoristaAjudanteParams = {
+dateFrom?: string;
+dateTo?: string;
 };
 
 export type GetTopClientesParams = {
