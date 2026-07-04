@@ -153,9 +153,9 @@ export function Diesel() {
                     <TableCell className="text-right whitespace-nowrap">{formatNumber(a.litros, 2)} L</TableCell>
                     <TableCell className="text-right whitespace-nowrap">{formatCurrency(a.precoLitro)}</TableCell>
                     <TableCell className="text-right font-bold whitespace-nowrap">{formatCurrency(a.totalPago)}</TableCell>
-                    <TableCell className="text-right text-muted-foreground whitespace-nowrap">{formatNumber(a.kmInicio, 0)}</TableCell>
-                    <TableCell className="text-right text-muted-foreground whitespace-nowrap">{formatNumber(a.kmFinal, 0)}</TableCell>
-                    <TableCell className="text-right whitespace-nowrap">{formatNumber(a.kmPercorrido, 3)}</TableCell>
+                    <TableCell className="text-right text-muted-foreground whitespace-nowrap">{formatInteger(a.kmInicio)}</TableCell>
+                    <TableCell className="text-right text-muted-foreground whitespace-nowrap">{formatInteger(a.kmFinal)}</TableCell>
+                    <TableCell className="text-right whitespace-nowrap">{formatInteger(a.kmPercorrido)}</TableCell>
                     <TableCell className="text-center">
                       <div className={`px-2 py-1 rounded inline-block font-bold min-w-[52px] ${getMediaColor(a.media)}`}>
                         {formatNumber(a.media, 1)}

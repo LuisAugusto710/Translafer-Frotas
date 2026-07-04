@@ -26,3 +26,10 @@ export function formatDate(dateString: string | undefined | null) {
     return dateString;
   }
 }
+
+export function formatInteger(value: number | string | undefined | null): string {
+  if (value === undefined || value === null || value === "") return "";
+  const num = typeof value === 'string' ? parseInt(value.replace(/\D/g, ""), 10) : Number(value);
+  if (isNaN(num)) return "";
+  return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 }).format(num);
+}

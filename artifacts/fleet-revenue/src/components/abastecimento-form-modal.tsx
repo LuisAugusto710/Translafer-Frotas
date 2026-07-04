@@ -7,6 +7,7 @@ import { MaskedDateInput } from "@/components/masked-date-input";
 import { useCreateAbastecimento, useUpdateAbastecimento, getListAbastecimentosQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { formatInteger } from "@/lib/utils";
 
 export function AbastecimentoFormModal({
   open,
@@ -76,18 +77,23 @@ export function AbastecimentoFormModal({
     }
   }, [formData.litros, formData.precoLitro]);
 
-  // Auto-calculate KM Percorrido
+  // Auto-calculate KM Percorrido (integers only)
   useEffect(() => {
-    const ki = parseFloat(formData.kmInicio) || 0;
-    const kf = parseFloat(formData.kmFinal) || 0;
+    const ki = parseInt(formData.kmInicio.replace(/\D/g, ""), 10) || 0;
+    const kf = parseInt(formData.kmFinal.replace(/\D/g, ""), 10) || 0;
     if (kf > 0 && ki > 0 && kf >= ki) {
-      setFormData((prev) => ({ ...prev, kmPercorrido: (kf - ki).toFixed(3) }));
+      setFormData((prev) => ({ ...prev, kmPercorrido: String(kf - ki) }));
     }
   }, [formData.kmInicio, formData.kmFinal]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "kmInicio" || name === "kmFinal" || name === "kmPercorrido") {
+      const digitsOnly = value.replace(/\D/g, "");
+      setFormData((prev) => ({ ...prev, [name]: digitsOnly }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -265,9 +271,10 @@ export function AbastecimentoFormModal({
             <div className="space-y-2">
               <Label>KM Início</Label>
               <Input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 name="kmInicio"
-                value={formData.kmInicio}
+                value={formatInteger(formData.kmInicio)}
                 onChange={handleChange}
               />
             </div>
@@ -276,9 +283,10 @@ export function AbastecimentoFormModal({
             <div className="space-y-2">
               <Label>KM Final</Label>
               <Input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 name="kmFinal"
-                value={formData.kmFinal}
+                value={formatInteger(formData.kmFinal)}
                 onChange={handleChange}
               />
             </div>
@@ -287,9 +295,10 @@ export function AbastecimentoFormModal({
             <div className="space-y-2">
               <Label>KM Percorrido</Label>
               <Input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 name="kmPercorrido"
-                value={formData.kmPercorrido}
+                value={formatInteger(formData.kmPercorrido)}
                 onChange={handleChange}
               />
             </div>
