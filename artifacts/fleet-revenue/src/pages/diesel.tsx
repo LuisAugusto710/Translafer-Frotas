@@ -158,7 +158,7 @@ export function Diesel() {
                     <TableCell className="text-right whitespace-nowrap">{formatNumber(a.kmPercorrido, 3)}</TableCell>
                     <TableCell className="text-center">
                       <div className={`px-2 py-1 rounded inline-block font-bold min-w-[52px] ${getMediaColor(a.media)}`}>
-                        {formatNumber(a.media, 3)}
+                        {formatNumber(a.media, 1)}
                       </div>
                     </TableCell>
                     <TableCell>

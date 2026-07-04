@@ -81,7 +81,7 @@ export function AbastecimentoFormModal({
     const ki = parseFloat(formData.kmInicio) || 0;
     const kf = parseFloat(formData.kmFinal) || 0;
     if (kf > 0 && ki > 0 && kf >= ki) {
-      setFormData((prev) => ({ ...prev, kmPercorrido: (kf - ki).toString() }));
+      setFormData((prev) => ({ ...prev, kmPercorrido: (kf - ki).toFixed(3) }));
     }
   }, [formData.kmInicio, formData.kmFinal]);
 
@@ -155,7 +155,7 @@ export function AbastecimentoFormModal({
 
   const l = parseFloat(formData.litros) || 0;
   const kmp = parseFloat(formData.kmPercorrido) || 0;
-  const mediaCalc = l > 0 && kmp > 0 ? (kmp / l).toFixed(3) : "-";
+  const mediaCalc = l > 0 && kmp > 0 ? (kmp / l).toFixed(1) : "-";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
