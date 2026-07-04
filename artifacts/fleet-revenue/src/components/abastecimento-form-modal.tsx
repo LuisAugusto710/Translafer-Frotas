@@ -93,16 +93,19 @@ export function AbastecimentoFormModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    const litrosNum = parseFloat(formData.litros);
+    const kmpNum = formData.kmPercorrido ? parseFloat(formData.kmPercorrido) : undefined;
+    const mediaNum = kmpNum && kmpNum > 0 && litrosNum > 0 ? kmpNum / litrosNum : undefined;
+
     const payload = {
       ...formData,
-      litros: parseFloat(formData.litros),
+      litros: litrosNum,
       precoLitro: parseFloat(formData.precoLitro),
       totalPago: parseFloat(formData.totalPago),
       kmInicio: formData.kmInicio ? parseFloat(formData.kmInicio) : undefined,
       kmFinal: formData.kmFinal ? parseFloat(formData.kmFinal) : undefined,
-      kmPercorrido: formData.kmPercorrido
-        ? parseFloat(formData.kmPercorrido)
-        : undefined,
+      kmPercorrido: kmpNum,
+      media: mediaNum,
     };
 
     if (!payload.data || !payload.placa || !payload.litros || !payload.precoLitro) {

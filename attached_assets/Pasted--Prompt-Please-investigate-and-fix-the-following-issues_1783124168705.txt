@@ -1,0 +1,93 @@
+**Prompt:**
+
+Please investigate and fix the following issues **without changing the application's design, layout, or existing workflow**.
+
+## 1. Fix the Diesel Average calculation
+
+The **Average** value on the **Diesel** page is currently **not being displayed**, both in the Diesel table and on the Dashboard.
+
+Please perform a complete investigation to identify the root cause and fix the problem.
+
+### Verification Checklist
+
+* Verify that the average is being calculated using the correct formula.
+* Ensure all required fields (liters, total cost, price per liter, etc.) are being read correctly from the database.
+* Check for null, empty, or invalid values that may be preventing the calculation.
+* Verify that no filtering or date logic is excluding valid records.
+* Ensure the average updates automatically whenever:
+
+  * A diesel record is created.
+  * A diesel record is edited.
+  * A diesel record is deleted.
+* Ensure the Dashboard and the Diesel page use the **same calculation logic**.
+* Confirm that the Dashboard always displays the same average shown on the Diesel page.
+* Ensure the calculation fully respects the selected date filter.
+
+If the average is not being displayed because of an error in the query, state management, aggregation logic, or rendering, correct the issue so the value is shown correctly everywhere.
+
+---
+
+## 2. Automatically fill the Toll field on the Expenses page
+
+On the **Expenses** page, I want the **Toll** field to be filled automatically.
+
+### Automatic behavior
+
+After the user finishes selecting or filling in the required information (especially the **Fleet Number** and the **Expense Date**), the system should:
+
+* Find every toll transaction associated with that fleet **on the same date**.
+* Calculate the **sum of all tolls** for that fleet on that day.
+* Automatically populate the **Toll** field with the calculated total.
+
+The user should not have to type this value manually.
+
+### Automatic recalculation
+
+The Toll field must automatically recalculate whenever:
+
+* The Fleet Number changes.
+* The Expense Date changes.
+* A toll entry is added.
+* A toll entry is edited.
+* A toll entry is deleted.
+
+The displayed value must always represent the latest total for that fleet on that specific day.
+
+### Validation
+
+* If no toll records exist for the selected fleet and date, automatically set the Toll value to **0**.
+* Prevent duplicate calculations.
+* Ensure the total includes all toll records for that fleet on the selected day.
+
+---
+
+## 3. Dashboard Integration
+
+The automatically calculated Toll value must immediately update:
+
+* Total Expenses
+* Profit calculations
+* Dashboard charts
+* Reports
+* KPIs
+* Any other metrics that depend on expense values
+
+No manual page refresh should be required.
+
+---
+
+## Performance
+
+* Optimize the database queries used to calculate the toll total.
+* Avoid unnecessary recalculations.
+* Use efficient aggregation (SUM) operations.
+* Ensure the automatic calculation remains fast even with a large amount of historical data.
+
+---
+
+## Important
+
+* Do **not** redesign the application.
+* Do **not** modify unrelated functionality.
+* Keep the existing UI and workflow unchanged.
+* Focus on fixing the Diesel Average calculation and implementing the automatic Toll calculation based on the selected **Fleet Number** and **Expense Date**.

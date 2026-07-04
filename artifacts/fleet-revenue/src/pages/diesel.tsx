@@ -185,6 +185,23 @@ export function Diesel() {
                 ))
               )}
             </TableBody>
+            {!isLoading && abasts.length > 0 && (
+              <TableFooter className="bg-muted/70 font-semibold text-sm sticky bottom-0">
+                <TableRow>
+                  <TableCell colSpan={5} className="text-right text-muted-foreground">Totais</TableCell>
+                  <TableCell className="text-right whitespace-nowrap">{formatNumber(totalLitros, 2)} L</TableCell>
+                  <TableCell />
+                  <TableCell className="text-right font-bold text-[#0a192f] whitespace-nowrap">{formatCurrency(totalPago)}</TableCell>
+                  <TableCell colSpan={3} />
+                  <TableCell className="text-center whitespace-nowrap">
+                    <div className={`px-2 py-1 rounded inline-block font-bold min-w-[52px] ${getMediaColor(avgMedia)}`}>
+                      {avgMedia > 0 ? formatNumber(avgMedia, 2) : "—"}
+                    </div>
+                  </TableCell>
+                  <TableCell />
+                </TableRow>
+              </TableFooter>
+            )}
           </Table>
         </div>
       </div>

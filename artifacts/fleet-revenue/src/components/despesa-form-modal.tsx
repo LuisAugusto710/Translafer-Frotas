@@ -99,9 +99,12 @@ export function DespesaFormModal({
   useEffect(() => {
     if (!canAutoFetch || !fretesDodia?.fretes) return;
     const totalFrete = fretesDodia.fretes.reduce((sum, f) => sum + (f.totalFrete ?? 0), 0);
-    if (totalFrete > 0) {
-      setFormData((prev) => ({ ...prev, frete: totalFrete.toFixed(2) }));
-    }
+    const totalPedagio = fretesDodia.fretes.reduce((sum, f) => sum + (f.pedagio ?? 0), 0);
+    setFormData((prev) => ({
+      ...prev,
+      ...(totalFrete > 0 ? { frete: totalFrete.toFixed(2) } : {}),
+      pedagio: totalPedagio.toFixed(2),
+    }));
   }, [fretesDodia]);
 
   useEffect(() => {
