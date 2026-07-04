@@ -1,0 +1,95 @@
+**Prompt:**
+
+Please implement the following improvements to the **Diesel** module **without changing the application's design, layout, or existing workflow**.
+
+## 1. Remove the Total Summary Bar
+
+The **Diesel** page does not need to display the **Total** summary bar.
+
+Please remove the totals section from this page entirely.
+
+The Dashboard will remain the only place where aggregated totals and KPIs are displayed.
+
+---
+
+## 2. Format the "Distance Traveled (KM)" value
+
+The **Distance Traveled (KM)** field should display **only three decimal places**.
+
+### Requirements
+
+* Round the displayed value to **3 decimal places**.
+* Apply this formatting consistently throughout the application, including:
+
+  * Diesel table
+  * Add/Edit Diesel form (if displayed)
+  * Reports
+  * Exports (where applicable)
+* Store the full precision in the database if necessary, but always display only three decimal places to the user.
+
+Example:
+
+* **532.458721** → **532.459**
+* **187.2** → **187.200**
+
+---
+
+## 3. Verify and correct the Average (KM/L) calculation
+
+Please perform a complete review of the **Average (KM/L)** calculation.
+
+The correct formula must be:
+
+**Average (KM/L) = Distance Traveled (KM) ÷ Liters Fueled**
+
+### Example
+
+* Distance Traveled: **640 KM**
+* Liters Fueled: **160 L**
+
+Average:
+
+**640 ÷ 160 = 4.000 KM/L**
+
+### Verification Checklist
+
+* Confirm the calculation uses the **Distance Traveled (KM)** field.
+* Confirm the calculation uses the **Liters Fueled** field.
+* Ensure no incorrect fields are being used in the formula.
+* Prevent division by zero.
+* Handle null or empty values gracefully.
+* Ensure the value updates automatically whenever:
+
+  * A diesel record is created.
+  * A diesel record is edited.
+  * A diesel record is deleted.
+* Ensure the same calculation is used on both the **Diesel** page and the **Dashboard**.
+* Verify that the Dashboard always displays the same average shown in the Diesel table.
+* Ensure the calculation respects the selected date filter.
+
+### Display
+
+* Show the result with **three decimal places**.
+* Format the value consistently across the entire application.
+
+---
+
+## Performance
+
+* Keep the calculation efficient even with large datasets.
+* Avoid unnecessary recalculations.
+* Use the same calculation logic everywhere to prevent inconsistencies.
+
+---
+
+## Important
+
+* Do **not** redesign the interface.
+* Do **not** modify unrelated functionality.
+* Remove only the Total summary bar from the Diesel page.
+* Ensure the Distance Traveled value is displayed with three decimal places.
+* Correct the Average (KM/L) calculation so it always uses:
+
+**Distance Traveled (KM) ÷ Liters Fueled**
+
+and displays the correct result throughout the application.

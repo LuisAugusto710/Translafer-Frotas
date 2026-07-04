@@ -155,7 +155,7 @@ export function AbastecimentoFormModal({
 
   const l = parseFloat(formData.litros) || 0;
   const kmp = parseFloat(formData.kmPercorrido) || 0;
-  const mediaCalc = l > 0 && kmp > 0 ? (kmp / l).toFixed(2) : "-";
+  const mediaCalc = l > 0 && kmp > 0 ? (kmp / l).toFixed(3) : "-";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -393,7 +393,7 @@ export function Dashboard() {
     if (dieselData && dieselData.length > 0) {
       const best = [...dieselData].sort((a, b) => (b.mediaGeral ?? 0) - (a.mediaGeral ?? 0))[0];
       if (best.mediaGeral) {
-        list.push({ label: "Melhor eficiência (km/L)", value: `${best.placa} — ${formatNumber(best.mediaGeral, 2)} km/L`, icon: <Fuel className="h-4 w-4" />, color: "text-amber-600" });
+        list.push({ label: "Melhor eficiência (km/L)", value: `${best.placa} — ${formatNumber(best.mediaGeral, 3)} km/L`, icon: <Fuel className="h-4 w-4" />, color: "text-amber-600" });
       }
     }
     if (despResumo && despResumo.categorias.length > 0) {
@@ -709,7 +709,7 @@ export function Dashboard() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <KpiCard title="Total Litros"    icon={<Fuel className="h-5 w-5" />}      value={`${formatNumber(totalLitros, 0)} L`}    loading={l4} />
         <KpiCard title="Custo Diesel"    icon={<DollarSign className="h-5 w-5" />} value={formatCurrency(totalDiesel)}             valueColor="text-amber-600" loading={l1} />
-        <KpiCard title="Média KM/L"      icon={<Activity className="h-5 w-5" />}   value={avgKmL > 0 ? `${formatNumber(avgKmL, 2)} km/L` : "—"} loading={l4} />
+        <KpiCard title="Média KM/L"      icon={<Activity className="h-5 w-5" />}   value={avgKmL > 0 ? `${formatNumber(avgKmL, 3)} km/L` : "—"} loading={l4} />
         <KpiCard title="KM Percorrido"   icon={<Route className="h-5 w-5" />}      value={totalKm > 0 ? `${formatNumber(totalKm, 0)} km` : "—"} loading={l4} />
       </div>
 
@@ -752,7 +752,7 @@ export function Dashboard() {
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                     <XAxis dataKey="placa" fontSize={10} tickLine={false} axisLine={false} stroke="hsl(var(--muted-foreground))" />
                     <YAxis fontSize={10} tickLine={false} axisLine={false} width={36} stroke="hsl(var(--muted-foreground))" tickFormatter={v => `${v}`} />
-                    <Tooltip {...CHART_STYLE} formatter={(v: number) => `${formatNumber(v, 2)} km/L`} />
+                    <Tooltip {...CHART_STYLE} formatter={(v: number) => `${formatNumber(v, 3)} km/L`} />
                     <Bar dataKey="mediaGeral" name="Média KM/L" fill="#2ecc71" radius={[4,4,0,0]} />
                   </BarChart>
                 </ResponsiveContainer>
