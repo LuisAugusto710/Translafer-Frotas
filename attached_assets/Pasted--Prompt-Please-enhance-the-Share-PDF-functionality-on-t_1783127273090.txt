@@ -1,0 +1,54 @@
+**Prompt:**
+
+Please enhance the **Share PDF** functionality on the **Employees** page.
+
+## Add WhatsApp as a sharing option
+
+When the user clicks the **Share** button after generating the employee's PDF, I want **WhatsApp** to be one of the available sharing options.
+
+### Requirements
+
+* Include **WhatsApp** in the list of available sharing methods whenever the platform supports it.
+* On **Android** and **iOS**, use the device's native share sheet so WhatsApp appears alongside the other installed apps.
+* If WhatsApp is installed, the user should be able to send the generated PDF directly through a WhatsApp conversation.
+* The PDF should be attached automatically to the WhatsApp message.
+* Optionally, allow a predefined message to accompany the PDF, such as:
+
+```
+Hello,
+
+Please find attached your work report for the selected period.
+
+Best regards,
+LAFER Transportes
+```
+
+### Desktop Support
+
+* If the application is running on Windows, macOS, or Linux and WhatsApp Desktop is installed, allow the user to share the PDF through WhatsApp Desktop whenever possible.
+* If direct integration is not available, provide an option to:
+
+  * Download the PDF.
+  * Open WhatsApp Web or WhatsApp Desktop so the user can easily attach the generated file.
+
+### User Experience
+
+* The sharing process should be as simple as possible.
+* After clicking **Share**, present the available sharing options, including **WhatsApp**.
+* If WhatsApp is unavailable on the device, automatically fall back to the system's standard sharing options without displaying an error.
+
+### Compatibility
+
+Ensure the sharing feature works correctly on:
+
+* Android
+* iPhone (iOS)
+* Windows
+* macOS
+* Linux (where supported)
+
+## Important
+
+* Do **not** redesign the interface.
+* Keep the existing **Export PDF** and **Share** workflow unchanged.
+* Simply extend the Share functionality to include **WhatsApp** as a first-class sharing option while maintaining compatibility with the operating system's native sharing capabilities.

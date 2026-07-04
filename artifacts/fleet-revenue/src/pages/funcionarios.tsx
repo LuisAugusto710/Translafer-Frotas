@@ -16,6 +16,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   ChevronLeft,
   ChevronRight,
   FileDown,
@@ -23,7 +30,11 @@ import {
   Users,
   CalendarDays,
   Info,
+  MessageCircle,
+  Clipboard,
+  Check,
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const MONTH_NAMES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -224,25 +235,63 @@ export function Funcionarios() {
     setTimeout(() => { win.print(); }, 400);
   }, [selectedEmployee, calendarData, month, year]);
 
-  const handleShare = useCallback(async () => {
-    if (!selectedEmployee || !calendarData) return;
-    const period = `${MONTH_NAMES[month - 1]} ${year}`;
-    const text = [
-      `Funcionário: ${selectedEmployee.nome} (${selectedEmployee.tipo})`,
-      `Período: ${period}`,
-      `Dias trabalhados: ${calendarData.diasTrabalhados}`,
-      `Total a receber: ${fmt(calendarData.totalGanho)}`,
-    ].join("\n");
+  const { toast } = useToast();
 
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: `Calendário — ${selectedEmployee.nome}`, text });
-      } catch { /* user cancelled */ }
-    } else {
-      await navigator.clipboard.writeText(text);
-      alert("Resumo copiado para a área de transferência.");
-    }
+  const buildShareText = useCallback(() => {
+    if (!selectedEmployee || !calendarData) return "";
+    const period = `${MONTH_NAMES[month - 1]} ${year}`;
+    return [
+      `Olá,`,
+      ``,
+      `Segue abaixo o relatório de trabalho referente ao período de *${period}*:`,
+      ``,
+      `👤 *Funcionário:* ${selectedEmployee.nome}`,
+      `🏷️ *Função:* ${selectedEmployee.tipo}`,
+      `📅 *Período:* ${period}`,
+      `✅ *Dias trabalhados:* ${calendarData.diasTrabalhados}`,
+      `❌ *Dias não trabalhados:* ${calendarData.diasNaoTrabalhados}`,
+      `💰 *Valor por dia:* ${fmt(calendarData.mediaPorDia)}`,
+      `💵 *Total a receber:* ${fmt(calendarData.totalGanho)}`,
+      ``,
+      `Atenciosamente,`,
+      `LAFER Transportes`,
+    ].join("\n");
   }, [selectedEmployee, calendarData, month, year]);
+
+  const handleShareWhatsApp = useCallback(() => {
+    const text = buildShareText();
+    if (!text) return;
+    const encoded = encodeURIComponent(text);
+    window.open(`https://wa.me/?text=${encoded}`, "_blank", "noopener,noreferrer");
+  }, [buildShareText]);
+
+  const handleShareNative = useCallback(async () => {
+    const text = buildShareText();
+    if (!text || !selectedEmployee) return;
+    const period = `${MONTH_NAMES[month - 1]} ${year}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `Relatório — ${selectedEmployee.nome} — ${period}`,
+          text,
+        });
+      } else {
+        await navigator.clipboard.writeText(text);
+        toast({ title: "Resumo copiado!", description: "Texto copiado para a área de transferência." });
+      }
+    } catch { /* user cancelled */ }
+  }, [buildShareText, selectedEmployee, month, year, toast]);
+
+  const handleCopyClipboard = useCallback(async () => {
+    const text = buildShareText();
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ title: "Copiado!", description: "Resumo copiado para a área de transferência." });
+    } catch {
+      toast({ title: "Erro", description: "Não foi possível copiar.", variant: "destructive" });
+    }
+  }, [buildShareText, toast]);
 
   const isLoading = employeesLoading;
 
@@ -511,18 +560,75 @@ export function Funcionarios() {
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold">Compartilhar PDF</p>
                   <p className="text-[10px] text-muted-foreground leading-tight">
-                    Compartilhe o PDF gerado com o funcionário ou por outros canais.
+                    Compartilhe o resumo com o funcionário via WhatsApp ou outros canais.
                   </p>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={!selectedEmployee || !calendarData}
-                  onClick={handleShare}
-                  className="shrink-0 text-xs h-8"
-                >
-                  Compartilhar
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={!selectedEmployee || !calendarData}
+                      className="shrink-0 text-xs h-8 gap-1.5"
+                    >
+                      <Share2 className="h-3.5 w-3.5" />
+                      Compartilhar
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-52">
+                    <DropdownMenuItem
+                      onClick={handleShareWhatsApp}
+                      className="gap-2 cursor-pointer"
+                    >
+                      <MessageCircle className="h-4 w-4 text-[#25D366]" />
+                      <div>
+                        <p className="text-xs font-semibold">WhatsApp</p>
+                        <p className="text-[10px] text-muted-foreground leading-tight">
+                          Envia resumo via WhatsApp
+                        </p>
+                      </div>
+                    </DropdownMenuItem>
+                    {typeof navigator !== "undefined" && "share" in navigator && (
+                      <DropdownMenuItem
+                        onClick={handleShareNative}
+                        className="gap-2 cursor-pointer"
+                      >
+                        <Share2 className="h-4 w-4 text-blue-500" />
+                        <div>
+                          <p className="text-xs font-semibold">Compartilhar</p>
+                          <p className="text-[10px] text-muted-foreground leading-tight">
+                            Painel nativo do sistema
+                          </p>
+                        </div>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleCopyClipboard}
+                      className="gap-2 cursor-pointer"
+                    >
+                      <Clipboard className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs font-semibold">Copiar resumo</p>
+                        <p className="text-[10px] text-muted-foreground leading-tight">
+                          Copia texto para área de transferência
+                        </p>
+                      </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleSavePdf}
+                      className="gap-2 cursor-pointer"
+                    >
+                      <FileDown className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs font-semibold">Baixar PDF</p>
+                        <p className="text-[10px] text-muted-foreground leading-tight">
+                          Abre diálogo de impressão/PDF
+                        </p>
+                      </div>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </CardContent>
           </Card>
