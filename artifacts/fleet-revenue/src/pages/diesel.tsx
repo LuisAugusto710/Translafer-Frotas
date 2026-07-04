@@ -15,7 +15,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatCurrency, formatNumber, formatDate } from "@/lib/utils";
+import { formatCurrency, formatNumber, formatDate, formatInteger } from "@/lib/utils";
 import { exportToCsv, exportToExcel } from "@/lib/export";
 import { AbastecimentoFormModal } from "@/components/abastecimento-form-modal";
 
