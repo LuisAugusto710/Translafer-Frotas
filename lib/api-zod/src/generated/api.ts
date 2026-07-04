@@ -897,3 +897,33 @@ export const UpsertFleetConfigResponse = zod.object({
 })
 
 
+/**
+ * @summary List all distinct employees from despesas
+ */
+export const ListEmployeesResponseItem = zod.object({
+  "nome": zod.string(),
+  "tipo": zod.string()
+})
+export const ListEmployeesResponse = zod.array(ListEmployeesResponseItem)
+
+
+export const GetEmployeeCalendarQueryParams = zod.object({
+  "nome": zod.coerce.string(),
+  "tipo": zod.coerce.string(),
+  "ano": zod.coerce.number(),
+  "mes": zod.coerce.number()
+})
+
+export const GetEmployeeCalendarResponse = zod.object({
+  "dias": zod.array(zod.object({
+  "date": zod.string(),
+  "worked": zod.boolean(),
+  "valor": zod.number()
+})),
+  "totalGanho": zod.number(),
+  "diasTrabalhados": zod.number(),
+  "diasNaoTrabalhados": zod.number(),
+  "mediaPorDia": zod.number()
+})
+
+

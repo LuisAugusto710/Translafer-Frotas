@@ -428,6 +428,25 @@ export interface RecentFrete {
   transp?: string | null;
 }
 
+export interface EmployeeItem {
+  nome: string;
+  tipo: string;
+}
+
+export interface EmployeeCalendarDay {
+  date: string;
+  worked: boolean;
+  valor: number;
+}
+
+export interface EmployeeCalendarResponse {
+  dias: EmployeeCalendarDay[];
+  totalGanho: number;
+  diasTrabalhados: number;
+  diasNaoTrabalhados: number;
+  mediaPorDia: number;
+}
+
 export type ListFretesParams = {
 frota?: string;
 cliente?: string;
@@ -529,5 +548,12 @@ dateTo?: string;
 
 export type GetRecentFretesParams = {
 limit?: number;
+};
+
+export type GetEmployeeCalendarParams = {
+nome: string;
+tipo: string;
+ano: number;
+mes: number;
 };
 

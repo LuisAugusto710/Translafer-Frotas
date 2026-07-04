@@ -37,6 +37,8 @@ import type {
   DespesasResumo,
   DieselAvgPrice,
   DieselByPlaca,
+  EmployeeCalendarResponse,
+  EmployeeItem,
   ErrorResponse,
   FleetConfig,
   FleetConfigInput,
@@ -53,6 +55,7 @@ import type {
   GetDespesasMotoristaAjudanteParams,
   GetDespesasResumoParams,
   GetDieselByPlacaParams,
+  GetEmployeeCalendarParams,
   GetFleetPerformanceParams,
   GetMensalComparativoParams,
   GetRecentFretesParams,
@@ -2743,4 +2746,159 @@ export const useUpsertFleetConfig = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getUpsertFleetConfigMutationOptions(options));
     }
+
+export const getListEmployeesUrl = () => {
+
+
+
+
+  return `/api/employees`
+}
+
+/**
+ * @summary List all distinct employees from despesas
+ */
+export const listEmployees = async ( options?: RequestInit): Promise<EmployeeItem[]> => {
+
+  return customFetch<EmployeeItem[]>(getListEmployeesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListEmployeesQueryKey = () => {
+    return [
+    `/api/employees`
+    ] as const;
+    }
+
+
+export const getListEmployeesQueryOptions = <TData = Awaited<ReturnType<typeof listEmployees>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listEmployees>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListEmployeesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listEmployees>>> = ({ signal }) => listEmployees({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listEmployees>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListEmployeesQueryResult = NonNullable<Awaited<ReturnType<typeof listEmployees>>>
+export type ListEmployeesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all distinct employees from despesas
+ */
+
+export function useListEmployees<TData = Awaited<ReturnType<typeof listEmployees>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listEmployees>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListEmployeesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetEmployeeCalendarUrl = (params: GetEmployeeCalendarParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/employees/calendar?${stringifiedParams}` : `/api/employees/calendar`
+}
+
+export const getEmployeeCalendar = async (params: GetEmployeeCalendarParams, options?: RequestInit): Promise<EmployeeCalendarResponse> => {
+
+  return customFetch<EmployeeCalendarResponse>(getGetEmployeeCalendarUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetEmployeeCalendarQueryKey = (params?: GetEmployeeCalendarParams,) => {
+    return [
+    `/api/employees/calendar`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetEmployeeCalendarQueryOptions = <TData = Awaited<ReturnType<typeof getEmployeeCalendar>>, TError = ErrorType<unknown>>(params: GetEmployeeCalendarParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getEmployeeCalendar>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetEmployeeCalendarQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getEmployeeCalendar>>> = ({ signal }) => getEmployeeCalendar(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getEmployeeCalendar>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetEmployeeCalendarQueryResult = NonNullable<Awaited<ReturnType<typeof getEmployeeCalendar>>>
+export type GetEmployeeCalendarQueryError = ErrorType<unknown>
+
+
+
+export function useGetEmployeeCalendar<TData = Awaited<ReturnType<typeof getEmployeeCalendar>>, TError = ErrorType<unknown>>(
+ params: GetEmployeeCalendarParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getEmployeeCalendar>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetEmployeeCalendarQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 

@@ -1,0 +1,146 @@
+**Prompt:**
+
+Using the attached image as a **UI/UX reference**, create a new page called **Employees** and place it **before the "Dashboard"** in the application's sidebar navigation.
+
+The goal is to provide an employee management page that automatically generates each employee's work calendar and payment summary based on the data that already exists in the database.
+
+## 1. New Employees Page
+
+Create a new page named **Employees**.
+
+It should follow the same visual style as the attached reference image, while maintaining the application's existing design language, colors, spacing, typography, and components.
+
+Do **not** redesign the application—only create a new page that integrates seamlessly with the current interface.
+
+## 2. Employee Selection
+
+At the top of the page, add an employee selector.
+
+The user should be able to select any registered employee (Driver or Assistant).
+
+The list of employees must be populated automatically from the existing database.
+
+## 3. Automatic Data Population
+
+Do **not** require the user to manually enter worked days.
+
+The application already contains all the necessary information inside the **Expenses** table.
+
+Automatically build the employee's work calendar using the existing data.
+
+Whenever a new expense record is created or updated:
+
+* Read the Driver Name and Assistant Name.
+* Identify the corresponding work date.
+* Mark that day as **Worked** for the selected employee.
+* Days without records should automatically be marked as **Not Worked**.
+
+This process should happen automatically without any manual intervention.
+
+## 4. Monthly Work Calendar
+
+Display a monthly calendar similar to the reference image.
+
+Each day should indicate:
+
+* Worked (green)
+* Not Worked (red)
+
+Allow the user to navigate between months.
+
+When the month changes, all information should automatically refresh.
+
+## 5. Payment Summary
+
+Display a summary panel containing:
+
+* Days Worked
+* Days Not Worked
+* Amount Earned During the Selected Period
+* Average Amount Per Worked Day
+* Additional Payments (if applicable)
+* Total Amount to Receive
+
+All calculations must be generated automatically using the data already stored in the database.
+
+## 6. Employee Details
+
+Display information such as:
+
+* Employee Name
+* Employee Role (Driver or Assistant)
+* Selected Period
+* Base Amount Earned During the Period
+
+This information should update automatically whenever another employee or period is selected.
+
+## 7. Automatic Synchronization
+
+The page must always stay synchronized with the Expenses module.
+
+Whenever an expense is:
+
+* Created
+* Edited
+* Deleted
+* Imported
+
+the employee calendar and payment summary should update automatically.
+
+No manual refresh should be required.
+
+## 8. Export to PDF
+
+Add a button named:
+
+**Export PDF**
+
+When clicked, generate a professional PDF containing:
+
+* Employee name
+* Employee role
+* Selected period
+* Monthly work calendar
+* Days worked
+* Days not worked
+* Payment summary
+* Total amount to receive
+* Company logo (if available)
+* Generation date and time
+
+The PDF should be clean, well-formatted, and suitable for printing or sending to employees.
+
+## 9. Share PDF
+
+After generating the PDF, provide a **Share** option.
+
+The user should be able to share the generated PDF directly using the operating system's native sharing features whenever available.
+
+Examples:
+
+* WhatsApp
+* Email
+* Microsoft Teams
+* Telegram
+* AirDrop (Apple devices)
+* Android Share Sheet
+* Any other application supported by the operating system
+
+On desktop platforms where native sharing is unavailable, allow the user to download the PDF and share it manually.
+
+## 10. Performance
+
+* Generate the calendar efficiently, even with many years of historical data.
+* Load employee information dynamically.
+* Update calculations in real time.
+* Avoid unnecessary database queries.
+* Keep the page fully responsive for desktop, tablet, and mobile devices.
+
+## Important
+
+* Do **not** redesign the application.
+* Maintain the current visual identity.
+* Use the attached image only as a layout and functionality reference.
+* Reuse existing components whenever possible.
+* Automatically populate all employee information using the existing database, especially the data already stored in the **Expenses** table.
+* Ensure the PDF export and sharing functionality work reliably across supported platforms.

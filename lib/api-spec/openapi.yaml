@@ -738,6 +738,50 @@ paths:
               schema:
                 $ref: "#/components/schemas/FleetConfig"
 
+  /employees:
+    get:
+      operationId: listEmployees
+      tags: [employees]
+      summary: List all distinct employees from despesas
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EmployeeItem"
+
+  /employees/calendar:
+    get:
+      operationId: getEmployeeCalendar
+      tags: [employees]
+      parameters:
+        - name: nome
+          in: query
+          required: true
+          schema: { type: string }
+        - name: tipo
+          in: query
+          required: true
+          schema: { type: string }
+        - name: ano
+          in: query
+          required: true
+          schema: { type: integer }
+        - name: mes
+          in: query
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmployeeCalendarResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -1590,3 +1634,40 @@ components:
         transp:
           type: ["string", "null"]
       required: [id, dataCte, cliente, frota, cidade, frete, pedagio, totalGeral]
+
+    EmployeeItem:
+      type: object
+      required: [nome, tipo]
+      properties:
+        nome:
+          type: string
+        tipo:
+          type: string
+
+    EmployeeCalendarDay:
+      type: object
+      required: [date, worked, valor]
+      properties:
+        date:
+          type: string
+        worked:
+          type: boolean
+        valor:
+          type: number
+
+    EmployeeCalendarResponse:
+      type: object
+      required: [dias, totalGanho, diasTrabalhados, diasNaoTrabalhados, mediaPorDia]
+      properties:
+        dias:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmployeeCalendarDay"
+        totalGanho:
+          type: number
+        diasTrabalhados:
+          type: integer
+        diasNaoTrabalhados:
+          type: integer
+        mediaPorDia:
+          type: number

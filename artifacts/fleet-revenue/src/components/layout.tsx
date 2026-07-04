@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useTheme } from "./theme-provider";
-import { Moon, Sun, LayoutDashboard, Truck, Fuel, Wallet, Menu, X, LogOut } from "lucide-react";
+import { Moon, Sun, LayoutDashboard, Truck, Fuel, Wallet, Users, Menu, X, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { BackupFolderButton } from "./backup-folder-button";
 import { OneDriveBackupButton } from "./onedrive-backup-button";
@@ -11,6 +11,7 @@ function NavLinks({ currentLocation, onNavigate }: { currentLocation: string; on
   const isFretes = currentLocation === "/" || currentLocation === "/fretes";
   const isDiesel = currentLocation === "/diesel";
   const isDespesas = currentLocation === "/despesas";
+  const isFuncionarios = currentLocation === "/funcionarios";
   const isDashboard = currentLocation === "/dashboard";
 
   return (
@@ -31,6 +32,12 @@ function NavLinks({ currentLocation, onNavigate }: { currentLocation: string; on
         <div className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${isDespesas ? "bg-[#0a192f] text-white" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
           <Wallet className="h-4 w-4 shrink-0" />
           Despesas
+        </div>
+      </Link>
+      <Link href="/funcionarios" onClick={onNavigate}>
+        <div className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${isFuncionarios ? "bg-[#0a192f] text-white" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+          <Users className="h-4 w-4 shrink-0" />
+          Funcionários
         </div>
       </Link>
       <Link href="/dashboard" onClick={onNavigate}>
@@ -78,6 +85,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       ? "Controle de Diesel"
       : location === "/despesas"
       ? "Gestão de Despesas"
+      : location === "/funcionarios"
+      ? "Funcionários"
       : "Dashboard Operacional";
 
   return (

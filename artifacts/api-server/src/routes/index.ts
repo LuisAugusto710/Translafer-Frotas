@@ -8,6 +8,7 @@ import dashboardRouter from "./dashboard";
 import backupRouter from "./backup";
 import restoreRouter from "./restore";
 import fleetConfigsRouter from "./fleet-configs";
+import employeesRouter from "./employees";
 import { requireAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
@@ -25,5 +26,6 @@ router.use(dashboardRouter);
 router.use(backupRouter);
 router.use(restoreRouter);
 router.use(fleetConfigsRouter);
+router.use(employeesRouter);
 
 export default router;
