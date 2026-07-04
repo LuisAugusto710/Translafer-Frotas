@@ -1,0 +1,177 @@
+**Prompt:**
+
+Please perform a **comprehensive responsive UI optimization** across the entire application while **preserving the existing design, layout, functionality, and visual identity**.
+
+The objective is to make the application feel native on desktop, tablet, and mobile devices, ensuring that no text, numbers, buttons, tables, or cards break, overlap, or become difficult to read.
+
+## 1. Fully Responsive Layout
+
+Review every page in the application and optimize the layout for:
+
+* Desktop (1920px+)
+* Laptop
+* Tablet
+* Large phones
+* Small phones (320px width and above)
+
+The interface should adapt fluidly to every screen size.
+
+## 2. Prevent Text and Number Overflow
+
+One of the biggest issues is that text and numbers sometimes overflow or wrap incorrectly.
+
+Please ensure that:
+
+* Text never overflows its container.
+* Numbers never overflow cards or table cells.
+* Long values remain readable.
+* Buttons never break onto multiple lines.
+* Titles remain fully visible.
+* Currency values are always displayed correctly.
+* Dates remain readable on all screen sizes.
+
+If necessary:
+
+* Dynamically reduce font size.
+* Increase available width.
+* Allow intelligent wrapping only when appropriate.
+* Keep important values on a single line whenever possible.
+
+## 3. Responsive Tables
+
+Optimize every table in the application, including:
+
+* Freights
+* Expenses
+* Diesel
+* Employees
+* Dashboard tables
+* Any future tables
+
+Requirements:
+
+* Columns should resize intelligently.
+* Headers should always align with their data.
+* No header text should be cut off.
+* No cell content should overlap.
+* Horizontal scrolling should only appear when absolutely necessary.
+* Sticky headers must continue working correctly.
+* Maintain smooth scrolling performance.
+
+## 4. Responsive Cards
+
+Review all dashboard cards and summary panels.
+
+Ensure:
+
+* Numbers fit properly.
+* Currency values never overflow.
+* Icons remain aligned.
+* Titles remain readable.
+* Cards resize proportionally on smaller screens.
+* Consistent spacing between elements.
+
+## 5. Forms
+
+Optimize all forms.
+
+Requirements:
+
+* Inputs should expand to the available width.
+* Labels should never overlap fields.
+* Long labels should wrap gracefully.
+* Buttons should resize appropriately.
+* Proper spacing between fields.
+* Comfortable touch targets on mobile devices.
+
+## 6. Calendar Page
+
+Optimize the new **Employees** calendar page.
+
+Ensure:
+
+* Calendar cells remain readable.
+* Worked/Not Worked labels never overflow.
+* Payment summary cards resize correctly.
+* Calendar navigation works well on mobile.
+* Employee selector fits smaller screens.
+* Summary panels stack naturally on narrow displays.
+
+## 7. Typography
+
+Implement fluid typography.
+
+Requirements:
+
+* Scale font sizes according to screen width.
+* Maintain visual hierarchy.
+* Prevent oversized text on small devices.
+* Prevent tiny text on large monitors.
+* Preserve readability across all resolutions.
+
+## 8. Spacing
+
+Review margins and padding throughout the application.
+
+Ensure:
+
+* Consistent spacing.
+* No unnecessary empty areas.
+* Components do not touch screen edges.
+* Proper spacing between cards, tables, and buttons.
+
+## 9. Buttons
+
+Optimize every button.
+
+Requirements:
+
+* Buttons should resize responsively.
+* Button text should remain on a single line whenever possible.
+* Icons should stay aligned.
+* Touch-friendly size on mobile.
+* No clipping or overflow.
+
+## 10. Charts
+
+Review all Dashboard charts.
+
+Ensure:
+
+* Axis labels remain readable.
+* Legends never overlap.
+* Tooltips fit on screen.
+* Charts resize smoothly.
+* Responsive behavior across all screen sizes.
+
+## 11. Performance
+
+The responsive improvements must not reduce performance.
+
+* Avoid unnecessary re-renders.
+* Maintain smooth scrolling.
+* Keep lazy loading and virtualization working correctly.
+* Minimize layout shifts.
+* Ensure fast rendering on both desktop and mobile.
+
+## 12. Modern Responsive Techniques
+
+Where appropriate, use modern CSS techniques such as:
+
+* CSS Grid
+* Flexbox
+* Responsive breakpoints
+* Fluid typography (`clamp()`)
+* Relative units (`rem`, `%`, `vw`, `vh`)
+* Auto-fit and auto-fill layouts
+* Dynamic container sizing
+
+Avoid hardcoded widths and heights whenever possible.
+
+## Important
+
+* **Do not redesign the application.**
+* **Do not change colors, branding, icons, or the overall layout.**
+* Focus exclusively on making the interface highly responsive and adaptive.
+* Ensure there are **no broken layouts, clipped content, overlapping elements, or truncated text or numbers** on any supported device.
+* The final result should provide a polished, professional, and seamless user experience across desktop, tablet, and mobile platforms.

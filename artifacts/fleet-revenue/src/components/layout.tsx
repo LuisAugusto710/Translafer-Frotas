@@ -156,8 +156,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </h1>
 
           <div className="flex items-center gap-2 shrink-0">
-            <OneDriveBackupButton />
-            <BackupFolderButton />
+            <span className="hidden sm:contents">
+              <OneDriveBackupButton />
+              <BackupFolderButton />
+            </span>
             {user?.email && (
               <span className="hidden lg:inline text-xs text-muted-foreground font-mono max-w-[180px] truncate">
                 {user.email}

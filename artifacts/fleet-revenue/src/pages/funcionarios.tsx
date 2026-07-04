@@ -403,25 +403,25 @@ export function Funcionarios() {
                 <div className="grid grid-cols-7 gap-1">
                   {cells.map((cell, i) => {
                     if (cell.dayNum === null) {
-                      return <div key={i} className="h-16 rounded-lg" />;
+                      return <div key={i} className="h-11 sm:h-16 rounded-lg" />;
                     }
                     return (
                       <div
                         key={i}
-                        className={`h-16 rounded-lg border flex flex-col items-center justify-center gap-0.5 ${
+                        className={`h-11 sm:h-16 rounded-lg border flex flex-col items-center justify-center gap-0 sm:gap-0.5 ${
                           cell.worked
                             ? "bg-green-50 border-green-200 dark:bg-green-950/40 dark:border-green-900"
                             : "bg-red-50 border-red-200 dark:bg-red-950/40 dark:border-red-900"
                         }`}
                       >
-                        <span className={`text-sm font-bold leading-none ${cell.worked ? "text-green-800 dark:text-green-300" : "text-red-700 dark:text-red-400"}`}>
+                        <span className={`text-xs sm:text-sm font-bold leading-none ${cell.worked ? "text-green-800 dark:text-green-300" : "text-red-700 dark:text-red-400"}`}>
                           {cell.dayNum}
                         </span>
-                        <span className={`text-[10px] font-semibold leading-none ${cell.worked ? "text-green-700 dark:text-green-400" : "text-red-600 dark:text-red-500"}`}>
-                          {cell.worked ? "Trabalhou" : "Não trab."}
+                        <span className={`text-[8px] sm:text-[10px] font-semibold leading-tight ${cell.worked ? "text-green-700 dark:text-green-400" : "text-red-600 dark:text-red-500"}`}>
+                          {cell.worked ? "Trab." : "Não"}
                         </span>
                         {cell.worked && cell.valor > 0 && (
-                          <span className="text-[9px] text-green-600 dark:text-green-500 leading-none">
+                          <span className="hidden sm:block text-[9px] text-green-600 dark:text-green-500 leading-none">
                             {fmt(cell.valor)}
                           </span>
                         )}

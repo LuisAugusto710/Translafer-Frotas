@@ -123,7 +123,7 @@ function KpiCard({ title, value, sub, icon, valueColor = "text-foreground", load
             {loading ? (
               <Skeleton className="h-7 w-24 mt-2" />
             ) : (
-              <p className={`text-lg sm:text-xl font-bold mt-1.5 tracking-tight break-all ${valueColor}`}>
+              <p className={`text-base sm:text-lg font-bold mt-1.5 tracking-tight break-words leading-tight ${valueColor}`}>
                 {value}
               </p>
             )}
@@ -420,12 +420,12 @@ export function Dashboard() {
 
       {/* ── Global Filters ──────────────────────────────────────────────── */}
       <div className="px-4 sm:px-6 py-2.5 bg-white dark:bg-slate-900 border-b border-border -mx-3 sm:-mx-6">
-        <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-wrap items-end gap-2 sm:gap-3">
           {/* Year */}
           <div className="flex flex-col gap-1">
             <Label className="text-xs text-muted-foreground">Ano</Label>
             <Select value={ano.toString()} onValueChange={v => { setAno(parseInt(v)); resetDates(); }}>
-              <SelectTrigger className="w-[90px] h-8"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-[80px] sm:w-[90px] h-8"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {YEARS.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
               </SelectContent>
@@ -436,7 +436,7 @@ export function Dashboard() {
             <Label className="text-xs text-muted-foreground">De</Label>
             <Input
               type="date"
-              className="h-8 w-[140px] text-xs"
+              className="h-8 w-[120px] sm:w-[140px] text-xs"
               value={customFrom}
               onChange={e => setCustomFrom(e.target.value)}
             />
@@ -446,7 +446,7 @@ export function Dashboard() {
             <Label className="text-xs text-muted-foreground">Até</Label>
             <Input
               type="date"
-              className="h-8 w-[140px] text-xs"
+              className="h-8 w-[120px] sm:w-[140px] text-xs"
               value={customTo}
               onChange={e => setCustomTo(e.target.value)}
             />
@@ -455,7 +455,7 @@ export function Dashboard() {
           <div className="flex flex-col gap-1">
             <Label className="text-xs text-muted-foreground">Frota</Label>
             <Select value={frotaFilter} onValueChange={setFrotaFilter}>
-              <SelectTrigger className="w-[110px] h-8"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-[95px] sm:w-[110px] h-8"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">Todas</SelectItem>
                 {(frotasList ?? []).map(f => <SelectItem key={f.frota} value={f.frota}>{f.frota}</SelectItem>)}
@@ -523,7 +523,7 @@ export function Dashboard() {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                   <XAxis dataKey="periodo" fontSize={10} tickLine={false} axisLine={false} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis fontSize={10} tickLine={false} axisLine={false} width={52} stroke="hsl(var(--muted-foreground))" tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} />
+                  <YAxis fontSize={10} tickLine={false} axisLine={false} width={44} stroke="hsl(var(--muted-foreground))" tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} />
                   <Tooltip {...CHART_STYLE} formatter={(v: number) => formatCurrency(v)} />
                   <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
                   <Area type="monotone" dataKey="totalPedagio" name="Pedágio" stroke="#2ecc71" fill="url(#gPedagio)" stackId="1" strokeWidth={1.5} />
@@ -549,7 +549,7 @@ export function Dashboard() {
                   <ComposedChart data={despMensal} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                     <XAxis dataKey="mes" fontSize={10} tickLine={false} axisLine={false} stroke="hsl(var(--muted-foreground))" />
-                    <YAxis fontSize={10} tickLine={false} axisLine={false} width={52} stroke="hsl(var(--muted-foreground))" tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} />
+                    <YAxis fontSize={10} tickLine={false} axisLine={false} width={44} stroke="hsl(var(--muted-foreground))" tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} />
                     <Tooltip {...CHART_STYLE} formatter={(v: number) => formatCurrency(v)} />
                     <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
                     <Bar dataKey="frete"  name="Receita"  fill="#0a192f" radius={[4,4,0,0]} />
@@ -727,7 +727,7 @@ export function Dashboard() {
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                     <XAxis dataKey="placa" fontSize={10} tickLine={false} axisLine={false} stroke="hsl(var(--muted-foreground))" />
                     <YAxis yAxisId="l" fontSize={10} tickLine={false} axisLine={false} width={44} stroke="hsl(var(--muted-foreground))" tickFormatter={v => `${v}L`} />
-                    <YAxis yAxisId="r" orientation="right" fontSize={10} tickLine={false} axisLine={false} width={52} stroke="hsl(var(--muted-foreground))" tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} />
+                    <YAxis yAxisId="r" orientation="right" fontSize={10} tickLine={false} axisLine={false} width={44} stroke="hsl(var(--muted-foreground))" tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} />
                     <Tooltip {...CHART_STYLE} />
                     <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
                     <Bar  yAxisId="l" dataKey="totalLitros" name="Litros (L)"     fill="#f39c12" radius={[4,4,0,0]} />
