@@ -9,4 +9,5 @@
 export type GetDespesasMotoristaAjudanteParams = {
 dateFrom?: Date;
 dateTo?: Date;
+frota?: string;
 };

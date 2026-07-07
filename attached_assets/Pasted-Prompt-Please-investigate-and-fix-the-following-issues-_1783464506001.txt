@@ -1,0 +1,158 @@
+Prompt:
+
+Please investigate and fix the following issues with the Dashboard Fleet Filter without changing the application’s design, layout, or existing workflow.
+
+1. Fix the Fleet filter
+
+The Fleet filter on the Dashboard is currently not working correctly.
+
+When I select a specific fleet, the Dashboard does not update to display the data corresponding to the selected fleet and the selected date range.
+
+Please perform a complete investigation to identify the root cause and fix it.
+
+Verification Checklist
+
+Check that the Fleet filter is correctly applied to:
+
+* Total Revenue
+* Total Expenses
+* Net Profit
+* Diesel Costs
+* Toll Costs
+* Driver Payments
+* Assistant Payments
+* Freight Count
+* Every KPI card
+* Every chart
+* Every table
+* Every report displayed on the Dashboard
+
+The selected fleet should filter all Dashboard data, not just some widgets.
+
+⸻
+
+2. Verify the filter combination
+
+The Dashboard should always combine the selected filters correctly.
+
+For example:
+
+* Fleet: 4104
+* Date Range: 01/07/2026 – 31/07/2026
+
+The Dashboard should display only data that belongs to:
+
+* Fleet 4104
+* AND the selected date range.
+
+The filters must work together (logical AND) and not independently.
+
+⸻
+
+3. Investigate the root cause
+
+Please verify:
+
+* Database queries
+* SQL WHERE clauses
+* ORM filters
+* API requests
+* Backend aggregation logic
+* Dashboard state management
+* Cache invalidation
+* React state/hooks (if applicable)
+* Filter propagation to all Dashboard components
+
+Ensure every widget receives the currently selected fleet and date filter before calculating its values.
+
+⸻
+
+4. Automatic updates
+
+Whenever the user changes:
+
+* Fleet
+* Date range
+
+the Dashboard should immediately:
+
+* Refresh all KPI cards.
+* Refresh every chart.
+* Refresh every table.
+* Refresh every calculation.
+
+No page refresh should be required.
+
+⸻
+
+5. Add an “All Fleets” option
+
+In the Fleet dropdown menu, add a new option:
+
+All Fleets
+
+This option should be selected by default when the Dashboard loads.
+
+When All Fleets is selected:
+
+* Display data from every fleet.
+* Combine all records.
+* Ignore fleet-specific filtering while still respecting the selected date range.
+
+⸻
+
+6. Fleet dropdown behavior
+
+The dropdown should:
+
+* List every registered fleet.
+* Include All Fleets as the first option.
+* Sort fleet numbers in ascending order.
+* Automatically include newly added fleets.
+* Never contain duplicate fleet numbers.
+
+Example:
+
+* All Fleets
+* 4101
+* 4102
+* 4103
+* 4104
+* 4105
+* …
+
+⸻
+
+7. Performance
+
+Optimize the filtering logic so that:
+
+* Filtering remains fast even with large datasets.
+* Database queries use efficient filtering and indexing.
+* Avoid unnecessary recalculations.
+* Only affected Dashboard components are refreshed.
+
+⸻
+
+8. Validation
+
+After implementing the fix, verify the following scenarios:
+
+* All Fleets + Current Month
+* Single Fleet + Current Month
+* Single Fleet + Custom Date Range
+* All Fleets + Custom Date Range
+* Changing fleet multiple times
+* Changing date after selecting a fleet
+* Adding a new freight while a fleet filter is active
+
+In every scenario, the Dashboard should immediately display the correct data.
+
+⸻
+
+Important
+
+* Do not redesign the Dashboard.
+* Do not modify the existing layout or visual identity.
+* Focus on fixing the Fleet filter so it correctly filters every Dashboard metric, chart, table, and report.
+* Add an “All Fleets” option to the dropdown and make it the default selection.

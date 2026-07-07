@@ -9,4 +9,5 @@
 export type GetDashboardResumoParams = {
 dateFrom?: Date;
 dateTo?: Date;
+frota?: string;
 };

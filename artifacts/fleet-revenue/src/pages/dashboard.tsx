@@ -344,19 +344,19 @@ export function Dashboard() {
   function resetDates() { setCustomFrom(""); setCustomTo(""); }
 
   // ── Data hooks ─────────────────────────────────────────────────────────────
-  const { data: resumo,        isLoading: l1 } = useGetDashboardResumo({ dateFrom, dateTo }, { query: { queryKey: getGetDashboardResumoQueryKey({ dateFrom, dateTo }) } });
-  const { data: periodoData,   isLoading: l2 } = useGetRevenueByPeriodo({ period, dateFrom, dateTo }, { query: { queryKey: getGetRevenueByPeriodoQueryKey({ period, dateFrom, dateTo }) } });
-  const { data: mensalData,    isLoading: l3 } = useGetMensalComparativo({ ano }, { query: { queryKey: getGetMensalComparativoQueryKey({ ano }) } });
-  const { data: dieselData,    isLoading: l4 } = useGetDieselByPlaca({ ano }, { query: { queryKey: getGetDieselByPlacaQueryKey({ ano }) } });
-  const { data: despResumo,    isLoading: l5 } = useGetDespesasResumo({ ano }, { query: { queryKey: getGetDespesasResumoQueryKey({ ano }) } });
-  const { data: despMensal,    isLoading: l6 } = useGetDespesasMensal({ ano }, { query: { queryKey: getGetDespesasMensalQueryKey({ ano }) } });
-  const { data: motAjud,       isLoading: l13} = useGetDespesasMotoristaAjudante({ dateFrom, dateTo }, { query: { queryKey: getGetDespesasMotoristaAjudanteQueryKey({ dateFrom, dateTo }) } });
+  const { data: resumo,        isLoading: l1 } = useGetDashboardResumo({ dateFrom, dateTo, frota: frotaParam as any }, { query: { queryKey: getGetDashboardResumoQueryKey({ dateFrom, dateTo, frota: frotaParam as any }) } });
+  const { data: periodoData,   isLoading: l2 } = useGetRevenueByPeriodo({ period, dateFrom, dateTo, frota: frotaParam as any }, { query: { queryKey: getGetRevenueByPeriodoQueryKey({ period, dateFrom, dateTo, frota: frotaParam as any }) } });
+  const { data: mensalData,    isLoading: l3 } = useGetMensalComparativo({ ano, frota: frotaParam as any }, { query: { queryKey: getGetMensalComparativoQueryKey({ ano, frota: frotaParam as any }) } });
+  const { data: dieselData,    isLoading: l4 } = useGetDieselByPlaca({ ano, frota: frotaParam as any }, { query: { queryKey: getGetDieselByPlacaQueryKey({ ano, frota: frotaParam as any }) } });
+  const { data: despResumo,    isLoading: l5 } = useGetDespesasResumo({ ano, dateFrom, dateTo, frota: frotaParam as any }, { query: { queryKey: getGetDespesasResumoQueryKey({ ano, dateFrom, dateTo, frota: frotaParam as any }) } });
+  const { data: despMensal,    isLoading: l6 } = useGetDespesasMensal({ ano, dateFrom, dateTo, frota: frotaParam as any }, { query: { queryKey: getGetDespesasMensalQueryKey({ ano, dateFrom, dateTo, frota: frotaParam as any }) } });
+  const { data: motAjud,       isLoading: l13} = useGetDespesasMotoristaAjudante({ dateFrom, dateTo, frota: frotaParam as any }, { query: { queryKey: getGetDespesasMotoristaAjudanteQueryKey({ dateFrom, dateTo, frota: frotaParam as any }) } });
   const { data: clientesData,  isLoading: l7 } = useGetTopClientes({ dateFrom, dateTo, frota: frotaParam as any }, { query: { queryKey: getGetTopClientesQueryKey({ dateFrom, dateTo, frota: frotaParam as any }) } });
   const { data: cidadesData,   isLoading: l8 } = useGetTopCidades({ dateFrom, dateTo, frota: frotaParam as any }, { query: { queryKey: getGetTopCidadesQueryKey({ dateFrom, dateTo, frota: frotaParam as any }) } });
-  const { data: transpData,    isLoading: l9 } = useGetByTransportadora({ dateFrom, dateTo }, { query: { queryKey: getGetByTransportadoraQueryKey({ dateFrom, dateTo }) } });
-  const { data: fleetPerf,     isLoading: l10} = useGetFleetPerformance({ dateFrom, dateTo }, { query: { queryKey: getGetFleetPerformanceQueryKey({ dateFrom, dateTo }) } });
-  const { data: receivables,   isLoading: l11} = useGetUpcomingReceivables({ query: { queryKey: getGetUpcomingReceivablesQueryKey() } });
-  const { data: recentFretes,  isLoading: l12} = useGetRecentFretes({ limit: 10 }, { query: { queryKey: getGetRecentFretesQueryKey({ limit: 10 }) } });
+  const { data: transpData,    isLoading: l9 } = useGetByTransportadora({ dateFrom, dateTo, frota: frotaParam as any }, { query: { queryKey: getGetByTransportadoraQueryKey({ dateFrom, dateTo, frota: frotaParam as any }) } });
+  const { data: fleetPerf,     isLoading: l10} = useGetFleetPerformance({ dateFrom, dateTo, frota: frotaParam as any }, { query: { queryKey: getGetFleetPerformanceQueryKey({ dateFrom, dateTo, frota: frotaParam as any }) } });
+  const { data: receivables,   isLoading: l11} = useGetUpcomingReceivables({ frota: frotaParam as any }, { query: { queryKey: getGetUpcomingReceivablesQueryKey({ frota: frotaParam as any } as any) } });
+  const { data: recentFretes,  isLoading: l12} = useGetRecentFretes({ limit: 10, frota: frotaParam as any, dateFrom, dateTo } as any, { query: { queryKey: getGetRecentFretesQueryKey({ limit: 10, frota: frotaParam as any, dateFrom, dateTo } as any) } });
   const { data: frotasList } = useListFrotas({ query: { queryKey: getListFrotasQueryKey() } });
 
   // ── Computed KPIs ──────────────────────────────────────────────────────────

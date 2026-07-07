@@ -355,7 +355,8 @@ export const ListPlacasResponse = zod.array(ListPlacasResponseItem)
 
 export const GetDashboardResumoQueryParams = zod.object({
   "dateFrom": zod.date().optional(),
-  "dateTo": zod.date().optional()
+  "dateTo": zod.date().optional(),
+  "frota": zod.coerce.string().optional()
 })
 
 export const GetDashboardResumoResponse = zod.object({
@@ -373,7 +374,8 @@ export const GetDashboardResumoResponse = zod.object({
 
 export const GetRevenueByFrotaQueryParams = zod.object({
   "dateFrom": zod.date().optional(),
-  "dateTo": zod.date().optional()
+  "dateTo": zod.date().optional(),
+  "frota": zod.coerce.string().optional()
 })
 
 export const GetRevenueByFrotaResponseItem = zod.object({
@@ -390,7 +392,8 @@ export const GetRevenueByFrotaResponse = zod.array(GetRevenueByFrotaResponseItem
 export const GetRevenueByPeriodoQueryParams = zod.object({
   "period": zod.enum(['diario', 'semanal', 'mensal', 'trimestral', 'anual']),
   "dateFrom": zod.date().optional(),
-  "dateTo": zod.date().optional()
+  "dateTo": zod.date().optional(),
+  "frota": zod.coerce.string().optional()
 })
 
 export const GetRevenueByPeriodoResponseItem = zod.object({
@@ -404,7 +407,10 @@ export const GetRevenueByPeriodoResponse = zod.array(GetRevenueByPeriodoResponse
 
 
 export const GetDieselByPlacaQueryParams = zod.object({
-  "ano": zod.coerce.number().optional()
+  "ano": zod.coerce.number().optional(),
+  "frota": zod.coerce.string().optional(),
+  "dateFrom": zod.date().optional(),
+  "dateTo": zod.date().optional()
 })
 
 export const GetDieselByPlacaResponseItem = zod.object({
@@ -419,7 +425,8 @@ export const GetDieselByPlacaResponse = zod.array(GetDieselByPlacaResponseItem)
 
 
 export const GetMensalComparativoQueryParams = zod.object({
-  "ano": zod.coerce.number().optional()
+  "ano": zod.coerce.number().optional(),
+  "frota": zod.coerce.string().optional()
 })
 
 export const GetMensalComparativoResponseItem = zod.object({
@@ -719,7 +726,10 @@ export const DeleteDespesaResponse = zod.void()
 
 
 export const GetDespesasResumoQueryParams = zod.object({
-  "ano": zod.coerce.number().optional()
+  "ano": zod.coerce.number().optional(),
+  "frota": zod.coerce.string().optional(),
+  "dateFrom": zod.date().optional(),
+  "dateTo": zod.date().optional()
 })
 
 export const GetDespesasResumoResponse = zod.object({
@@ -735,7 +745,10 @@ export const GetDespesasResumoResponse = zod.object({
 
 
 export const GetDespesasMensalQueryParams = zod.object({
-  "ano": zod.coerce.number().optional()
+  "ano": zod.coerce.number().optional(),
+  "frota": zod.coerce.string().optional(),
+  "dateFrom": zod.date().optional(),
+  "dateTo": zod.date().optional()
 })
 
 export const GetDespesasMensalResponseItem = zod.object({
@@ -750,7 +763,8 @@ export const GetDespesasMensalResponse = zod.array(GetDespesasMensalResponseItem
 
 export const GetDespesasMotoristaAjudanteQueryParams = zod.object({
   "dateFrom": zod.date().optional(),
-  "dateTo": zod.date().optional()
+  "dateTo": zod.date().optional(),
+  "frota": zod.coerce.string().optional()
 })
 
 export const GetDespesasMotoristaAjudanteResponseItem = zod.object({
@@ -805,7 +819,8 @@ export const GetTopCidadesResponse = zod.array(GetTopCidadesResponseItem)
 
 export const GetByTransportadoraQueryParams = zod.object({
   "dateFrom": zod.date().optional(),
-  "dateTo": zod.date().optional()
+  "dateTo": zod.date().optional(),
+  "frota": zod.coerce.string().optional()
 })
 
 export const GetByTransportadoraResponseItem = zod.object({
@@ -822,7 +837,8 @@ export const GetByTransportadoraResponse = zod.array(GetByTransportadoraResponse
 
 export const GetFleetPerformanceQueryParams = zod.object({
   "dateFrom": zod.date().optional(),
-  "dateTo": zod.date().optional()
+  "dateTo": zod.date().optional(),
+  "frota": zod.coerce.string().optional()
 })
 
 export const GetFleetPerformanceResponseItem = zod.object({
@@ -839,6 +855,12 @@ export const GetFleetPerformanceResponseItem = zod.object({
 export const GetFleetPerformanceResponse = zod.array(GetFleetPerformanceResponseItem)
 
 
+export const GetUpcomingReceivablesQueryParams = zod.object({
+  "frota": zod.coerce.string().optional(),
+  "dateFrom": zod.date().optional(),
+  "dateTo": zod.date().optional()
+})
+
 export const GetUpcomingReceivablesResponseItem = zod.object({
   "id": zod.number(),
   "dataCte": zod.string(),
@@ -853,7 +875,10 @@ export const GetUpcomingReceivablesResponse = zod.array(GetUpcomingReceivablesRe
 
 
 export const GetRecentFretesQueryParams = zod.object({
-  "limit": zod.coerce.number().optional()
+  "limit": zod.coerce.number().optional(),
+  "frota": zod.coerce.string().optional(),
+  "dateFrom": zod.date().optional(),
+  "dateTo": zod.date().optional()
 })
 
 export const GetRecentFretesResponseItem = zod.object({

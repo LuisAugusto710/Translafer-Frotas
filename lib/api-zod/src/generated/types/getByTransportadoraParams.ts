@@ -9,4 +9,5 @@
 export type GetByTransportadoraParams = {
 dateFrom?: Date;
 dateTo?: Date;
+frota?: string;
 };

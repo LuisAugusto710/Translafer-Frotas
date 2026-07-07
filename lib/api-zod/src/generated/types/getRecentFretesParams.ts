@@ -8,4 +8,7 @@
 
 export type GetRecentFretesParams = {
 limit?: number;
+frota?: string;
+dateFrom?: Date;
+dateTo?: Date;
 };

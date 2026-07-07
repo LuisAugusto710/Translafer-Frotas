@@ -8,4 +8,7 @@
 
 export type GetDespesasResumoParams = {
 ano?: number;
+frota?: string;
+dateFrom?: Date;
+dateTo?: Date;
 };

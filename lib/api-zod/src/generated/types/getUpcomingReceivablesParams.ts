@@ -6,8 +6,7 @@
  * OpenAPI spec version: 0.2.0
  */
 
-export type GetDespesasMensalParams = {
-ano?: number;
+export type GetUpcomingReceivablesParams = {
 frota?: string;
 dateFrom?: Date;
 dateTo?: Date;

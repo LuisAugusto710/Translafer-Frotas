@@ -8,4 +8,5 @@
 
 export type GetMensalComparativoParams = {
 ano?: number;
+frota?: string;
 };

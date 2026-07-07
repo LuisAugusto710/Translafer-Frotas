@@ -63,6 +63,7 @@ import type {
   GetRevenueByPeriodoParams,
   GetTopCidadesParams,
   GetTopClientesParams,
+  GetUpcomingReceivablesParams,
   HealthStatus,
   ListAbastecimentosParams,
   ListDespesasParams,
@@ -2450,17 +2451,24 @@ export function useGetFleetPerformance<TData = Awaited<ReturnType<typeof getFlee
 
 
 
-export const getGetUpcomingReceivablesUrl = () => {
+export const getGetUpcomingReceivablesUrl = (params?: GetUpcomingReceivablesParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/dashboard/upcoming-receivables`
+  return stringifiedParams.length > 0 ? `/api/dashboard/upcoming-receivables?${stringifiedParams}` : `/api/dashboard/upcoming-receivables`
 }
 
-export const getUpcomingReceivables = async ( options?: RequestInit): Promise<UpcomingReceivable[]> => {
+export const getUpcomingReceivables = async (params?: GetUpcomingReceivablesParams, options?: RequestInit): Promise<UpcomingReceivable[]> => {
 
-  return customFetch<UpcomingReceivable[]>(getGetUpcomingReceivablesUrl(),
+  return customFetch<UpcomingReceivable[]>(getGetUpcomingReceivablesUrl(params),
   {
     ...options,
     method: 'GET'
@@ -2473,23 +2481,23 @@ export const getUpcomingReceivables = async ( options?: RequestInit): Promise<Up
 
 
 
-export const getGetUpcomingReceivablesQueryKey = () => {
+export const getGetUpcomingReceivablesQueryKey = (params?: GetUpcomingReceivablesParams,) => {
     return [
-    `/api/dashboard/upcoming-receivables`
+    `/api/dashboard/upcoming-receivables`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getGetUpcomingReceivablesQueryOptions = <TData = Awaited<ReturnType<typeof getUpcomingReceivables>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUpcomingReceivables>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetUpcomingReceivablesQueryOptions = <TData = Awaited<ReturnType<typeof getUpcomingReceivables>>, TError = ErrorType<unknown>>(params?: GetUpcomingReceivablesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUpcomingReceivables>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetUpcomingReceivablesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetUpcomingReceivablesQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUpcomingReceivables>>> = ({ signal }) => getUpcomingReceivables({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUpcomingReceivables>>> = ({ signal }) => getUpcomingReceivables(params, { signal, ...requestOptions });
 
 
 
@@ -2504,11 +2512,11 @@ export type GetUpcomingReceivablesQueryError = ErrorType<unknown>
 
 
 export function useGetUpcomingReceivables<TData = Awaited<ReturnType<typeof getUpcomingReceivables>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUpcomingReceivables>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ params?: GetUpcomingReceivablesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUpcomingReceivables>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetUpcomingReceivablesQueryOptions(options)
+  const queryOptions = getGetUpcomingReceivablesQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

@@ -52,6 +52,7 @@ export * from './getRevenueByPeriodoParams';
 export * from './getRevenueByPeriodoPeriod';
 export * from './getTopCidadesParams';
 export * from './getTopClientesParams';
+export * from './getUpcomingReceivablesParams';
 export * from './healthStatus';
 export * from './listAbastecimentosParams';
 export * from './listDespesasParams';

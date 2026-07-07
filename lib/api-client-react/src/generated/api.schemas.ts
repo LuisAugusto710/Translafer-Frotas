@@ -469,17 +469,20 @@ offset?: number;
 export type GetDashboardResumoParams = {
 dateFrom?: string;
 dateTo?: string;
+frota?: string;
 };
 
 export type GetRevenueByFrotaParams = {
 dateFrom?: string;
 dateTo?: string;
+frota?: string;
 };
 
 export type GetRevenueByPeriodoParams = {
 period: GetRevenueByPeriodoPeriod;
 dateFrom?: string;
 dateTo?: string;
+frota?: string;
 };
 
 export type GetRevenueByPeriodoPeriod = typeof GetRevenueByPeriodoPeriod[keyof typeof GetRevenueByPeriodoPeriod];
@@ -495,10 +498,14 @@ export const GetRevenueByPeriodoPeriod = {
 
 export type GetDieselByPlacaParams = {
 ano?: number;
+frota?: string;
+dateFrom?: string;
+dateTo?: string;
 };
 
 export type GetMensalComparativoParams = {
 ano?: number;
+frota?: string;
 };
 
 export type ListDespesasParams = {
@@ -513,15 +520,22 @@ offset?: number;
 
 export type GetDespesasResumoParams = {
 ano?: number;
+frota?: string;
+dateFrom?: string;
+dateTo?: string;
 };
 
 export type GetDespesasMensalParams = {
 ano?: number;
+frota?: string;
+dateFrom?: string;
+dateTo?: string;
 };
 
 export type GetDespesasMotoristaAjudanteParams = {
 dateFrom?: string;
 dateTo?: string;
+frota?: string;
 };
 
 export type GetTopClientesParams = {
@@ -539,15 +553,26 @@ frota?: string;
 export type GetByTransportadoraParams = {
 dateFrom?: string;
 dateTo?: string;
+frota?: string;
 };
 
 export type GetFleetPerformanceParams = {
+dateFrom?: string;
+dateTo?: string;
+frota?: string;
+};
+
+export type GetUpcomingReceivablesParams = {
+frota?: string;
 dateFrom?: string;
 dateTo?: string;
 };
 
 export type GetRecentFretesParams = {
 limit?: number;
+frota?: string;
+dateFrom?: string;
+dateTo?: string;
 };
 
 export type GetEmployeeCalendarParams = {

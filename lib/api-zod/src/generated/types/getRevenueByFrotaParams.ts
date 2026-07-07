@@ -9,4 +9,5 @@
 export type GetRevenueByFrotaParams = {
 dateFrom?: Date;
 dateTo?: Date;
+frota?: string;
 };

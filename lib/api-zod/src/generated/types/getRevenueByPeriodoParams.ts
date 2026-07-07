@@ -11,4 +11,5 @@ export type GetRevenueByPeriodoParams = {
 period: GetRevenueByPeriodoPeriod;
 dateFrom?: Date;
 dateTo?: Date;
+frota?: string;
 };

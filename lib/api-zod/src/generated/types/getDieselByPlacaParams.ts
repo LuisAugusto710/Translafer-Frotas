@@ -8,4 +8,7 @@
 
 export type GetDieselByPlacaParams = {
 ano?: number;
+frota?: string;
+dateFrom?: Date;
+dateTo?: Date;
 };

@@ -154,7 +154,7 @@ router.get("/frotas", async (req, res) => {
     totalFretes: sql<number>`count(*)`,
     totalFrete: sql<number>`sum(${fretesTable.frete})`,
     totalPedagio: sql<number>`sum(${fretesTable.pedagio})`,
-  }).from(fretesTable).groupBy(fretesTable.frota).orderBy(desc(sql`sum(${fretesTable.frete})`));
+  }).from(fretesTable).groupBy(fretesTable.frota).orderBy(fretesTable.frota);
 
   res.json(result.map(r => ({
     frota: r.frota,

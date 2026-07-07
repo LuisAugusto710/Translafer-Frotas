@@ -9,4 +9,5 @@
 export type GetFleetPerformanceParams = {
 dateFrom?: Date;
 dateTo?: Date;
+frota?: string;
 };
