@@ -134,14 +134,25 @@ router.get("/despesas", async (req, res) => {
 
 router.post("/despesas", async (req, res) => {
   const values = buildValues(req.body);
+  if (!values.data) { res.status(400).json({ error: "Campo obrigatório: Data" }); return; }
+  if (!values.frota) { res.status(400).json({ error: "Campo obrigatório: Frota" }); return; }
   values.lucro = computeLucro(values);
 
-  const [row] = await db.insert(despesasTable)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .values(values as any)
-    .returning();
-
-  res.status(201).json(fmt(row));
+  try {
+    const [row] = await db.insert(despesasTable)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .values(values as any)
+      .returning();
+    res.status(201).json(fmt(row));
+  } catch (err: unknown) {
+    const pgMsg = (err as any)?.cause?.message ?? (err as any)?.message ?? String(err);
+    req.log.error({ err, pgMsg, body: req.body }, "Erro ao criar despesa");
+    if (pgMsg.includes("unique") || pgMsg.includes("duplicate")) {
+      res.status(409).json({ error: "Já existe um registro para esta Frota e Data. Verifique os dados e tente novamente." });
+    } else {
+      res.status(500).json({ error: `Erro ao salvar: ${pgMsg}` });
+    }
+  }
 });
 
 // Fingerprint for exact-duplicate detection during bulk import.
@@ -212,12 +223,22 @@ router.put("/despesas/:id", async (req, res) => {
   update.lucro = computeLucro(merged);
   update.updatedAt = new Date();
 
-  const [row] = await db.update(despesasTable)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .set(update as any)
-    .where(eq(despesasTable.id, Number(req.params.id)))
-    .returning();
-  res.json(fmt(row));
+  try {
+    const [row] = await db.update(despesasTable)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .set(update as any)
+      .where(eq(despesasTable.id, Number(req.params.id)))
+      .returning();
+    res.json(fmt(row));
+  } catch (err: unknown) {
+    const pgMsg = (err as any)?.cause?.message ?? (err as any)?.message ?? String(err);
+    req.log.error({ err, pgMsg, body: req.body }, "Erro ao atualizar despesa");
+    if (pgMsg.includes("unique") || pgMsg.includes("duplicate")) {
+      res.status(409).json({ error: "Já existe um registro para esta Frota e Data." });
+    } else {
+      res.status(500).json({ error: `Erro ao salvar: ${pgMsg}` });
+    }
+  }
 });
 
 router.delete("/despesas/:id", async (req, res) => {

@@ -1,0 +1,134 @@
+**Prompt:**
+
+Please investigate and fix the issue preventing new records from being added to the **Expenses** page. The previous changes were not sufficient, as I am **still unable to create new expense records**.
+
+## 1. Investigate the root cause
+
+Do not apply a workaround. Instead, perform a complete investigation to determine why the record creation is failing.
+
+Check the following:
+
+* Database constraints (UNIQUE indexes, primary keys, foreign keys).
+* Form validation logic.
+* Required fields.
+* API request payload.
+* Backend validation.
+* Database insert queries.
+* ORM/database model definitions.
+* Data type mismatches.
+* Empty or null values.
+* Duplicate validation logic.
+* Relationships with Freights, Fleet, Driver, and Assistant.
+* Any client-side JavaScript errors.
+* Any server-side exceptions.
+* Any network/API request failures.
+* Permission or authentication issues.
+
+The goal is to identify the **actual cause** of the problem and fix it permanently.
+
+---
+
+## 2. Improve error handling
+
+Currently, when an error occurs, the application does not clearly explain what happened.
+
+I want every failed operation to display a meaningful error message.
+
+Instead of generic messages like:
+
+* "Something went wrong"
+* "Failed to save"
+
+display the real reason.
+
+Examples:
+
+* "Fleet Number is required."
+* "Expense Date is invalid."
+* "Driver Name cannot be empty."
+* "Database connection failed."
+* "A duplicate record already exists."
+* "Unable to save because the Freight does not exist."
+* "The selected Fleet Number is invalid."
+
+The message should help the user understand exactly what needs to be corrected.
+
+---
+
+## 3. Log technical details
+
+In addition to the user-friendly message:
+
+* Log the complete error in the console or server logs.
+* Include the stack trace when appropriate.
+* Log the request payload.
+* Log the backend response.
+* Log the SQL/database error (if applicable).
+
+This will make future debugging much easier.
+
+---
+
+## 4. Validation improvements
+
+Before submitting the form:
+
+* Validate all required fields.
+* Highlight any invalid fields.
+* Focus the first invalid field automatically.
+* Prevent submission until validation passes.
+* Display validation messages directly below the corresponding fields whenever possible.
+
+---
+
+## 5. API Response Handling
+
+Ensure the frontend correctly handles every possible backend response, including:
+
+* Success (200/201)
+* Validation errors (400)
+* Unauthorized (401)
+* Forbidden (403)
+* Not Found (404)
+* Conflict (409)
+* Internal Server Error (500)
+
+Each response should present an appropriate and understandable message to the user.
+
+---
+
+## 6. User Experience
+
+When saving an expense:
+
+* Show a loading indicator while the request is being processed.
+* Disable the Save button to prevent duplicate submissions.
+* On success:
+
+  * Show a confirmation message (e.g., **"Expense saved successfully."**).
+  * Refresh the Expenses table automatically.
+  * Update the Dashboard automatically.
+* On failure:
+
+  * Keep the form open.
+  * Preserve all entered values.
+  * Display the exact reason for the failure.
+
+---
+
+## 7. Final Verification
+
+After implementing the fix, verify that:
+
+* Multiple expenses can be created successfully.
+* Multiple expenses with the same date are allowed.
+* The record is correctly stored in the database.
+* The new record immediately appears in the Expenses table.
+* The Dashboard updates automatically.
+* Any future errors are displayed with clear, descriptive messages instead of generic failures.
+
+## Important
+
+* **Do not redesign the application.**
+* **Do not change the existing workflow.**
+* Focus on identifying and fixing the real cause preventing expense creation, and implement robust error handling so every future error clearly informs the user what went wrong and how to resolve it.

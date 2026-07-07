@@ -241,13 +241,18 @@ export function DespesaFormModal({
           });
           onOpenChange(false);
         },
-        onError: (err) => {
+        onError: (err: unknown) => {
+          const apiMsg =
+            (err as any)?.response?.data?.error ??
+            (err as any)?.response?.data?.message ??
+            (err as any)?.message ??
+            "Erro desconhecido ao salvar a despesa.";
+          console.error("Erro ao salvar despesa:", err);
           toast({
-            title: "Erro",
-            description: "Ocorreu um erro ao salvar a despesa.",
+            title: "Erro ao salvar despesa",
+            description: apiMsg,
             variant: "destructive",
           });
-          console.error(err);
         },
       }
     );
@@ -459,15 +464,18 @@ export function DespesaFormModal({
           </div>
 
           <DialogFooter className="pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}
+              disabled={createMutation.isPending || updateMutation.isPending}>
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={createMutation.isPending || updateMutation.isPending}
-              className="bg-[#0a192f] text-white"
+              className="bg-[#0a192f] text-white min-w-[130px]"
             >
-              Salvar Despesa
+              {(createMutation.isPending || updateMutation.isPending)
+                ? "Salvando…"
+                : "Salvar Despesa"}
             </Button>
           </DialogFooter>
         </form>
