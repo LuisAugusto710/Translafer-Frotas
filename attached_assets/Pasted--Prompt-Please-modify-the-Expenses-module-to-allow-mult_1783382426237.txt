@@ -1,0 +1,76 @@
+**Prompt:**
+
+Please modify the **Expenses** module to allow **multiple expense records with the same date**, while preserving the application's current design, workflow, and business logic.
+
+## Allow Multiple Expenses on the Same Date
+
+Currently, the application appears to prevent creating more than one expense record for the same date.
+
+This restriction should be removed.
+
+### Requirements
+
+* Allow users to create **unlimited expense records** for the same date.
+* The **Expense Date** should **not** be treated as a unique field.
+* Multiple expenses on the same day should be considered valid and expected behavior.
+
+### Example
+
+The following records should all be allowed:
+
+| Date       | Fleet | Expense Type   | Amount  |
+| ---------- | ----- | -------------- | ------- |
+| 15/08/2026 | 4104  | Diesel         | €180.00 |
+| 15/08/2026 | 4104  | Toll           | €45.50  |
+| 15/08/2026 | 4104  | Driver Payment | €120.00 |
+| 15/08/2026 | 4104  | Oil Change     | €350.00 |
+| 15/08/2026 | 4108  | Tire Repair    | €95.00  |
+
+All of these should coexist without any validation errors.
+
+## Duplicate Validation
+
+The system should **not** block records simply because they share the same date.
+
+Instead, if duplicate prevention is required, validate records using a combination of meaningful fields, such as:
+
+* Date
+* Fleet Number
+* Freight Number
+* Expense Type
+* Amount
+
+Only prevent the creation of **true duplicate records** (identical records accidentally entered twice), not legitimate multiple expenses occurring on the same day.
+
+## Dashboard Integration
+
+The Dashboard must continue to:
+
+* Sum all expenses correctly.
+* Include every valid expense recorded on the same date.
+* Update charts, KPIs, reports, and totals automatically whenever a new expense is added.
+
+## Search and Filters
+
+Searching and filtering by date should return **all expense records** for that day, not just one.
+
+## Import Compatibility
+
+When importing data from Excel:
+
+* Allow multiple expense records with the same date.
+* Only skip records that are confirmed to be exact duplicates.
+* Do not reject valid records simply because another expense already exists on that date.
+
+## Performance
+
+* Maintain efficient database queries.
+* Ensure the change does not impact search performance or Dashboard calculations.
+* Preserve lazy loading, infinite scrolling, and virtualization.
+
+## Important
+
+* Do **not** redesign the interface.
+* Do **not** modify unrelated functionality.
+* Only remove the restriction that prevents multiple expenses from being recorded on the same date.
+* Ensure that all valid expenses on the same day are stored, displayed, searchable, and included in every calculation throughout the application.

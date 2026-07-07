@@ -144,20 +144,53 @@ router.post("/despesas", async (req, res) => {
   res.status(201).json(fmt(row));
 });
 
+// Fingerprint for exact-duplicate detection during bulk import.
+// Two records are duplicates only when every meaningful field matches.
+function despesaFingerprint(r: Record<string, unknown>): string {
+  return [
+    r.data, r.frota, r.cidade ?? "", r.motoristaNome ?? "", r.ajudanteNome ?? "",
+    r.frete ?? "0", r.km ?? "0", r.dieselLt ?? "0", r.dieselRs ?? "0",
+    r.das ?? "0", r.motorista ?? "0", r.almoco ?? "0", r.ajudante ?? "0",
+    r.pedagio ?? "0", r.unimed ?? "0", r.seguro ?? "0", r.gasto ?? "0",
+    r.rastreador ?? "0", r.inss ?? "0", r.escritorio ?? "0", r.ipva ?? "0",
+    r.bsoft ?? "0",
+  ].map(v => String(Number(v ?? 0) === 0 ? "0" : v)).join("|");
+}
+
 router.post("/despesas/bulk", async (req, res) => {
   const { despesas } = req.body as { despesas: Record<string, unknown>[] };
   if (!despesas?.length) { res.status(201).json({ created: 0, despesas: [] }); return; }
 
-  const values = despesas.map((d) => {
+  const incoming = despesas.map((d) => {
     const v = buildValues(d);
     v.lucro = computeLucro(v);
     return v;
   });
 
+  // Fetch existing records covering the same date range to detect true duplicates.
+  const dates = incoming.map(v => String(v.data)).filter(Boolean).sort();
+  const existing = await db.select().from(despesasTable)
+    .where(and(gte(despesasTable.data, dates[0]), lte(despesasTable.data, dates[dates.length - 1])));
+
+  const existingPrints = new Set(existing.map(r => despesaFingerprint(r as unknown as Record<string, unknown>)));
+
+  // Deduplicate within the incoming batch itself, then skip true duplicates of existing rows.
+  const seen = new Set<string>();
+  const toInsert = incoming.filter(v => {
+    const fp = despesaFingerprint(v);
+    if (existingPrints.has(fp) || seen.has(fp)) return false;
+    seen.add(fp);
+    return true;
+  });
+
+  if (!toInsert.length) {
+    res.status(201).json({ created: 0, despesas: [] });
+    return;
+  }
+
   const inserted = await db.insert(despesasTable)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .values(values as any)
-    .onConflictDoNothing({ target: [despesasTable.frota, despesasTable.data] })
+    .values(toInsert as any)
     .returning();
 
   res.status(201).json({ created: inserted.length, despesas: inserted.map(fmt) });

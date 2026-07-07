@@ -1,4 +1,4 @@
-import { pgTable, serial, text, numeric, date, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, numeric, date, timestamp } from "drizzle-orm/pg-core";
 
 export const despesasTable = pgTable(
   "despesas",
@@ -32,9 +32,6 @@ export const despesasTable = pgTable(
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
-  (t) => ({
-    frotaDataUnique: uniqueIndex("despesas_frota_data_unique").on(t.frota, t.data),
-  }),
 );
 
 export type Despesa = typeof despesasTable.$inferSelect;
