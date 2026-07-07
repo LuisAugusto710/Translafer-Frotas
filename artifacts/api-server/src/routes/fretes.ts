@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db, fretesTable } from "@workspace/db";
 import { eq, and, gte, lte, or, ilike, desc, sql } from "drizzle-orm";
+import { toTitleCase, toTitleCaseOrNull } from "../normalize";
 
 const router = Router();
 
@@ -76,23 +77,31 @@ router.get("/fretes", async (req, res) => {
   res.json({ fretes: fretes.map(fmt), total: Number(countResult[0].count) });
 });
 
-router.post("/fretes", async (req, res) => {
-  const { dataCte, dtaFrete, vencimento, frete, pedagio, peso, transporte, transp, cteNf, obs, ...rest } = req.body;
-
-  const [row] = await db.insert(fretesTable).values({
+function normalizeFrete(body: Record<string, unknown>): Record<string, unknown> {
+  const { dataCte, dtaFrete, vencimento, frete, pedagio, peso, transporte, transp, cteNf, obs, origem, cliente, cidade, ...rest } = body;
+  return {
     ...rest,
-    dataCte: toDateStr(dataCte) ?? dataCte,
-    dtaFrete: toDateStr(dtaFrete) ?? null,
+    origem:     toTitleCase(origem as string | null),
+    cliente:    toTitleCase(cliente as string | null),
+    cidade:     toTitleCase(cidade as string | null),
+    dataCte:    toDateStr(dataCte) ?? String(dataCte),
+    dtaFrete:   toDateStr(dtaFrete) ?? null,
     vencimento: toDateStr(vencimento) ?? null,
-    frete: String(frete ?? 0),
-    pedagio: String(pedagio ?? 0),
-    peso: String(peso ?? 0),
-    transporte: transporte ?? null,
-    transp: transp ?? null,
-    cteNf: cteNf ?? null,
-    obs: obs ?? null,
-  }).returning();
+    frete:      String(frete ?? 0),
+    pedagio:    String(pedagio ?? 0),
+    peso:       String(peso ?? 0),
+    transporte: toTitleCaseOrNull(transporte as string | null),
+    transp:     toTitleCaseOrNull(transp as string | null),
+    cteNf:      (cteNf as string) ?? null,
+    obs:        toTitleCaseOrNull(obs as string | null),
+  };
+}
 
+router.post("/fretes", async (req, res) => {
+  const [row] = await db.insert(fretesTable)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .values(normalizeFrete(req.body) as any)
+    .returning();
   res.status(201).json(fmt(row));
 });
 
@@ -100,20 +109,7 @@ router.post("/fretes/bulk", async (req, res) => {
   const { fretes } = req.body as { fretes: Record<string, unknown>[] };
   if (!fretes?.length) { res.status(201).json({ created: 0, fretes: [] }); return; }
 
-  const values = fretes.map(({ dataCte, dtaFrete, vencimento, frete, pedagio, peso, transporte, transp, cteNf, obs, ...rest }) => ({
-    ...rest as Record<string, unknown>,
-    dataCte: toDateStr(dataCte) ?? String(dataCte),
-    dtaFrete: toDateStr(dtaFrete) ?? null,
-    vencimento: toDateStr(vencimento) ?? null,
-    frete: String(frete ?? 0),
-    pedagio: String(pedagio ?? 0),
-    peso: String(peso ?? 0),
-    transporte: (transporte as string) ?? null,
-    transp: (transp as string) ?? null,
-    cteNf: (cteNf as string) ?? null,
-    obs: (obs as string) ?? null,
-  }));
-
+  const values = fretes.map(normalizeFrete);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const inserted = await db.insert(fretesTable).values(values as any).returning();
   res.status(201).json({ created: inserted.length, fretes: inserted.map(fmt) });
@@ -126,14 +122,20 @@ router.get("/fretes/:id", async (req, res) => {
 });
 
 router.put("/fretes/:id", async (req, res) => {
-  const { dataCte, dtaFrete, vencimento, frete, pedagio, peso, ...rest } = req.body;
+  const { dataCte, dtaFrete, vencimento, frete, pedagio, peso, origem, cliente, cidade, transporte, transp, obs, ...rest } = req.body;
   const update: Record<string, unknown> = { ...rest, updatedAt: new Date() };
-  if (dataCte !== undefined) update.dataCte = toDateStr(dataCte) ?? dataCte;
-  if (dtaFrete !== undefined) update.dtaFrete = toDateStr(dtaFrete) ?? null;
+  if (dataCte    !== undefined) update.dataCte    = toDateStr(dataCte) ?? dataCte;
+  if (dtaFrete   !== undefined) update.dtaFrete   = toDateStr(dtaFrete) ?? null;
   if (vencimento !== undefined) update.vencimento = toDateStr(vencimento) ?? null;
-  if (frete !== undefined) update.frete = String(frete);
-  if (pedagio !== undefined) update.pedagio = String(pedagio);
-  if (peso !== undefined) update.peso = String(peso);
+  if (frete      !== undefined) update.frete      = String(frete);
+  if (pedagio    !== undefined) update.pedagio    = String(pedagio);
+  if (peso       !== undefined) update.peso       = String(peso);
+  if (origem     !== undefined) update.origem     = toTitleCase(origem as string | null);
+  if (cliente    !== undefined) update.cliente    = toTitleCase(cliente as string | null);
+  if (cidade     !== undefined) update.cidade     = toTitleCase(cidade as string | null);
+  if (transporte !== undefined) update.transporte = toTitleCaseOrNull(transporte as string | null);
+  if (transp     !== undefined) update.transp     = toTitleCaseOrNull(transp as string | null);
+  if (obs        !== undefined) update.obs        = toTitleCaseOrNull(obs as string | null);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [row] = await db.update(fretesTable).set(update as any).where(eq(fretesTable.id, Number(req.params.id))).returning();

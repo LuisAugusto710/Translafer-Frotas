@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db, despesasTable } from "@workspace/db";
 import { eq, and, gte, lte, or, ilike, desc, sql } from "drizzle-orm";
+import { toTitleCase, toTitleCaseOrNull } from "../normalize";
 
 const router = Router();
 
@@ -70,12 +71,12 @@ function buildValues(body: Record<string, unknown>) {
       out[k] = String(body[k]);
     }
   }
-  if (body.cidade !== undefined) out.cidade = body.cidade ?? "";
-  if (body.motoristaNome !== undefined) out.motoristaNome = body.motoristaNome ?? "";
-  if (body.ajudanteNome !== undefined) out.ajudanteNome = body.ajudanteNome ?? "";
-  if (body.trocaOleoParcela !== undefined) out.trocaOleoParcela = body.trocaOleoParcela ?? "";
+  if (body.cidade !== undefined) out.cidade = toTitleCase(body.cidade as string | null);
+  if (body.motoristaNome !== undefined) out.motoristaNome = toTitleCase(body.motoristaNome as string | null);
+  if (body.ajudanteNome !== undefined) out.ajudanteNome = toTitleCase(body.ajudanteNome as string | null);
+  if (body.trocaOleoParcela !== undefined) out.trocaOleoParcela = toTitleCase(body.trocaOleoParcela as string | null);
   if (body.frota !== undefined) out.frota = body.frota;
-  if (body.obs !== undefined) out.obs = body.obs ?? null;
+  if (body.obs !== undefined) out.obs = toTitleCaseOrNull(body.obs as string | null);
   if (body.data !== undefined) out.data = toDateStr(body.data) ?? body.data;
   return out;
 }

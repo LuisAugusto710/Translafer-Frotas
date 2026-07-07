@@ -9,6 +9,7 @@ import backupRouter from "./backup";
 import restoreRouter from "./restore";
 import fleetConfigsRouter from "./fleet-configs";
 import employeesRouter from "./employees";
+import adminRouter from "./admin";
 import { requireAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
@@ -27,5 +28,6 @@ router.use(backupRouter);
 router.use(restoreRouter);
 router.use(fleetConfigsRouter);
 router.use(employeesRouter);
+router.use(adminRouter);
 
 export default router;

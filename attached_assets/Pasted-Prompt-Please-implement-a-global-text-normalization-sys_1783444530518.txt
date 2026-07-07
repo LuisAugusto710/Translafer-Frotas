@@ -1,0 +1,148 @@
+Prompt:
+
+Please implement a global text normalization system for the entire application without changing the existing design, layout, or business logic.
+
+The objective is to ensure that every text entered by the user is automatically formatted into a standardized format before being saved to the database, providing consistency across all modules.
+
+1. Global Text Formatting
+
+Every text field that stores data in the database should automatically apply formatting before saving.
+
+This includes, but is not limited to:
+
+* Driver Name
+* Assistant Name
+* Customer Name
+* City
+* State
+* Expense Description
+* Notes
+* Fleet Description
+* Any future text fields
+
+The formatting should happen automatically during the save process.
+
+⸻
+
+2. Capitalization Rules
+
+Regardless of how the user types the text (all uppercase, all lowercase, or mixed), the stored and displayed value must always follow Title Case.
+
+Rules:
+
+* The first letter of each word must be uppercase.
+* All remaining letters in each word must be lowercase.
+* The rule applies after every space.
+
+Examples
+
+User input:
+
+joAO da silVA
+
+Stored and displayed:
+
+Joao Da Silva
+
+User input:
+
+MARIA APARECIDA
+
+Stored and displayed:
+
+Maria Aparecida
+
+User input:
+
+cArLos eduArdo sAnTos
+
+Stored and displayed:
+
+Carlos Eduardo Santos
+
+User input:
+
+porto alegre
+
+Stored and displayed:
+
+Porto Alegre
+
+⸻
+
+3. Additional Text Cleanup
+
+Before saving, also perform the following normalization:
+
+* Remove leading and trailing spaces.
+* Replace multiple consecutive spaces with a single space.
+* Remove invisible or unsupported characters when appropriate.
+* Preserve accents and special characters (á, é, ç, ã, õ, etc.).
+* Preserve hyphens and apostrophes where applicable.
+
+Example:
+
+   jOAO     pAuLo
+
+Should become:
+
+Joao Paulo
+
+⸻
+
+4. Database Consistency
+
+The formatted value should be:
+
+* Saved to the database.
+* Displayed throughout the application.
+* Used in searches.
+* Used in reports.
+* Used in Dashboard calculations.
+* Used in PDF exports.
+* Used in Excel exports.
+* Used in backups.
+
+The database should never store inconsistent capitalization.
+
+⸻
+
+5. Existing Data
+
+Create a migration that normalizes all existing text records already stored in the database.
+
+Every existing value should be updated to the new formatting standard without changing its meaning.
+
+⸻
+
+6. Search Compatibility
+
+The search system must remain case-insensitive.
+
+For example, searching for:
+
+* joao
+* JOAO
+* João
+* jOãO
+
+should always find:
+
+João
+
+⸻
+
+7. Performance
+
+* Apply formatting efficiently before database insertion or update.
+* Avoid unnecessary processing.
+* Keep compatibility with lazy loading, imports, exports, backups, and Dashboard calculations.
+
+⸻
+
+Important
+
+* Do not redesign the application.
+* Do not modify unrelated functionality.
+* Apply this formatting globally to every text field that is persisted in the database.
+* Ensure all newly created and updated records follow the same capitalization standard, while also normalizing all existing records already stored in the database.

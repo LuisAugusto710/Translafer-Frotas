@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db, abastecimentosTable } from "@workspace/db";
 import { eq, and, ilike, or, desc, sql } from "drizzle-orm";
+import { toTitleCaseOrNull, normalizePlate } from "../normalize";
 
 const router = Router();
 
@@ -55,7 +56,7 @@ router.post("/abastecimentos", async (req, res) => {
 
   const [row] = await db.insert(abastecimentosTable).values({
     data: toDateStr(data) ?? data,
-    placa,
+    placa: normalizePlate(placa),
     litros: String(litros ?? 0),
     precoLitro: String(precoLitro ?? 0),
     totalPago: String(totalPago ?? 0),
@@ -64,23 +65,25 @@ router.post("/abastecimentos", async (req, res) => {
     kmPercorrido: kmPercorrido != null ? String(kmPercorrido) : null,
     media: media != null ? String(media) : null,
     requisicao: requisicao ?? null,
-    posto: posto ?? null,
+    posto: toTitleCaseOrNull(posto),
   }).returning();
 
   res.status(201).json(fmt(row));
 });
 
 router.put("/abastecimentos/:id", async (req, res) => {
-  const { data, litros, precoLitro, totalPago, kmInicio, kmFinal, kmPercorrido, media } = req.body;
+  const { data, placa, litros, precoLitro, totalPago, kmInicio, kmFinal, kmPercorrido, media, posto } = req.body;
   const update: Record<string, unknown> = { updatedAt: new Date() };
-  if (data !== undefined) update.data = toDateStr(data) ?? data;
-  if (litros !== undefined) update.litros = String(litros);
+  if (data     !== undefined) update.data     = toDateStr(data) ?? data;
+  if (placa    !== undefined) update.placa    = normalizePlate(placa);
+  if (litros   !== undefined) update.litros   = String(litros);
   if (precoLitro !== undefined) update.precoLitro = String(precoLitro);
-  if (totalPago !== undefined) update.totalPago = String(totalPago);
-  if (kmInicio !== undefined) update.kmInicio = kmInicio != null ? String(kmInicio) : null;
-  if (kmFinal !== undefined) update.kmFinal = kmFinal != null ? String(kmFinal) : null;
+  if (totalPago  !== undefined) update.totalPago  = String(totalPago);
+  if (kmInicio   !== undefined) update.kmInicio   = kmInicio != null ? String(kmInicio) : null;
+  if (kmFinal    !== undefined) update.kmFinal    = kmFinal != null ? String(kmFinal) : null;
   if (kmPercorrido !== undefined) update.kmPercorrido = kmPercorrido != null ? String(kmPercorrido) : null;
-  if (media !== undefined) update.media = media != null ? String(media) : null;
+  if (media    !== undefined) update.media    = media != null ? String(media) : null;
+  if (posto    !== undefined) update.posto    = toTitleCaseOrNull(posto);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [row] = await db.update(abastecimentosTable).set(update as any).where(eq(abastecimentosTable.id, Number(req.params.id))).returning();

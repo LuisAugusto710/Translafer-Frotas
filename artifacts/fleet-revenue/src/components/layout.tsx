@@ -5,6 +5,7 @@ import { Moon, Sun, LayoutDashboard, Truck, Fuel, Wallet, Users, Menu, X, LogOut
 import { Button } from "./ui/button";
 import { BackupFolderButton } from "./backup-folder-button";
 import { OneDriveBackupButton } from "./onedrive-backup-button";
+import { NormalizeTextButton } from "./normalize-text-button";
 import { useAuth } from "@/lib/auth-context";
 
 function NavLinks({ currentLocation, onNavigate }: { currentLocation: string; onNavigate?: () => void }) {
@@ -157,6 +158,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           <div className="flex items-center gap-2 shrink-0">
             <span className="hidden sm:contents">
+              <NormalizeTextButton />
               <OneDriveBackupButton />
               <BackupFolderButton />
             </span>
