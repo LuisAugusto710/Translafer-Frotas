@@ -1,0 +1,119 @@
+Prompt:
+
+Please apply the previously defined global text formatting standard to all existing records already stored in the database, without changing the application’s design, layout, or functionality.
+
+Currently, the formatting rule is only being applied to newly created or edited records. I also want all historical data to be standardized.
+
+1. Normalize Existing Data
+
+Run a one-time data migration that updates every existing text value stored in the database.
+
+This applies to all pages and modules, including but not limited to:
+
+* Freights
+* Expenses
+* Diesel
+* Employees
+* Dashboard
+* Reports
+* PDF exports
+* Excel exports
+* Search indexes
+* Any other module containing text fields
+
+2. Capitalization Standard
+
+Every text value must follow this standard:
+
+* The first letter of each word must be uppercase.
+* All remaining letters must be lowercase.
+* This rule applies after every space.
+
+Examples
+
+Before:
+
+JOAO DA SILVA
+
+After:
+
+Joao Da Silva
+
+Before:
+
+mArIa aPaReCiDa
+
+After:
+
+Maria Aparecida
+
+Before:
+
+PORTO ALEGRE
+
+After:
+
+Porto Alegre
+
+Before:
+
+sÃO PAULO
+
+After:
+
+São Paulo
+
+3. Additional Text Normalization
+
+While updating existing records, also:
+
+* Remove leading and trailing spaces.
+* Replace multiple consecutive spaces with a single space.
+* Preserve accented characters (á, é, í, ó, ú, ã, õ, ç, etc.).
+* Preserve hyphens and apostrophes where appropriate.
+* Remove invisible or unsupported characters if found.
+
+4. Apply Everywhere
+
+This migration must update every text field stored in the database, including:
+
+* Driver Names
+* Assistant Names
+* Cities
+* Customers
+* Expense Descriptions
+* Notes
+* Fleet Descriptions
+* Any other user-entered text fields
+
+The application should display the normalized values immediately after the migration.
+
+5. Future Consistency
+
+After the migration:
+
+* Every new record must continue following this formatting rule automatically.
+* Every edited record must also be normalized before being saved.
+* The database should never contain inconsistent capitalization again.
+
+6. Search Compatibility
+
+The search system must remain fully case-insensitive.
+
+Searching using uppercase, lowercase, or mixed case should always return the correct records.
+
+7. Verification
+
+After completing the migration, verify that:
+
+* Every existing text value follows the new capitalization standard.
+* No records were lost or modified incorrectly.
+* Dashboard calculations remain unchanged.
+* Reports, exports, backups, and PDFs display the normalized text correctly.
+* All pages show consistent formatting.
+
+Important
+
+* Do not redesign the application.
+* Do not modify any business logic.
+* Only normalize the existing text data throughout the entire database while preserving all data integrity and relationships.
