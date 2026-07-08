@@ -1,0 +1,272 @@
+**Prompt:**
+
+Please improve the application's visual design by refining its color palette using **color theory** and **complementary color principles**, while **preserving the current layout, structure, navigation, and functionality**.
+
+The goal is **not** to redesign the application, but to make it feel more modern, professional, and visually comfortable in both **Light Mode** and **Dark Mode**.
+
+---
+
+# Objective
+
+Review the entire application's color system and improve it using modern UI/UX best practices.
+
+Focus on:
+
+* Better visual hierarchy.
+* Improved readability.
+* Better contrast.
+* More pleasant color combinations.
+* Better separation between sections.
+* A more premium and professional appearance.
+
+---
+
+# 1. Preserve the Existing Layout
+
+Do **not** change:
+
+* Page structure
+* Navigation
+* Component positions
+* Tables
+* Cards
+* Charts
+* Forms
+* Buttons placement
+
+Only improve the **color system**.
+
+---
+
+# 2. Build a Consistent Color Palette
+
+Create a cohesive design system with:
+
+* Primary color
+* Secondary color
+* Accent color
+* Success color
+* Warning color
+* Error color
+* Information color
+* Neutral grays
+
+Ensure every color has an appropriate variant for:
+
+* Light Theme
+* Dark Theme
+
+---
+
+# 3. Improve Light Mode
+
+The Light Theme should feel:
+
+* Clean
+* Elegant
+* Modern
+* Minimal
+* Comfortable for long periods of use
+
+Improve:
+
+* Background colors
+* Card backgrounds
+* Table headers
+* Sidebar
+* Navigation
+* Buttons
+* Inputs
+* Borders
+* Hover states
+* Selected states
+
+Avoid overly saturated colors.
+
+Prefer soft neutral backgrounds with subtle contrast.
+
+---
+
+# 4. Improve Dark Mode
+
+The Dark Theme should not simply invert colors.
+
+Instead:
+
+* Use layered dark surfaces.
+* Differentiate page background, cards, tables, and dialogs with subtle tonal variations.
+* Avoid pure black (#000000).
+* Reduce eye strain.
+* Preserve readability.
+
+Create clear visual depth using different shades.
+
+---
+
+# 5. Use Color Theory
+
+Apply modern UI principles such as:
+
+* Complementary colors
+* Analogous colors
+* Accent colors for important actions
+* Consistent semantic colors
+* Balanced contrast ratios
+* Visual hierarchy through color
+
+Interactive elements should naturally guide the user's attention without overwhelming the interface.
+
+---
+
+# 6. Improve Tables
+
+Improve the appearance of tables by refining:
+
+* Header background colors.
+* Alternate row colors (subtle zebra striping).
+* Hover effects.
+* Selected row colors.
+* Border colors.
+* Sticky header appearance.
+
+Tables should become easier to scan without increasing visual noise.
+
+---
+
+# 7. Improve Cards
+
+Dashboard cards should have:
+
+* Better background contrast.
+* Softer shadows.
+* More pleasant borders.
+* Better title readability.
+* Better value emphasis.
+
+Important KPIs should stand out naturally.
+
+---
+
+# 8. Improve Charts
+
+Review all Dashboard charts.
+
+Improve:
+
+* Color palette.
+* Series differentiation.
+* Legends.
+* Grid lines.
+* Axis labels.
+* Tooltip colors.
+
+Ensure charts remain easy to understand in both themes.
+
+Use colors that remain distinguishable even for users with common forms of color blindness.
+
+---
+
+# 9. Buttons
+
+Improve button colors.
+
+Differentiate clearly between:
+
+* Primary actions
+* Secondary actions
+* Success
+* Warning
+* Danger
+* Disabled
+
+Improve hover, pressed and focus states.
+
+---
+
+# 10. Forms
+
+Improve:
+
+* Input backgrounds.
+* Focus colors.
+* Validation colors.
+* Placeholder colors.
+* Labels.
+* Checkbox and radio button colors.
+
+Maintain excellent readability.
+
+---
+
+# 11. Sidebar
+
+Refine the Sidebar colors.
+
+Improve:
+
+* Active page highlight.
+* Hover effect.
+* Icons.
+* Section separation.
+* Selected menu item visibility.
+
+The active page should be immediately recognizable without being visually aggressive.
+
+---
+
+# 12. Dashboard
+
+Improve the visual hierarchy by refining colors for:
+
+* KPI cards
+* Charts
+* Filters
+* Tables
+* Icons
+* Section titles
+
+The Dashboard should look cleaner and easier to interpret at a glance.
+
+---
+
+# 13. Accessibility
+
+Ensure compliance with accessibility best practices.
+
+Maintain sufficient color contrast for:
+
+* Text
+* Icons
+* Buttons
+* Links
+* Charts
+* Form controls
+
+Avoid color combinations that reduce readability.
+
+---
+
+# 14. Theme Consistency
+
+Both themes should feel like they belong to the same design system.
+
+The only difference should be the brightness and contrast—not a completely different visual identity.
+
+---
+
+# 15. Performance
+
+* Do not introduce unnecessary CSS complexity.
+* Reuse color variables.
+* Use a centralized theme/token system.
+* Keep rendering efficient.
+
+---
+
+# Important
+
+* **Do not redesign the application.**
+* **Do not move components.**
+* **Do not change the navigation or layout.**
+* Only refine the application's color palette using modern UI design principles, complementary color theory, and accessibility guidelines.
+* The final result should feel significantly more polished, premium, visually balanced, and comfortable to use in both Light Mode and Dark Mode while preserving the current interface and user experience.
