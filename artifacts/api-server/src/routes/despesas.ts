@@ -52,7 +52,7 @@ function fmt(t: typeof despesasTable.$inferSelect) {
     bsoft: num.bsoft,
     trocaOleoParcela: t.trocaOleoParcela,
     totalDespesa: Math.round(totalDespesa * 100) / 100,
-    lucro: num.lucro,
+    lucro: Math.round((num.frete - totalDespesa) * 100) / 100,
     obs: t.obs,
     createdAt: t.createdAt.toISOString(),
     updatedAt: t.updatedAt.toISOString(),

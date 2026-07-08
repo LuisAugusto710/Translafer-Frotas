@@ -228,7 +228,7 @@ export function Despesas() {
           <Button
             size="sm"
             onClick={() => { setEditingDespesa(null); setIsFormOpen(true); }}
-            className="bg-[#0a192f] hover:bg-[#0a192f]/90 text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <Plus className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">Nova Entrada</span>
@@ -266,7 +266,7 @@ export function Despesas() {
                 <TableHead className="text-right min-w-[64px] whitespace-nowrap">Bsoft</TableHead>
                 <TableHead className="min-w-[110px] leading-tight">Parcela Troca Óleo</TableHead>
                 <TableHead className="text-right font-bold text-red-600 min-w-[100px] leading-tight">Total Despesa</TableHead>
-                <TableHead className="text-right font-bold text-[#0a192f] min-w-[80px] leading-tight">Lucro (R$)</TableHead>
+                <TableHead className="text-right font-bold text-primary min-w-[80px] leading-tight">Lucro (R$)</TableHead>
                 <TableHead className="min-w-[80px] whitespace-nowrap">Obs</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
@@ -303,7 +303,7 @@ export function Despesas() {
                         className="hover:bg-muted/50 transition-colors group"
                       >
                         <TableCell className="whitespace-nowrap">{hl(formatDate(d.data))}</TableCell>
-                        <TableCell className="font-medium text-[#0a192f] whitespace-nowrap">{hl(d.frota)}</TableCell>
+                        <TableCell className="font-medium text-primary whitespace-nowrap">{hl(d.frota)}</TableCell>
                         <TableCell className="truncate max-w-[140px]" title={d.cidade}>{hl(d.cidade)}</TableCell>
                         <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.frete))}</TableCell>
                         <TableCell className="text-right whitespace-nowrap">{hl(formatNumber(d.km))}</TableCell>
@@ -330,7 +330,7 @@ export function Despesas() {
                         <TableCell className="text-right font-bold text-red-600 bg-red-500/10 whitespace-nowrap">
                           {hl(formatCurrency(d.totalDespesa))}
                         </TableCell>
-                        <TableCell className={`text-right font-bold whitespace-nowrap ${d.lucro >= 0 ? "text-[#2ecc71] bg-[#2ecc71]/10" : "text-red-600 bg-red-500/10"}`}>
+                        <TableCell className={`text-right font-bold whitespace-nowrap ${d.lucro >= 0 ? "text-emerald-500 bg-emerald-500/10" : "text-red-600 bg-red-500/10"}`}>
                           {hl(formatCurrency(d.lucro))}
                         </TableCell>
                         <TableCell className="truncate max-w-[100px]" title={d.obs || ""}>

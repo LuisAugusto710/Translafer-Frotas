@@ -258,7 +258,7 @@ router.get("/dashboard/despesas-resumo", async (req, res) => {
   const [summary] = await db.select({
     totalFrete:    sql<number>`coalesce(sum(${despesasTable.frete}), 0)`,
     totalCustos:   sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
-    totalLucro:    sql<number>`coalesce(sum(${despesasTable.lucro}), 0)`,
+    totalLucro:    sql<number>`coalesce(sum(${despesasTable.frete}), 0) - coalesce(sum(${despesaCustosSql}), 0)`,
     totalRegistros:sql<number>`count(*)`,
   }).from(despesasTable).where(where);
 
@@ -294,7 +294,7 @@ router.get("/dashboard/despesas-mensal", async (req, res) => {
     mes:      sql<string>`to_char(date_trunc('month', ${despesasTable.data}::date), 'YYYY-MM')`,
     frete:    sql<number>`coalesce(sum(${despesasTable.frete}), 0)`,
     custos:   sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
-    lucro:    sql<number>`coalesce(sum(${despesasTable.lucro}), 0)`,
+    lucro:    sql<number>`coalesce(sum(${despesasTable.frete}), 0) - coalesce(sum(${despesaCustosSql}), 0)`,
     registros:sql<number>`count(*)`,
   }).from(despesasTable).where(where)
     .groupBy(sql`date_trunc('month', ${despesasTable.data}::date)`)
