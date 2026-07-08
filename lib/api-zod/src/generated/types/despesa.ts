@@ -9,7 +9,8 @@
 export interface Despesa {
   id: number;
   data: Date;
-  frota: string;
+  /** @nullable */
+  frota?: string | null;
   cidade: string;
   motoristaNome?: string;
   ajudanteNome?: string;

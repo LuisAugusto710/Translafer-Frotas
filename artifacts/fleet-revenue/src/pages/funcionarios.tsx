@@ -293,6 +293,98 @@ export function Funcionarios() {
     }
   }, [buildShareText, toast]);
 
+  const handleSharePdf = useCallback(async () => {
+    if (!selectedEmployee || !calendarData) return;
+
+    const html = buildPrintHtml({
+      nome: selectedEmployee.nome,
+      tipo: selectedEmployee.tipo,
+      mes: month,
+      ano: year,
+      dias: calendarData.dias,
+      totalGanho: calendarData.totalGanho,
+      diasTrabalhados: calendarData.diasTrabalhados,
+      diasNaoTrabalhados: calendarData.diasNaoTrabalhados,
+      mediaPorDia: calendarData.mediaPorDia,
+    });
+
+    // Parse the HTML string and inject into an off-screen container
+    const parser = new DOMParser();
+    const parsed = parser.parseFromString(html, "text/html");
+    const styleEl = parsed.querySelector("style");
+
+    const container = document.createElement("div");
+    container.style.cssText =
+      "position:fixed;top:-9999px;left:-9999px;width:794px;background:#fff;";
+
+    if (styleEl) {
+      const s = document.createElement("style");
+      s.textContent = styleEl.textContent ?? "";
+      container.appendChild(s);
+    }
+    const content = document.createElement("div");
+    content.innerHTML = parsed.body?.innerHTML ?? "";
+    container.appendChild(content);
+    document.body.appendChild(container);
+
+    try {
+      toast({ title: "Gerando PDF…", description: "Por favor aguarde." });
+
+      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
+
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = (canvas.height * pdfW) / canvas.width;
+      const pageH = pdf.internal.pageSize.getHeight();
+
+      let yPos = 0;
+      while (yPos < pdfH) {
+        if (yPos > 0) pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, -yPos, pdfW, pdfH);
+        yPos += pageH;
+      }
+
+      const blob = pdf.output("blob");
+      const period = `${MONTH_NAMES[month - 1]}-${year}`;
+      const filename = `relatorio-${selectedEmployee.nome.replace(/\s+/g, "-")}-${period}.pdf`;
+      const pdfFile = new File([blob], filename, { type: "application/pdf" });
+
+      if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+        await navigator.share({
+          title: `Relatório — ${selectedEmployee.nome} — ${period}`,
+          files: [pdfFile],
+        });
+      } else {
+        // Fallback: trigger download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast({ title: "PDF baixado!", description: "O arquivo foi salvo no seu dispositivo." });
+      }
+    } catch (err) {
+      if ((err as Error)?.name !== "AbortError") {
+        toast({ title: "Erro", description: "Não foi possível gerar o PDF.", variant: "destructive" });
+      }
+    } finally {
+      document.body.removeChild(container);
+    }
+  }, [selectedEmployee, calendarData, month, year, toast]);
+
   const isLoading = employeesLoading;
 
   return (
@@ -575,33 +667,19 @@ export function Funcionarios() {
                       Compartilhar
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-52">
+                  <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuItem
-                      onClick={handleShareWhatsApp}
+                      onClick={handleSharePdf}
                       className="gap-2 cursor-pointer"
                     >
-                      <MessageCircle className="h-4 w-4 text-[#25D366]" />
+                      <Share2 className="h-4 w-4 text-blue-500" />
                       <div>
-                        <p className="text-xs font-semibold">WhatsApp</p>
+                        <p className="text-xs font-semibold">Compartilhar PDF</p>
                         <p className="text-[10px] text-muted-foreground leading-tight">
-                          Envia resumo via WhatsApp
+                          WhatsApp, Email, Teams, Telegram…
                         </p>
                       </div>
                     </DropdownMenuItem>
-                    {typeof navigator !== "undefined" && "share" in navigator && (
-                      <DropdownMenuItem
-                        onClick={handleShareNative}
-                        className="gap-2 cursor-pointer"
-                      >
-                        <Share2 className="h-4 w-4 text-blue-500" />
-                        <div>
-                          <p className="text-xs font-semibold">Compartilhar</p>
-                          <p className="text-[10px] text-muted-foreground leading-tight">
-                            Painel nativo do sistema
-                          </p>
-                        </div>
-                      </DropdownMenuItem>
-                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleCopyClipboard}

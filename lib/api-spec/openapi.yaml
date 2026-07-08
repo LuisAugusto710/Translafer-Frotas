@@ -1282,7 +1282,7 @@ components:
           type: string
           format: date
         frota:
-          type: string
+          type: ["string", "null"]
         cidade:
           type: string
         motoristaNome:
@@ -1340,7 +1340,6 @@ components:
       required:
         - id
         - data
-        - frota
         - cidade
         - frete
         - km
@@ -1418,7 +1417,6 @@ components:
           type: string
       required:
         - data
-        - frota
 
     DespesaUpdate:
       type: object

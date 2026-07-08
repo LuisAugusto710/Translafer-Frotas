@@ -1,0 +1,140 @@
+**Prompt:**
+
+Please implement the following improvements and fixes **without changing the application's design, layout, or existing workflow**.
+
+---
+
+# 1. Make the Fleet Number optional on the Expenses page
+
+The **Fleet Number** field should **no longer be mandatory** when creating or editing an expense.
+
+The Expenses module is used to record **general company expenses**, and not every expense is associated with a specific truck.
+
+## Requirements
+
+* Remove the required validation for the **Fleet Number** field.
+* Allow users to save an expense even when no fleet is selected.
+* If a Fleet Number is provided, continue validating that it exists.
+* Update the database model to allow a NULL/empty Fleet Number.
+* Keep all other required validations unchanged.
+
+### Dashboard behavior
+
+Expenses without a Fleet Number should:
+
+* Be included in the company's total expenses.
+* Be included in profit calculations.
+* Be included in reports and charts when **All Fleets** is selected.
+* Be excluded when a specific fleet is selected.
+
+### User Interface
+
+* Keep the current layout.
+* Mark the Fleet Number field as **Optional**.
+* Do not display validation errors if it is left empty.
+
+---
+
+# 2. Fix the "Most Served Cities" chart
+
+On the Dashboard, the **Most Served Cities** chart is displaying the values as **currency (R$ or €)**.
+
+This is incorrect.
+
+The chart should display the **number of freights/trips** for each city, not monetary values.
+
+## Requirements
+
+* Remove the currency formatting.
+* Display plain integer values.
+* The Y-axis should represent the number of trips.
+* Tooltips should also display the trip count instead of a currency amount.
+* Verify that the aggregation is counting freights correctly.
+* Ensure the chart continues to respect all Dashboard filters (date range and fleet).
+
+Example:
+
+Incorrect:
+
+* Lisbon → €145
+* Porto → €98
+
+Correct:
+
+* Lisbon → 145 Trips
+* Porto → 98 Trips
+
+---
+
+# 3. Share the generated PDF directly
+
+On the **Employees** page, when the user clicks **Share**, I do **not** want to share a text summary.
+
+Instead, I want the application to share the **generated PDF file directly**.
+
+## Requirements
+
+* Generate the employee PDF.
+* Attach the generated PDF to the share action.
+* Share the actual PDF file rather than a text summary or link.
+* Maintain compatibility with:
+
+  * WhatsApp
+  * Email
+  * Microsoft Teams
+  * Telegram
+  * AirDrop
+  * Android Share Sheet
+  * iOS Share Sheet
+  * Other applications supported by the operating system.
+
+If native file sharing is unavailable on desktop, allow the user to:
+
+* Download the PDF.
+* Open the selected sharing application when possible.
+
+The PDF should be the shared document, not a summary message.
+
+---
+
+# 4. Add a Show/Hide Password button on the Login page
+
+Improve the Login page by adding a password visibility toggle.
+
+## Requirements
+
+* Add an eye icon inside the password input field.
+* Clicking the icon should toggle between:
+
+  * Hidden password (`••••••`)
+  * Visible password
+* Clicking again should hide the password.
+* Use common eye and eye-slash icons for the two states.
+* Maintain the current styling of the Login page.
+* Ensure the button works on both desktop and mobile devices.
+* The icon should not interfere with typing or validation.
+
+---
+
+# 5. Performance and Compatibility
+
+Ensure that all of the above changes:
+
+* Preserve the current visual identity.
+* Do not break existing functionality.
+* Continue working with imports, exports, reports, backups, and Dashboard calculations.
+* Work correctly on desktop, tablet, and mobile devices.
+* Follow the application's existing coding standards.
+
+---
+
+## Important
+
+* **Do not redesign the application.**
+* **Do not modify unrelated functionality.**
+* Implement only the requested improvements:
+
+  1. Make the Fleet Number optional on the Expenses page.
+  2. Fix the formatting of the "Most Served Cities" chart so it displays trip counts instead of currency.
+  3. Share the generated PDF file directly from the Employees page.
+  4. Add a show/hide password (eye icon) to the Login page while maintaining the existing UI.

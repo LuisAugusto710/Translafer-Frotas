@@ -5,7 +5,7 @@ export const despesasTable = pgTable(
   {
     id: serial("id").primaryKey(),
     data: date("data").notNull(),
-    frota: text("frota").notNull(),
+    frota: text("frota"),
     cidade: text("cidade").notNull().default(""),
     motoristaNome: text("motorista_nome").notNull().default(""),
     ajudanteNome: text("ajudante_nome").notNull().default(""),

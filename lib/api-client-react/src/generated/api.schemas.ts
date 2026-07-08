@@ -214,7 +214,8 @@ export interface MensalComparativo {
 export interface Despesa {
   id: number;
   data: string;
-  frota: string;
+  /** @nullable */
+  frota?: string | null;
   cidade: string;
   motoristaNome?: string;
   ajudanteNome?: string;
@@ -246,7 +247,7 @@ export interface Despesa {
 
 export interface DespesaInput {
   data: string;
-  frota: string;
+  frota?: string;
   cidade?: string;
   motoristaNome?: string;
   ajudanteNome?: string;

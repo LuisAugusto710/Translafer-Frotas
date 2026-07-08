@@ -649,7 +649,7 @@ export function Dashboard() {
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
                     <XAxis type="number" fontSize={10} tickLine={false} axisLine={false} stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
                     <YAxis type="category" dataKey="label" fontSize={10} tickLine={false} axisLine={false} width={110} stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip {...CHART_STYLE} formatter={(v: number, name: string) => [name === "viagens" ? v + " viagens" : formatCurrency(v), name === "viagens" ? "Viagens" : "Receita"]} labelFormatter={l => cidadesData.find(c => truncate(c.cidade,18) === l)?.cidade ?? l} />
+                    <Tooltip {...CHART_STYLE} formatter={(v: number, name: string) => [name === "Viagens" ? v + " viagens" : formatCurrency(v), name === "Viagens" ? "Viagens" : "Receita"]} labelFormatter={l => cidadesData.find(c => truncate(c.cidade,18) === l)?.cidade ?? l} />
                     <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
                     <Bar dataKey="viagens"    name="Viagens" fill="#3498db" radius={[0,4,4,0]} yAxisId={0} />
                   </BarChart>

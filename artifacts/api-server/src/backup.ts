@@ -135,7 +135,7 @@ export async function generateBackup(): Promise<string> {
     const totalDespesa = DESPESA_COST_KEYS.reduce((s, k) => s + Number(d[k] ?? 0), 0);
     despesasRows.push([
       fmtDate(d.data),
-      d.frota,
+      d.frota ?? "",
       d.cidade,
       d.motoristaNome ?? "",
       d.ajudanteNome ?? "",

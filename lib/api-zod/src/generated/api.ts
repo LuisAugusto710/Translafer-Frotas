@@ -460,7 +460,7 @@ export const ListDespesasResponse = zod.object({
   "despesas": zod.array(zod.object({
   "id": zod.number(),
   "data": zod.coerce.date(),
-  "frota": zod.string(),
+  "frota": zod.string().nullish(),
   "cidade": zod.string(),
   "motoristaNome": zod.string().optional(),
   "ajudanteNome": zod.string().optional(),
@@ -494,7 +494,7 @@ export const ListDespesasResponse = zod.object({
 
 export const CreateDespesaBody = zod.object({
   "data": zod.coerce.date(),
-  "frota": zod.string(),
+  "frota": zod.string().optional(),
   "cidade": zod.string().optional(),
   "motoristaNome": zod.string().optional(),
   "ajudanteNome": zod.string().optional(),
@@ -522,7 +522,7 @@ export const CreateDespesaBody = zod.object({
 export const CreateDespesaResponse = zod.object({
   "id": zod.number(),
   "data": zod.coerce.date(),
-  "frota": zod.string(),
+  "frota": zod.string().nullish(),
   "cidade": zod.string(),
   "motoristaNome": zod.string().optional(),
   "ajudanteNome": zod.string().optional(),
@@ -555,7 +555,7 @@ export const CreateDespesaResponse = zod.object({
 export const BulkCreateDespesasBody = zod.object({
   "despesas": zod.array(zod.object({
   "data": zod.coerce.date(),
-  "frota": zod.string(),
+  "frota": zod.string().optional(),
   "cidade": zod.string().optional(),
   "motoristaNome": zod.string().optional(),
   "ajudanteNome": zod.string().optional(),
@@ -586,7 +586,7 @@ export const BulkCreateDespesasResponse = zod.object({
   "despesas": zod.array(zod.object({
   "id": zod.number(),
   "data": zod.coerce.date(),
-  "frota": zod.string(),
+  "frota": zod.string().nullish(),
   "cidade": zod.string(),
   "motoristaNome": zod.string().optional(),
   "ajudanteNome": zod.string().optional(),
@@ -624,7 +624,7 @@ export const GetDespesaParams = zod.object({
 export const GetDespesaResponse = zod.object({
   "id": zod.number(),
   "data": zod.coerce.date(),
-  "frota": zod.string(),
+  "frota": zod.string().nullish(),
   "cidade": zod.string(),
   "motoristaNome": zod.string().optional(),
   "ajudanteNome": zod.string().optional(),
@@ -688,7 +688,7 @@ export const UpdateDespesaBody = zod.object({
 export const UpdateDespesaResponse = zod.object({
   "id": zod.number(),
   "data": zod.coerce.date(),
-  "frota": zod.string(),
+  "frota": zod.string().nullish(),
   "cidade": zod.string(),
   "motoristaNome": zod.string().optional(),
   "ajudanteNome": zod.string().optional(),

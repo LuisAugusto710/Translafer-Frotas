@@ -193,10 +193,10 @@ export function DespesaFormModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.data || !formData.frota) {
+    if (!formData.data) {
       toast({
         title: "Erro de Validação",
-        description: "Preencha os campos obrigatórios (Data e Frota).",
+        description: "Preencha o campo obrigatório: Data.",
         variant: "destructive",
       });
       return;
@@ -285,7 +285,7 @@ export function DespesaFormModal({
             {/* Frota */}
             <div className="space-y-2">
               <Label htmlFor="frota">
-                Frota <span className="text-red-500">*</span>
+                Frota <span className="text-xs text-muted-foreground font-normal">(opcional)</span>
               </Label>
               <Input
                 id="frota"
@@ -293,7 +293,6 @@ export function DespesaFormModal({
                 value={formData.frota}
                 onChange={handleChange}
                 placeholder="Ex: 4104"
-                required
               />
             </div>
 

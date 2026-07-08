@@ -8,7 +8,7 @@
 
 export interface DespesaInput {
   data: Date;
-  frota: string;
+  frota?: string;
   cidade?: string;
   motoristaNome?: string;
   ajudanteNome?: string;

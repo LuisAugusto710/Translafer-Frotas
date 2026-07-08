@@ -449,7 +449,7 @@ router.get("/dashboard/por-transportadora", async (req, res) => {
 
   const despMap: Record<string, number> = {};
   for (const d of despPerFrota) {
-    despMap[d.frota] = Number(d.totalCustos ?? 0);
+    despMap[d.frota ?? ""] = Number(d.totalCustos ?? 0);
   }
 
   const transpFrotas: Record<string, Set<string>> = {};
@@ -509,7 +509,7 @@ router.get("/dashboard/fleet-performance", async (req, res) => {
 
   const despMap: Record<string, { custos: number; km: number }> = {};
   for (const d of despesasPerFrota) {
-    despMap[d.frota] = { custos: Number(d.totalCustos ?? 0), km: Number(d.totalKm ?? 0) };
+    despMap[d.frota ?? ""] = { custos: Number(d.totalCustos ?? 0), km: Number(d.totalKm ?? 0) };
   }
 
   const result = fretesPerFrota.map(f => {

@@ -75,7 +75,7 @@ function buildValues(body: Record<string, unknown>) {
   if (body.motoristaNome !== undefined) out.motoristaNome = toTitleCase(body.motoristaNome as string | null);
   if (body.ajudanteNome !== undefined) out.ajudanteNome = toTitleCase(body.ajudanteNome as string | null);
   if (body.trocaOleoParcela !== undefined) out.trocaOleoParcela = toTitleCase(body.trocaOleoParcela as string | null);
-  if (body.frota !== undefined) out.frota = body.frota;
+  if (body.frota !== undefined) out.frota = (body.frota as string)?.trim() || null;
   if (body.obs !== undefined) out.obs = toTitleCaseOrNull(body.obs as string | null);
   if (body.data !== undefined) out.data = toDateStr(body.data) ?? body.data;
   return out;
@@ -136,7 +136,6 @@ router.get("/despesas", async (req, res) => {
 router.post("/despesas", async (req, res) => {
   const values = buildValues(req.body);
   if (!values.data) { res.status(400).json({ error: "Campo obrigatório: Data" }); return; }
-  if (!values.frota) { res.status(400).json({ error: "Campo obrigatório: Frota" }); return; }
   values.lucro = computeLucro(values);
 
   try {
