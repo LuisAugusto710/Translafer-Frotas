@@ -6,6 +6,9 @@ import type { AnyPgColumn } from "drizzle-orm/pg-core";
 const router = Router();
 
 // Cost columns that make up "total despesa" (KM and Diesel LT are metrics, not costs).
+// SQL fragment to parse trocaOleoParcela (text column) as numeric
+const trocaOleoParsed = sql<number>`COALESCE(NULLIF(REPLACE(REPLACE(trim(${despesasTable.trocaOleoParcela}::text), ',', '.'), ' ', ''), '')::numeric, 0)`;
+
 const DESPESA_CATEGORIAS: Array<{ label: string; col: AnyPgColumn }> = [
   { label: "Diesel",     col: despesasTable.dieselRs },
   { label: "DAS",        col: despesasTable.das },
@@ -23,7 +26,7 @@ const DESPESA_CATEGORIAS: Array<{ label: string; col: AnyPgColumn }> = [
   { label: "Bsoft",      col: despesasTable.bsoft },
 ];
 
-const despesaCustosSql = sql<number>`coalesce(${despesasTable.dieselRs},0)+coalesce(${despesasTable.das},0)+coalesce(${despesasTable.motorista},0)+coalesce(${despesasTable.almoco},0)+coalesce(${despesasTable.ajudante},0)+coalesce(${despesasTable.pedagio},0)+coalesce(${despesasTable.unimed},0)+coalesce(${despesasTable.seguro},0)+coalesce(${despesasTable.gasto},0)+coalesce(${despesasTable.rastreador},0)+coalesce(${despesasTable.inss},0)+coalesce(${despesasTable.escritorio},0)+coalesce(${despesasTable.ipva},0)+coalesce(${despesasTable.bsoft},0)`;
+const despesaCustosSql = sql<number>`coalesce(${despesasTable.dieselRs},0)+coalesce(${despesasTable.das},0)+coalesce(${despesasTable.motorista},0)+coalesce(${despesasTable.almoco},0)+coalesce(${despesasTable.ajudante},0)+coalesce(${despesasTable.pedagio},0)+coalesce(${despesasTable.unimed},0)+coalesce(${despesasTable.seguro},0)+coalesce(${despesasTable.gasto},0)+coalesce(${despesasTable.rastreador},0)+coalesce(${despesasTable.inss},0)+coalesce(${despesasTable.escritorio},0)+coalesce(${despesasTable.ipva},0)+coalesce(${despesasTable.bsoft},0)+${trocaOleoParsed}`;
 
 function toDateStr(v: unknown): string | undefined {
   if (!v) return undefined;
@@ -258,7 +261,7 @@ router.get("/dashboard/despesas-resumo", async (req, res) => {
   const [summary] = await db.select({
     totalFrete:    sql<number>`coalesce(sum(${despesasTable.frete}), 0)`,
     totalCustos:   sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
-    totalLucro:    sql<number>`coalesce(sum(${despesasTable.frete}), 0) - coalesce(sum(${despesaCustosSql}), 0)`,
+    totalLucro:    sql<number>`coalesce(sum(${despesasTable.lucro}), 0)`,
     totalRegistros:sql<number>`count(*)`,
   }).from(despesasTable).where(where);
 
@@ -266,10 +269,13 @@ router.get("/dashboard/despesas-resumo", async (req, res) => {
   DESPESA_CATEGORIAS.forEach((c, i) => {
     catSelect[`c${i}`] = sql<number>`coalesce(sum(${c.col}), 0)`;
   });
+  catSelect["cTrocaOleo"] = sql<number>`coalesce(sum(${trocaOleoParsed}), 0)`;
   const [catRow] = await db.select(catSelect).from(despesasTable).where(where);
 
-  const categorias = DESPESA_CATEGORIAS
-    .map((c, i) => ({ categoria: c.label, valor: Number(catRow[`c${i}`] ?? 0) }))
+  const categorias = [
+    ...DESPESA_CATEGORIAS.map((c, i) => ({ categoria: c.label, valor: Number(catRow[`c${i}`] ?? 0) })),
+    { categoria: "Troca de Óleo", valor: Number(catRow["cTrocaOleo"] ?? 0) },
+  ]
     .filter(c => c.valor > 0)
     .sort((a, b) => b.valor - a.valor);
 
@@ -294,7 +300,7 @@ router.get("/dashboard/despesas-mensal", async (req, res) => {
     mes:      sql<string>`to_char(date_trunc('month', ${despesasTable.data}::date), 'YYYY-MM')`,
     frete:    sql<number>`coalesce(sum(${despesasTable.frete}), 0)`,
     custos:   sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
-    lucro:    sql<number>`coalesce(sum(${despesasTable.frete}), 0) - coalesce(sum(${despesaCustosSql}), 0)`,
+    lucro:    sql<number>`coalesce(sum(${despesasTable.lucro}), 0)`,
     registros:sql<number>`count(*)`,
   }).from(despesasTable).where(where)
     .groupBy(sql`date_trunc('month', ${despesasTable.data}::date)`)

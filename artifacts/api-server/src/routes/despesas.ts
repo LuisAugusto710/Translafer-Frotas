@@ -9,6 +9,7 @@ const router = Router();
 const COST_FIELDS = [
   "dieselRs", "das", "motorista", "almoco", "ajudante", "pedagio",
   "unimed", "seguro", "gasto", "rastreador", "inss", "escritorio", "ipva", "bsoft",
+  "trocaOleoParcela",
 ] as const;
 
 function toDateStr(v: unknown): string | undefined {
@@ -25,6 +26,8 @@ function fmt(t: typeof despesasTable.$inferSelect) {
   ] as const) {
     num[k] = Number(t[k]);
   }
+  // trocaOleoParcela is stored as text but represents a monetary value; parse it numerically
+  num["trocaOleoParcela"] = Number(String(t.trocaOleoParcela ?? "0").replace(",", ".").trim()) || 0;
   const totalDespesa = COST_FIELDS.reduce((s, k) => s + num[k], 0);
   return {
     id: t.id,
@@ -74,7 +77,11 @@ function buildValues(body: Record<string, unknown>) {
   if (body.cidade !== undefined) out.cidade = toTitleCase(body.cidade as string | null);
   if (body.motoristaNome !== undefined) out.motoristaNome = toTitleCase(body.motoristaNome as string | null);
   if (body.ajudanteNome !== undefined) out.ajudanteNome = toTitleCase(body.ajudanteNome as string | null);
-  if (body.trocaOleoParcela !== undefined) out.trocaOleoParcela = toTitleCase(body.trocaOleoParcela as string | null);
+  if (body.trocaOleoParcela !== undefined) {
+    // Normalize decimal separator so "100,00" is stored as "100.00" for consistent parsing
+    const raw = String(body.trocaOleoParcela ?? "").replace(",", ".").trim();
+    out.trocaOleoParcela = raw;
+  }
   if (body.frota !== undefined) out.frota = (body.frota as string)?.trim() || null;
   if (body.obs !== undefined) out.obs = toTitleCaseOrNull(body.obs as string | null);
   if (body.data !== undefined) out.data = toDateStr(body.data) ?? body.data;

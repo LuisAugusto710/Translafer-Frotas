@@ -444,7 +444,7 @@ export function DespesaFormModal({
               <Input
                 value={formatCurrency(lucro)}
                 readOnly
-                className={`bg-muted font-bold ${lucro >= 0 ? "text-emerald-500" : "text-red-500"}`}
+                className={`bg-muted font-bold ${lucro >= 0 ? "text-[#2ecc71]" : "text-red-500"}`}
               />
             </div>
           </div>
@@ -470,7 +470,7 @@ export function DespesaFormModal({
             <Button
               type="submit"
               disabled={createMutation.isPending || updateMutation.isPending}
-              className="bg-primary text-primary-foreground min-w-[130px]"
+              className="bg-[#0a192f] text-white min-w-[130px]"
             >
               {(createMutation.isPending || updateMutation.isPending)
                 ? "Salvando…"
