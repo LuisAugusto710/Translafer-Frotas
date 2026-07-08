@@ -1,0 +1,153 @@
+**Prompt:**
+
+Please perform a complete investigation of the **Expenses** module because **some values are not being calculated correctly**. I do **not** want temporary fixes or workarounds—I want you to identify the root cause of the incorrect calculations and resolve it permanently.
+
+## 1. Investigate all calculations
+
+Review every calculation performed on the Expenses page, including but not limited to:
+
+* Total Expense
+* Driver Payment
+* Assistant Payment
+* Toll
+* Oil Change
+* Oil Change Installment
+* Other expense categories
+* Automatically calculated fields
+* Dashboard values that depend on Expenses
+
+Verify that every value is being calculated using the correct formula and the correct source data.
+
+---
+
+## 2. Validate the data flow
+
+Trace the entire flow of information:
+
+* User input
+* Form validation
+* Frontend calculations
+* API request
+* Backend processing
+* Database storage
+* Database retrieval
+* Dashboard aggregation
+* Reports
+* Charts
+* PDF exports
+* Excel exports
+
+Ensure the same values are preserved throughout the entire process.
+
+---
+
+## 3. Verify database integrity
+
+Check for:
+
+* Incorrect SQL queries
+* Incorrect aggregations (SUM, AVG, COUNT, etc.)
+* Duplicate records affecting totals
+* Missing records
+* Incorrect relationships
+* Null values
+* Incorrect joins
+* Data type issues
+* Decimal precision problems
+* Rounding errors
+
+Correct any issue that may lead to incorrect calculations.
+
+---
+
+## 4. Verify automatic calculations
+
+Review every automatically populated field.
+
+Ensure that:
+
+* Values update immediately when related fields change.
+* Totals are recalculated whenever an expense is created, edited, imported, or deleted.
+* No stale or cached values are being displayed.
+* Calculations are performed only once to prevent duplication.
+
+---
+
+## 5. Dashboard synchronization
+
+After correcting the calculations, ensure that the Dashboard displays exactly the same totals as the Expenses module.
+
+Verify that all KPI cards, charts, reports, and summaries use the corrected values.
+
+The Dashboard should update automatically whenever expense data changes.
+
+---
+
+## 6. Date and Fleet filters
+
+Ensure all calculations correctly respect:
+
+* Selected date range
+* Selected fleet
+* "All Fleets" option
+
+Only records matching the active filters should be included in the calculations.
+
+---
+
+## 7. Decimal precision
+
+Review all monetary calculations.
+
+Ensure that:
+
+* Currency values maintain consistent precision.
+* No cumulative floating-point errors occur.
+* Totals are rounded only for display purposes, while calculations retain full precision internally.
+
+---
+
+## 8. Validation and Testing
+
+After implementing the fixes, perform a complete validation by testing:
+
+* Creating new expenses
+* Editing expenses
+* Deleting expenses
+* Importing expenses from Excel
+* Expenses with and without a Fleet Number
+* Multiple expenses on the same date
+* Driver and Assistant payments
+* Toll calculations
+* Oil Change Installments
+* Dashboard synchronization
+* PDF and Excel exports
+
+Confirm that all totals remain accurate in every scenario.
+
+---
+
+## 9. Error Handling
+
+If any calculation fails:
+
+* Display a clear error message.
+* Log the technical error for debugging.
+* Prevent incorrect values from being saved to the database.
+
+---
+
+## Performance
+
+* Optimize all calculation queries.
+* Avoid redundant recalculations.
+* Keep the application responsive even with large datasets.
+* Ensure all calculations remain consistent across the entire application.
+
+---
+
+## Important
+
+* **Do not redesign the interface.**
+* **Do not modify unrelated functionality.**
+* Focus on identifying the root cause of the incorrect calculations, correcting the formulas and data flow, and ensuring that every value shown in the Expenses page, Dashboard, reports, and exports is accurate and fully synchronized.
