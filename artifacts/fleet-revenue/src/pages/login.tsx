@@ -45,7 +45,7 @@ export function Login() {
   }
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#0a192f] via-[#0d2240] to-[#0a192f] p-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#1e3a5f] via-[#0f2744] to-[#0b1929] p-4">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center gap-3 mb-2">
@@ -132,7 +132,7 @@ export function Login() {
 
             <Button
               type="submit"
-              className="w-full bg-[#0a192f] hover:bg-[#0d2240] text-white"
+              className="w-full bg-primary hover:bg-primary/90 text-white"
               disabled={submitting}
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}

@@ -15,34 +15,37 @@ function NavLinks({ currentLocation, onNavigate }: { currentLocation: string; on
   const isFuncionarios = currentLocation === "/funcionarios";
   const isDashboard = currentLocation === "/dashboard";
 
+  const active = "bg-white/[0.08] text-white font-semibold";
+  const inactive = "text-sidebar-foreground hover:bg-white/[0.05] hover:text-white/90 font-medium";
+
   return (
     <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
       <Link href="/fretes" onClick={onNavigate}>
-        <div className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${isFretes ? "bg-[#0a192f] text-white" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+        <div className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors cursor-pointer ${isFretes ? active : inactive}`}>
           <Truck className="h-4 w-4 shrink-0" />
           Fretes
         </div>
       </Link>
       <Link href="/diesel" onClick={onNavigate}>
-        <div className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${isDiesel ? "bg-[#0a192f] text-white" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+        <div className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors cursor-pointer ${isDiesel ? active : inactive}`}>
           <Fuel className="h-4 w-4 shrink-0" />
           Diesel
         </div>
       </Link>
       <Link href="/despesas" onClick={onNavigate}>
-        <div className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${isDespesas ? "bg-[#0a192f] text-white" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+        <div className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors cursor-pointer ${isDespesas ? active : inactive}`}>
           <Wallet className="h-4 w-4 shrink-0" />
           Despesas
         </div>
       </Link>
       <Link href="/funcionarios" onClick={onNavigate}>
-        <div className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${isFuncionarios ? "bg-[#0a192f] text-white" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+        <div className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors cursor-pointer ${isFuncionarios ? active : inactive}`}>
           <Users className="h-4 w-4 shrink-0" />
           Funcionários
         </div>
       </Link>
       <Link href="/dashboard" onClick={onNavigate}>
-        <div className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${isDashboard ? "bg-[#0a192f] text-white" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+        <div className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors cursor-pointer ${isDashboard ? active : inactive}`}>
           <LayoutDashboard className="h-4 w-4 shrink-0" />
           Dashboard
         </div>
@@ -64,7 +67,7 @@ function LaferLogo({ size = 24 }: { size?: number }) {
 
 function SidebarBrand() {
   return (
-    <div className="p-4 border-b h-14 flex items-center bg-[#0a192f] text-white shrink-0">
+    <div className="p-4 border-b border-sidebar-border h-14 flex items-center bg-sidebar text-white shrink-0">
       <div className="flex items-center gap-2 font-bold text-lg tracking-tight min-w-0">
         <LaferLogo size={28} />
         <span className="truncate tracking-widest">LAFER</span>
@@ -93,16 +96,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-64 border-r bg-card flex-col shrink-0">
+      <aside className="hidden md:flex w-64 border-r border-sidebar-border bg-sidebar flex-col shrink-0">
         <SidebarBrand />
         <NavLinks currentLocation={location} />
-        <div className="p-4 border-t flex justify-between items-center text-xs text-muted-foreground shrink-0">
+        <div className="p-4 border-t border-sidebar-border flex justify-between items-center text-xs text-sidebar-foreground shrink-0">
           <span className="font-mono">Gestão de Frotas</span>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="h-8 w-8"
+            className="h-8 w-8 text-sidebar-foreground hover:text-white hover:bg-white/10"
           >
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
@@ -118,19 +121,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
             onClick={() => setMobileOpen(false)}
           />
           {/* Drawer panel */}
-          <aside className="relative z-50 w-72 max-w-[85vw] bg-card flex flex-col h-full shadow-xl">
+          <aside className="relative z-50 w-72 max-w-[85vw] bg-sidebar flex flex-col h-full shadow-xl">
             <SidebarBrand />
             <NavLinks
               currentLocation={location}
               onNavigate={() => setMobileOpen(false)}
             />
-            <div className="p-4 border-t flex justify-between items-center text-xs text-muted-foreground shrink-0">
+            <div className="p-4 border-t border-sidebar-border flex justify-between items-center text-xs text-sidebar-foreground shrink-0">
               <span className="font-mono">Gestão de Frotas</span>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="h-8 w-8"
+                className="h-8 w-8 text-sidebar-foreground hover:text-white hover:bg-white/10"
               >
                 {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </Button>
@@ -140,8 +143,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Main content */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden bg-slate-50 dark:bg-slate-950 min-w-0">
-        <header className="h-14 border-b bg-white dark:bg-slate-900 px-4 sm:px-6 flex items-center justify-between shrink-0 gap-2">
+      <main className="flex-1 flex flex-col h-full overflow-hidden bg-background min-w-0">
+        <header className="h-14 border-b bg-card px-4 sm:px-6 flex items-center justify-between shrink-0 gap-2">
           {/* Hamburger — mobile only */}
           <Button
             variant="ghost"
@@ -167,7 +170,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 {user.email}
               </span>
             )}
-            <div className="h-2 w-2 rounded-full bg-[#2ecc71] animate-pulse" />
+            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
             <Button
               variant="ghost"
               size="sm"

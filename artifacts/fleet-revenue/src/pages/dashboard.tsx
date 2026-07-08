@@ -40,9 +40,9 @@ const THIS_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: THIS_YEAR - 2021 }, (_, i) => 2022 + i);
 
 const PIE_COLORS = [
-  "#0a192f", "#e74c3c", "#2ecc71", "#f39c12", "#3498db",
-  "#9b59b6", "#1abc9c", "#e67e22", "#e91e63", "#607d8b",
-  "#795548", "#ff5722", "#009688", "#f06292",
+  "#2563eb", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6",
+  "#06b6d4", "#f97316", "#ec4899", "#14b8a6", "#64748b",
+  "#a855f7", "#84cc16", "#0891b2", "#fb923c",
 ];
 
 const CHART_STYLE = {
@@ -86,7 +86,7 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }
   return (
     <div className="flex flex-wrap items-center gap-2 bg-white dark:bg-slate-900 px-4 py-3 rounded-lg border shadow-sm">
       <div>
-        <h2 className="text-base font-bold text-[#0a192f] dark:text-white">{title}</h2>
+        <h2 className="text-base font-bold text-foreground">{title}</h2>
         {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
       </div>
     </div>
@@ -137,7 +137,7 @@ function KpiCard({ title, value, sub, icon, valueColor = "text-foreground", load
               </div>
             )}
           </div>
-          <div className="p-2 rounded-lg bg-[#0a192f]/8 dark:bg-white/5 shrink-0 text-[#0a192f] dark:text-white/70">
+          <div className="p-2 rounded-lg bg-primary/8 dark:bg-primary/10 shrink-0 text-primary dark:text-primary/80">
             {icon}
           </div>
         </div>
@@ -159,8 +159,8 @@ function SortBtn({
     >
       {active
         ? sortDir === "desc"
-          ? <ChevronDown className="h-3 w-3 text-[#0a192f]" />
-          : <ChevronUp className="h-3 w-3 text-[#0a192f]" />
+          ? <ChevronDown className="h-3 w-3 text-primary" />
+          : <ChevronUp className="h-3 w-3 text-primary" />
         : <ChevronsUpDown className="h-3 w-3 opacity-40" />
       }
     </button>
@@ -223,7 +223,7 @@ function FleetRankingTable({ data, loading }: { data?: FleetPerformance[]; loadi
         </thead>
         <tbody>
           {sorted.map((r, i) => (
-            <tr key={r.frota} className={`border-t hover:bg-muted/30 transition-colors ${i === 0 && sortKey === "totalReceita" && sortDir === "desc" ? "bg-[#0a192f]/3 dark:bg-white/3" : ""}`}>
+            <tr key={r.frota} className={`border-t hover:bg-muted/30 transition-colors ${i === 0 && sortKey === "totalReceita" && sortDir === "desc" ? "bg-primary/5 dark:bg-primary/5" : ""}`}>
               <td className="px-3 py-2 text-muted-foreground font-medium">{i + 1}</td>
               {cols.map(c => {
                 const val = c.fmt(r);
@@ -233,7 +233,7 @@ function FleetRankingTable({ data, loading }: { data?: FleetPerformance[]; loadi
                   : "";
                 return (
                   <td key={c.key} className={`px-3 py-2 whitespace-nowrap font-medium ${color}`}>
-                    {c.key === "frota" ? <span className="font-bold text-[#0a192f] dark:text-white">{val}</span> : val}
+                    {c.key === "frota" ? <span className="font-bold text-foreground">{val}</span> : val}
                   </td>
                 );
               })}
@@ -299,8 +299,8 @@ function FleetComparison({ data }: { data?: FleetPerformance[] }) {
             <thead className="bg-muted/50">
               <tr>
                 <th className="px-4 py-2 text-left text-xs font-semibold text-muted-foreground">Métrica</th>
-                <th className="px-4 py-2 text-center text-xs font-semibold text-[#0a192f] dark:text-white">Frota {frotaA}</th>
-                <th className="px-4 py-2 text-center text-xs font-semibold text-[#2ecc71]">Frota {frotaB}</th>
+                <th className="px-4 py-2 text-center text-xs font-semibold text-chart-1">Frota {frotaA}</th>
+                <th className="px-4 py-2 text-center text-xs font-semibold text-chart-3">Frota {frotaB}</th>
               </tr>
             </thead>
             <tbody>
@@ -384,7 +384,7 @@ export function Dashboard() {
     }
     if (clientesData && clientesData.length > 0) {
       const top = clientesData[0];
-      list.push({ label: "Maior cliente", value: `${truncate(top.cliente, 22)} — ${formatCurrency(top.totalGeral)}`, icon: <Users className="h-4 w-4" />, color: "text-[#0a192f] dark:text-white" });
+      list.push({ label: "Maior cliente", value: `${truncate(top.cliente, 22)} — ${formatCurrency(top.totalGeral)}`, icon: <Users className="h-4 w-4" />, color: "text-primary" });
     }
     if (cidadesData && cidadesData.length > 0) {
       const top = cidadesData[0];
@@ -513,12 +513,12 @@ export function Dashboard() {
                 <AreaChart data={periodoData} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
                   <defs>
                     <linearGradient id="gFrete" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#0a192f" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#0a192f" stopOpacity={0} />
+                      <stop offset="5%"  stopColor="#2563eb" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="gPedagio" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#2ecc71" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#2ecc71" stopOpacity={0} />
+                      <stop offset="5%"  stopColor="#10b981" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
@@ -526,8 +526,8 @@ export function Dashboard() {
                   <YAxis fontSize={10} tickLine={false} axisLine={false} width={44} stroke="hsl(var(--muted-foreground))" tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} />
                   <Tooltip {...CHART_STYLE} formatter={(v: number) => formatCurrency(v)} />
                   <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
-                  <Area type="monotone" dataKey="totalPedagio" name="Pedágio" stroke="#2ecc71" fill="url(#gPedagio)" stackId="1" strokeWidth={1.5} />
-                  <Area type="monotone" dataKey="totalFrete"   name="Frete"   stroke="#0a192f" fill="url(#gFrete)"   stackId="1" strokeWidth={2} />
+                  <Area type="monotone" dataKey="totalPedagio" name="Pedágio" stroke="#10b981" fill="url(#gPedagio)" stackId="1" strokeWidth={1.5} />
+                  <Area type="monotone" dataKey="totalFrete"   name="Frete"   stroke="#2563eb" fill="url(#gFrete)"   stackId="1" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
             ) : <EmptyChart />
@@ -552,9 +552,9 @@ export function Dashboard() {
                     <YAxis fontSize={10} tickLine={false} axisLine={false} width={44} stroke="hsl(var(--muted-foreground))" tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} />
                     <Tooltip {...CHART_STYLE} formatter={(v: number) => formatCurrency(v)} />
                     <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
-                    <Bar dataKey="frete"  name="Receita"  fill="#0a192f" radius={[4,4,0,0]} />
-                    <Bar dataKey="custos" name="Despesas" fill="#e74c3c" radius={[4,4,0,0]} />
-                    <Line type="monotone" dataKey="lucro" name="Lucro" stroke="#2ecc71" strokeWidth={2.5} dot={{ r: 3 }} />
+                    <Bar dataKey="frete"  name="Receita"  fill="#2563eb" radius={[4,4,0,0]} />
+                    <Bar dataKey="custos" name="Despesas" fill="#ef4444" radius={[4,4,0,0]} />
+                    <Line type="monotone" dataKey="lucro" name="Lucro" stroke="#10b981" strokeWidth={2.5} dot={{ r: 3 }} />
                   </ComposedChart>
                 </ResponsiveContainer>
               ) : <EmptyChart />
@@ -612,7 +612,7 @@ export function Dashboard() {
         <Card className="shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-              <Users className="h-4 w-4 text-[#0a192f]" /> Principais Clientes
+              <Users className="h-4 w-4 text-primary" /> Principais Clientes
             </CardTitle>
             <CardDescription>Top 10 por receita de frete</CardDescription>
           </CardHeader>
@@ -625,8 +625,8 @@ export function Dashboard() {
                     <XAxis type="number" fontSize={10} tickLine={false} axisLine={false} stroke="hsl(var(--muted-foreground))" tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} />
                     <YAxis type="category" dataKey="label" fontSize={10} tickLine={false} axisLine={false} width={110} stroke="hsl(var(--muted-foreground))" />
                     <Tooltip {...CHART_STYLE} formatter={(v: number) => formatCurrency(v)} labelFormatter={l => clientesData.find(c => truncate(c.cliente,18) === l)?.cliente ?? l} />
-                    <Bar dataKey="totalFrete"   name="Frete"   stackId="a" fill="#0a192f" />
-                    <Bar dataKey="totalPedagio" name="Pedágio" stackId="a" fill="#2ecc71" radius={[0,4,4,0]} />
+                    <Bar dataKey="totalFrete"   name="Frete"   stackId="a" fill="#2563eb" />
+                    <Bar dataKey="totalPedagio" name="Pedágio" stackId="a" fill="#10b981" radius={[0,4,4,0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : <EmptyChart />
@@ -637,7 +637,7 @@ export function Dashboard() {
         <Card className="shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-[#0a192f]" /> Destinos Mais Servidos
+              <MapPin className="h-4 w-4 text-primary" /> Destinos Mais Servidos
             </CardTitle>
             <CardDescription>Top 10 cidades por nº de viagens</CardDescription>
           </CardHeader>
@@ -651,7 +651,7 @@ export function Dashboard() {
                     <YAxis type="category" dataKey="label" fontSize={10} tickLine={false} axisLine={false} width={110} stroke="hsl(var(--muted-foreground))" />
                     <Tooltip {...CHART_STYLE} formatter={(v: number, name: string) => [name === "Viagens" ? v + " viagens" : formatCurrency(v), name === "Viagens" ? "Viagens" : "Receita"]} labelFormatter={l => cidadesData.find(c => truncate(c.cidade,18) === l)?.cidade ?? l} />
                     <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
-                    <Bar dataKey="viagens"    name="Viagens" fill="#3498db" radius={[0,4,4,0]} yAxisId={0} />
+                    <Bar dataKey="viagens"    name="Viagens" fill="#8b5cf6" radius={[0,4,4,0]} yAxisId={0} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : <EmptyChart />
@@ -665,7 +665,7 @@ export function Dashboard() {
         <Card className="shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-              <Truck className="h-4 w-4 text-[#0a192f]" /> Por Transportadora
+              <Truck className="h-4 w-4 text-primary" /> Por Transportadora
             </CardTitle>
             <CardDescription>Receita e viagens por empresa de transporte</CardDescription>
           </CardHeader>
@@ -692,7 +692,7 @@ export function Dashboard() {
                       <td className="px-3 py-2 text-right font-semibold">{formatNumber(t.pctTotal, 1)}%</td>
                       <td className="px-3 py-2">
                         <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div className="h-full bg-[#0a192f] rounded-full transition-all" style={{ width: `${t.pctTotal}%` }} />
+                          <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${t.pctTotal}%` }} />
                         </div>
                       </td>
                     </tr>
@@ -730,8 +730,8 @@ export function Dashboard() {
                     <YAxis yAxisId="r" orientation="right" fontSize={10} tickLine={false} axisLine={false} width={44} stroke="hsl(var(--muted-foreground))" tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} />
                     <Tooltip {...CHART_STYLE} />
                     <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
-                    <Bar  yAxisId="l" dataKey="totalLitros" name="Litros (L)"     fill="#f39c12" radius={[4,4,0,0]} />
-                    <Line yAxisId="r" type="monotone" dataKey="totalPago" name="Valor Pago (R$)" stroke="#c0392b" strokeWidth={2} dot={{ r: 4 }} />
+                    <Bar  yAxisId="l" dataKey="totalLitros" name="Litros (L)"     fill="#f59e0b" radius={[4,4,0,0]} />
+                    <Line yAxisId="r" type="monotone" dataKey="totalPago" name="Valor Pago (R$)" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
                   </ComposedChart>
                 </ResponsiveContainer>
               ) : <EmptyChart message="Nenhum dado de diesel para o ano selecionado" />
@@ -753,7 +753,7 @@ export function Dashboard() {
                     <XAxis dataKey="placa" fontSize={10} tickLine={false} axisLine={false} stroke="hsl(var(--muted-foreground))" />
                     <YAxis fontSize={10} tickLine={false} axisLine={false} width={36} stroke="hsl(var(--muted-foreground))" tickFormatter={v => `${v}`} />
                     <Tooltip {...CHART_STYLE} formatter={(v: number) => `${formatNumber(v, 1)} km/L`} />
-                    <Bar dataKey="mediaGeral" name="Média KM/L" fill="#2ecc71" radius={[4,4,0,0]} />
+                    <Bar dataKey="mediaGeral" name="Média KM/L" fill="#10b981" radius={[4,4,0,0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : <EmptyChart message="Nenhuma média de km/L disponível" />
@@ -776,7 +776,7 @@ export function Dashboard() {
         <Card className="shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-              <Users className="h-4 w-4 text-[#0a192f]" /> Custos por Motorista e Ajudante
+              <Users className="h-4 w-4 text-primary" /> Custos por Motorista e Ajudante
             </CardTitle>
             <CardDescription>
               Total pago por pessoa no período — ordenado pelo maior valor
@@ -786,8 +786,8 @@ export function Dashboard() {
             {l13 ? <Skeleton className="w-full h-48" /> : motAjud && motAjud.length > 0 ? (
               <>
                 <div className="flex items-center gap-4 mb-2 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1.5"><span className="inline-block w-3 h-3 rounded-sm" style={{ background: "#0a192f" }} />Motorista</span>
-                  <span className="flex items-center gap-1.5"><span className="inline-block w-3 h-3 rounded-sm" style={{ background: "#3498db" }} />Ajudante</span>
+                  <span className="flex items-center gap-1.5"><span className="inline-block w-3 h-3 rounded-sm" style={{ background: "#2563eb" }} />Motorista</span>
+                  <span className="flex items-center gap-1.5"><span className="inline-block w-3 h-3 rounded-sm" style={{ background: "#8b5cf6" }} />Ajudante</span>
                 </div>
                 <div className="overflow-y-auto" style={{ maxHeight: 400 }}>
                   <div style={{ height: Math.max(180, motAjud.length * 36) }}>
@@ -825,7 +825,7 @@ export function Dashboard() {
                         />
                         <Bar dataKey="total" name="Total pago" radius={[0, 4, 4, 0]} label={{ position: "right", fontSize: 10, formatter: (v: number) => formatCurrency(v) }}>
                           {motAjud.map((entry, i) => (
-                            <Cell key={i} fill={entry.tipo === "Motorista" ? "#0a192f" : "#3498db"} />
+                            <Cell key={i} fill={entry.tipo === "Motorista" ? "#2563eb" : "#8b5cf6"} />
                           ))}
                         </Bar>
                       </BarChart>
@@ -844,7 +844,7 @@ export function Dashboard() {
           <SectionHeader title="Insights Automáticos" subtitle="Destaques gerados automaticamente com base nos dados do período" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {insights.map((ins, i) => (
-              <Card key={i} className="shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-[#0a192f]">
+              <Card key={i} className="shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-primary">
                 <CardContent className="p-4 flex items-start gap-3">
                   <div className={`mt-0.5 shrink-0 ${ins.color}`}>{ins.icon}</div>
                   <div className="min-w-0">

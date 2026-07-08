@@ -66,7 +66,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* LIGHT MODE - Navy/Slate */
+/* LIGHT MODE — Slate & Sapphire */
 :root {
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
@@ -74,56 +74,56 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  --background: 210 40% 98%;
-  --foreground: 222 47% 11%;
-  --border: 214 32% 91%;
-  
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --card-border: 214 32% 91%;
-  
-  --sidebar: 222 47% 11%;
-  --sidebar-foreground: 210 40% 98%;
-  --sidebar-border: 217 33% 17%;
-  --sidebar-primary: 210 40% 98%;
-  --sidebar-primary-foreground: 222 47% 11%;
-  --sidebar-accent: 217 33% 17%;
-  --sidebar-accent-foreground: 210 40% 98%;
+  --background: 213 43% 96%;       /* #f0f4f9 — cool blue-tinted off-white */
+  --foreground: 213 60% 16%;       /* #0f2744 — deep navy text */
+  --border: 213 30% 88%;           /* #d5dce8 — subtle cool border */
+
+  --card: 0 0% 100%;               /* #ffffff */
+  --card-foreground: 213 60% 16%;
+  --card-border: 213 30% 88%;
+
+  --sidebar: 212 52% 24%;          /* #1e3a5f — slate-blue sidebar */
+  --sidebar-foreground: 210 35% 68%; /* #8baac4 — muted sidebar text */
+  --sidebar-border: 213 52% 19%;   /* slightly darker for separation */
+  --sidebar-primary: 213 93% 68%;  /* #60a5fa — sapphire active text */
+  --sidebar-primary-foreground: 212 52% 24%;
+  --sidebar-accent: 213 52% 30%;   /* lighter hover on dark sidebar */
+  --sidebar-accent-foreground: 213 93% 88%;
   --sidebar-ring: 221 83% 53%;
-  
+
   --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
-  --popover-border: 214 32% 91%;
-  
-  --primary: 221 83% 53%;
-  --primary-foreground: 210 40% 98%;
-  
-  --secondary: 214 32% 91%;
-  --secondary-foreground: 222 47% 11%;
-  
-  --muted: 214 32% 91%;
-  --muted-foreground: 215 16% 47%;
-  
-  --accent: 214 32% 91%;
-  --accent-foreground: 222 47% 11%;
-  
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 210 40% 98%;
-  
-  --input: 214 32% 91%;
+  --popover-foreground: 213 60% 16%;
+  --popover-border: 213 30% 88%;
+
+  --primary: 221 83% 53%;          /* #2563eb — sapphire */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 213 40% 93%;        /* #edf1f8 — light blue-gray for secondary */
+  --secondary-foreground: 213 60% 16%;
+
+  --muted: 213 40% 93%;            /* #edf1f8 — table headers, muted areas */
+  --muted-foreground: 215 16% 47%; /* #64748b */
+
+  --accent: 213 40% 93%;
+  --accent-foreground: 213 60% 16%;
+
+  --destructive: 0 84% 60%;        /* #ef4444 */
+  --destructive-foreground: 0 0% 100%;
+
+  --input: 213 30% 88%;
   --ring: 221 83% 53%;
-  
-  --chart-1: 221 83% 53%;
-  --chart-2: 215 16% 47%;
-  --chart-3: 142 71% 45%;
-  --chart-4: 43 74% 66%;
-  --chart-5: 27 87% 67%;
+
+  --chart-1: 221 83% 53%;          /* #2563eb — sapphire */
+  --chart-2: 262 83% 58%;          /* #7c3aed — violet */
+  --chart-3: 160 84% 39%;          /* #10b981 — emerald */
+  --chart-4: 38 92% 50%;           /* #f59e0b — amber */
+  --chart-5: 192 91% 36%;          /* #0891b2 — cyan */
 
   --app-font-sans: 'Inter', sans-serif;
   --app-font-serif: Georgia, serif;
   --app-font-mono: 'JetBrains Mono', Menlo, monospace;
   --radius: 0.3rem;
-  
+
   --sidebar-primary-border: hsl(var(--sidebar-primary));
   --sidebar-accent-border: hsl(var(--sidebar-accent));
   --primary-border: hsl(var(--primary));
@@ -133,6 +133,7 @@
   --destructive-border: hsl(var(--destructive));
 }
 
+/* DARK MODE — layered deep slate surfaces */
 .dark {
   --button-outline: rgba(255,255,255, .10);
   --badge-outline: rgba(255,255,255, .05);
@@ -140,50 +141,50 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  --background: 222 47% 11%;
-  --foreground: 210 40% 98%;
-  --border: 217 33% 17%;
-  
-  --card: 217 33% 15%;
-  --card-foreground: 210 40% 98%;
-  --card-border: 217 33% 17%;
-  
-  --sidebar: 217 33% 15%;
-  --sidebar-foreground: 210 40% 98%;
-  --sidebar-border: 217 33% 17%;
-  --sidebar-primary: 210 40% 98%;
-  --sidebar-primary-foreground: 222 47% 11%;
-  --sidebar-accent: 217 33% 17%;
-  --sidebar-accent-foreground: 210 40% 98%;
-  --sidebar-ring: 221 83% 53%;
-  
-  --popover: 217 33% 15%;
-  --popover-foreground: 210 40% 98%;
-  --popover-border: 217 33% 17%;
-  
-  --primary: 221 83% 53%;
-  --primary-foreground: 210 40% 98%;
-  
-  --secondary: 217 33% 17%;
-  --secondary-foreground: 210 40% 98%;
-  
-  --muted: 217 33% 17%;
-  --muted-foreground: 215 20% 65%;
-  
-  --accent: 217 33% 17%;
-  --accent-foreground: 210 40% 98%;
-  
-  --destructive: 0 62% 30%;
-  --destructive-foreground: 210 40% 98%;
-  
-  --input: 217 33% 17%;
-  --ring: 221 83% 53%;
-  
-  --chart-1: 221 83% 53%;
-  --chart-2: 215 20% 65%;
-  --chart-3: 142 71% 45%;
-  --chart-4: 43 74% 66%;
-  --chart-5: 27 87% 67%;
+  --background: 213 50% 12%;       /* #0f1e2f — deep blue-black */
+  --foreground: 214 45% 91%;       /* #e2eaf4 — soft blue-white text */
+  --border: 210 42% 20%;           /* #1e3248 — subtle dark border */
+
+  --card: 211 48% 15%;             /* #162434 — elevated surface */
+  --card-foreground: 214 45% 91%;
+  --card-border: 210 42% 20%;
+
+  --sidebar: 214 57% 10%;          /* #0b1929 — darkest surface, clear hierarchy */
+  --sidebar-foreground: 210 30% 50%; /* #5a7a98 — readable muted nav text */
+  --sidebar-border: 210 42% 20%;
+  --sidebar-primary: 213 93% 68%;  /* #60a5fa — bright sapphire active */
+  --sidebar-primary-foreground: 214 57% 10%;
+  --sidebar-accent: 210 42% 20%;   /* subtle hover */
+  --sidebar-accent-foreground: 214 45% 91%;
+  --sidebar-ring: 217 91% 60%;
+
+  --popover: 211 48% 15%;
+  --popover-foreground: 214 45% 91%;
+  --popover-border: 210 42% 20%;
+
+  --primary: 217 91% 60%;          /* #3b82f6 — brighter blue for dark bg */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 210 42% 20%;        /* #1e3248 */
+  --secondary-foreground: 214 45% 91%;
+
+  --muted: 210 42% 20%;
+  --muted-foreground: 210 25% 52%; /* slightly lighter for readability */
+
+  --accent: 210 42% 20%;
+  --accent-foreground: 214 45% 91%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --input: 210 42% 20%;
+  --ring: 217 91% 60%;
+
+  --chart-1: 213 93% 68%;          /* #60a5fa — light sapphire */
+  --chart-2: 258 92% 76%;          /* #a78bfa — light violet */
+  --chart-3: 160 84% 52%;          /* #34d399 — light emerald */
+  --chart-4: 43 96% 56%;           /* #fbbf24 — light amber */
+  --chart-5: 189 95% 53%;          /* #22d3ee — light cyan */
 }
 
 @layer base {
