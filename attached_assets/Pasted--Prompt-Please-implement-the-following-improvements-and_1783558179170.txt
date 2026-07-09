@@ -1,0 +1,263 @@
+**Prompt:**
+
+Please implement the following improvements and business logic changes throughout the application **without changing the existing design, layout, or workflow**. The goal is to improve automation, consistency, and data integration between the **Freights**, **Diesel**, **Expenses**, **Employees**, and **Dashboard** modules.
+
+---
+
+# 1. Include Diesel as an Expense in the Dashboard
+
+Every diesel refueling recorded in the **Diesel** module must automatically be considered an **expense** for its respective fleet.
+
+## Requirements
+
+* Every diesel record must contribute to the total expenses of the corresponding fleet.
+* The Dashboard must include diesel costs in:
+
+  * Total Expenses
+  * Profit Calculation
+  * Fleet Cost Analysis
+  * Charts
+  * Reports
+  * KPIs
+* When filtering by fleet or date, only the corresponding diesel expenses should be included.
+* There should be no need to manually create an expense record for diesel; it must happen automatically through the Diesel module.
+
+---
+
+# 2. Use the Last Fuel Price Instead of the Historical Average
+
+Currently, when creating an expense, the **Diesel Price (R$/L)** is filled using the average of previous refuelings.
+
+This behavior should be changed.
+
+## New Logic
+
+For each fleet:
+
+* Use the **R$/L value from the most recent refueling** of that fleet.
+* Do **not** use the historical average anymore.
+
+Example:
+
+Fleet 4104
+
+Refueling History:
+
+* 01/07 → R$ 5.89/L
+* 05/07 → R$ 5.95/L
+* 10/07 → R$ 6.02/L
+
+Any expense created after **10/07** should automatically use:
+
+**R$ 6.02/L**
+
+If a new refueling is added:
+
+15/07 → R$ 6.08/L
+
+Then:
+
+* Expenses created **before 15/07** must keep their original value.
+* Only expenses created **after the new refueling** should automatically use **R$ 6.08/L**.
+
+Historical data must never be recalculated or modified.
+
+---
+
+# 3. Automatically Fill Freight Dates
+
+On the **Add Freight** page:
+
+As soon as the user fills in the **CTE Date**, automatically:
+
+* Fill the **Freight Date** with the same date.
+* Automatically calculate the **Freight Due Date** by adding **15 days**.
+
+Example:
+
+CTE Date:
+
+01/07/2026
+
+Automatically becomes:
+
+Freight Date:
+
+01/07/2026
+
+Freight Due Date:
+
+16/07/2026
+
+The user may still edit these values manually if necessary.
+
+---
+
+# 4. Automatically Fill Initial Odometer
+
+On the **New Refueling** page:
+
+When the user selects a fleet:
+
+Automatically retrieve:
+
+The **Final Odometer (KM Final)** from the latest refueling of that same fleet.
+
+Populate it as:
+
+**Initial Odometer (KM Initial)**
+
+Example:
+
+Latest refueling:
+
+Fleet 4104
+
+KM Initial:
+
+154,800
+
+KM Final:
+
+155,432
+
+When creating the next refueling for Fleet 4104:
+
+Automatically fill:
+
+KM Initial:
+
+155,432
+
+The user may manually change the value if necessary.
+
+---
+
+# 5. Improve the Employee PDF
+
+When generating the Employee PDF:
+
+Remove the text:
+
+**"LAFER TRANSPORTS"**
+
+Do not display this title anywhere in the generated PDF.
+
+Keep the remaining layout intact.
+
+---
+
+# 6. Add a Period Filter to the Employees Page
+
+Add a date range filter to the **Employees** page.
+
+The filter should work similarly to the Dashboard.
+
+Allow:
+
+* Current Month
+* Current Year
+* Custom Date Range
+
+Whenever the period changes:
+
+Automatically update:
+
+* Worked days
+* Days not worked
+* Total earnings
+* Payment summary
+* Calendar
+* Generated PDF
+
+No manual refresh should be required.
+
+---
+
+# 7. Add an Advances Section
+
+On the Employees page, add a new section for **Advances and Other Adjustments**.
+
+The objective is to calculate the employee's final payment after considering salary advances and similar deductions.
+
+## Requirements
+
+Allow recording:
+
+* Salary Advances
+* Cash Advances
+* Fuel Advances
+* Bonuses
+* Discounts
+* Other Adjustments
+
+Each record should contain:
+
+* Date
+* Description
+* Amount
+* Type (Advance, Bonus, Discount, Other)
+
+---
+
+## Payment Summary
+
+Automatically calculate:
+
+* Total Earned
+* Total Advances
+* Total Bonuses
+* Total Discounts
+* Final Amount to Receive
+
+Formula:
+
+**Final Amount = Total Earned + Bonuses − Advances − Discounts**
+
+---
+
+## PDF
+
+Include these values in the generated PDF.
+
+Display:
+
+* Total Earned
+* Total Advances
+* Total Bonuses
+* Total Discounts
+* Final Amount to Receive
+
+The PDF should remain clean and professional.
+
+---
+
+## Dashboard Integration
+
+The new employee adjustment records should be available for future Dashboard reports, but they should **not** affect freight costs or diesel costs unless explicitly intended.
+
+---
+
+## Performance
+
+* Keep all calculations efficient.
+* Avoid unnecessary database queries.
+* Maintain full compatibility with:
+
+  * Imports
+  * Exports
+  * Backups
+  * Dashboard filters
+  * Fleet filters
+  * Date filters
+  * Reports
+  * PDF generation
+
+---
+
+## Important
+
+* **Do not redesign the application.**
+* **Do not modify the existing layout or navigation.**
+* Preserve the current visual identity.
+* Focus on implementing the requested business logic and automation while ensuring all modules remain fully synchronized and all historical data remains accurate and unchanged.

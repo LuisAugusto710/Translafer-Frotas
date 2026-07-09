@@ -51,6 +51,30 @@ router.get("/abastecimentos", async (req, res) => {
   res.json({ abastecimentos: rows.map(fmt), total: Number(countResult[0].count) });
 });
 
+router.get("/abastecimentos/ultimo", async (req, res) => {
+  const { placa } = req.query as Record<string, string>;
+  if (!placa) {
+    res.json({ precoLitro: null, kmFinal: null });
+    return;
+  }
+  const [row] = await db.select({
+    precoLitro: abastecimentosTable.precoLitro,
+    kmFinal:    abastecimentosTable.kmFinal,
+  }).from(abastecimentosTable)
+    .where(eq(abastecimentosTable.placa, placa))
+    .orderBy(desc(abastecimentosTable.data), desc(abastecimentosTable.createdAt))
+    .limit(1);
+
+  if (!row) {
+    res.json({ precoLitro: null, kmFinal: null });
+    return;
+  }
+  res.json({
+    precoLitro: row.precoLitro != null ? Number(row.precoLitro) : null,
+    kmFinal:    row.kmFinal    != null ? Number(row.kmFinal) : null,
+  });
+});
+
 router.post("/abastecimentos", async (req, res) => {
   const { data, placa, litros, precoLitro, totalPago, kmInicio, kmFinal, kmPercorrido, media, requisicao, posto } = req.body;
 

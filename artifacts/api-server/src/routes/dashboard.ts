@@ -272,19 +272,38 @@ router.get("/dashboard/despesas-resumo", async (req, res) => {
   catSelect["cTrocaOleo"] = sql<number>`coalesce(sum(${trocaOleoParsed}), 0)`;
   const [catRow] = await db.select(catSelect).from(despesasTable).where(where);
 
+  const abastcC = [];
+  if (dateFrom) abastcC.push(gte(abastecimentosTable.data, dateFrom));
+  if (dateTo)   abastcC.push(lte(abastecimentosTable.data, dateTo));
+  if (frota)    abastcC.push(eq(abastecimentosTable.placa, frota));
+  const abastcWhere = abastcC.length ? and(...abastcC) : undefined;
+
+  const [dieselAbast] = await db.select({
+    totalDiesel: sql<number>`coalesce(sum(${abastecimentosTable.totalPago}), 0)`,
+  }).from(abastecimentosTable).where(abastcWhere);
+
+  const totalDieselAbast = Number(dieselAbast.totalDiesel);
+  const totalCustos      = Number(summary.totalCustos) + totalDieselAbast;
+  const totalLucro       = Number(summary.totalFrete) - totalCustos;
+
   const categorias = [
     ...DESPESA_CATEGORIAS.map((c, i) => ({ categoria: c.label, valor: Number(catRow[`c${i}`] ?? 0) })),
     { categoria: "Troca de Óleo", valor: Number(catRow["cTrocaOleo"] ?? 0) },
-  ]
-    .filter(c => c.valor > 0)
-    .sort((a, b) => b.valor - a.valor);
+  ];
+  const dieselEntry = categorias.find(c => c.categoria === "Diesel");
+  if (dieselEntry) {
+    dieselEntry.valor += totalDieselAbast;
+  } else if (totalDieselAbast > 0) {
+    categorias.push({ categoria: "Diesel", valor: totalDieselAbast });
+  }
+  const sortedCategorias = categorias.filter(c => c.valor > 0).sort((a, b) => b.valor - a.valor);
 
   res.json({
     totalFrete:    Number(summary.totalFrete),
-    totalCustos:   Number(summary.totalCustos),
-    totalLucro:    Number(summary.totalLucro),
+    totalCustos,
+    totalLucro,
     totalRegistros:Number(summary.totalRegistros),
-    categorias,
+    categorias: sortedCategorias,
   });
 });
 
@@ -296,25 +315,43 @@ router.get("/dashboard/despesas-mensal", async (req, res) => {
   const dateTo   = toDateStr(req.query.dateTo)   || `${ano}-12-31`;
   const where    = despWhere(dateFrom, dateTo, frota);
 
-  const result = await db.select({
-    mes:      sql<string>`to_char(date_trunc('month', ${despesasTable.data}::date), 'YYYY-MM')`,
-    frete:    sql<number>`coalesce(sum(${despesasTable.frete}), 0)`,
-    custos:   sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
-    lucro:    sql<number>`coalesce(sum(${despesasTable.lucro}), 0)`,
-    registros:sql<number>`count(*)`,
-  }).from(despesasTable).where(where)
-    .groupBy(sql`date_trunc('month', ${despesasTable.data}::date)`)
-    .orderBy(sql`date_trunc('month', ${despesasTable.data}::date)`);
+  const abastcMC = [];
+  if (dateFrom) abastcMC.push(gte(abastecimentosTable.data, dateFrom));
+  if (dateTo)   abastcMC.push(lte(abastecimentosTable.data, dateTo));
+  if (frota)    abastcMC.push(eq(abastecimentosTable.placa, frota));
+  const abastcMWhere = abastcMC.length ? and(...abastcMC) : undefined;
+
+  const [result, dieselMensalRows] = await Promise.all([
+    db.select({
+      mes:      sql<string>`to_char(date_trunc('month', ${despesasTable.data}::date), 'YYYY-MM')`,
+      frete:    sql<number>`coalesce(sum(${despesasTable.frete}), 0)`,
+      custos:   sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
+      lucro:    sql<number>`coalesce(sum(${despesasTable.lucro}), 0)`,
+      registros:sql<number>`count(*)`,
+    }).from(despesasTable).where(where)
+      .groupBy(sql`date_trunc('month', ${despesasTable.data}::date)`)
+      .orderBy(sql`date_trunc('month', ${despesasTable.data}::date)`),
+    db.select({
+      mes:         sql<string>`to_char(date_trunc('month', ${abastecimentosTable.data}::date), 'YYYY-MM')`,
+      totalDiesel: sql<number>`coalesce(sum(${abastecimentosTable.totalPago}), 0)`,
+    }).from(abastecimentosTable).where(abastcMWhere)
+      .groupBy(sql`date_trunc('month', ${abastecimentosTable.data}::date)`),
+  ]);
+
+  const dieselMenMap: Record<string, number> = {};
+  dieselMensalRows.forEach(d => { dieselMenMap[d.mes] = Number(d.totalDiesel ?? 0); });
 
   const MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
   res.json(result.map(r => {
     const monthIdx = parseInt(r.mes.split("-")[1]) - 1;
+    const diesel   = dieselMenMap[r.mes] ?? 0;
+    const custos   = Number(r.custos ?? 0) + diesel;
     return {
       mes:      MONTHS[monthIdx] ?? r.mes,
-      frete:    Number(r.frete    ?? 0),
-      custos:   Number(r.custos   ?? 0),
-      lucro:    Number(r.lucro    ?? 0),
+      frete:    Number(r.frete ?? 0),
+      custos,
+      lucro:    Number(r.frete ?? 0) - custos,
       registros:Number(r.registros),
     };
   }));

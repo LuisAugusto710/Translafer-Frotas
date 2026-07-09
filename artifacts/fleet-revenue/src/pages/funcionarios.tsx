@@ -3,6 +3,12 @@ import {
   useListEmployees,
   useGetEmployeeCalendar,
   getGetEmployeeCalendarQueryKey,
+  useListEmployeeAdvances,
+  useCreateEmployeeAdvance,
+  useUpdateEmployeeAdvance,
+  useDeleteEmployeeAdvance,
+  getListEmployeeAdvancesQueryKey,
+  type EmployeeAdvance,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -33,7 +39,15 @@ import {
   MessageCircle,
   Clipboard,
   Check,
+  Plus,
+  Trash2,
+  Pencil,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 
 const MONTH_NAMES = [
@@ -143,7 +157,7 @@ function buildPrintHtml(opts: {
   <div class="summary-row"><span>Bônus / Extras</span><span class="val">R$ 0,00</span></div>
   <div class="summary-row total"><span style="font-weight:700">Total a receber</span><span class="val">R$ ${totalGanho.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
 </div>
-<p class="footer">Gerado em ${now} — LAFER Transportes</p>
+<p class="footer">Gerado em ${now}</p>
 </body>
 </html>`;
 }
@@ -292,6 +306,79 @@ export function Funcionarios() {
       toast({ title: "Erro", description: "Não foi possível copiar.", variant: "destructive" });
     }
   }, [buildShareText, toast]);
+
+  const [showAdvanceForm, setShowAdvanceForm] = useState(false);
+  const [editingAdvance, setEditingAdvance] = useState<EmployeeAdvance | null>(null);
+  const [advanceForm, setAdvanceForm] = useState({
+    data: new Date().toISOString().split("T")[0],
+    descricao: "",
+    valor: "",
+    tipo: "Adiantamento",
+  });
+
+  const advancesParams = selectedEmployee
+    ? { nome: selectedEmployee.nome, tipoFuncionario: selectedEmployee.tipo }
+    : { nome: "", tipoFuncionario: "" };
+
+  const { data: advances, isLoading: advancesLoading } = useListEmployeeAdvances(
+    advancesParams,
+    { query: { enabled: !!selectedEmployee, queryKey: getListEmployeeAdvancesQueryKey(advancesParams) } },
+  );
+
+  const createAdvanceMutation = useCreateEmployeeAdvance();
+  const updateAdvanceMutation = useUpdateEmployeeAdvance();
+  const deleteAdvanceMutation = useDeleteEmployeeAdvance();
+
+  const advancesQueryKey = getListEmployeeAdvancesQueryKey(advancesParams);
+
+  const handleOpenAdvanceForm = useCallback((advance?: EmployeeAdvance) => {
+    if (advance) {
+      setEditingAdvance(advance);
+      setAdvanceForm({ data: advance.data, descricao: advance.descricao, valor: String(advance.valor), tipo: advance.tipo });
+    } else {
+      setEditingAdvance(null);
+      setAdvanceForm({ data: new Date().toISOString().split("T")[0], descricao: "", valor: "", tipo: "Adiantamento" });
+    }
+    setShowAdvanceForm(true);
+  }, []);
+
+  const handleSaveAdvance = useCallback(() => {
+    if (!selectedEmployee || !advanceForm.data || !advanceForm.valor || !advanceForm.tipo) return;
+    const payload = {
+      nome: selectedEmployee.nome,
+      tipoFuncionario: selectedEmployee.tipo,
+      data: advanceForm.data,
+      descricao: advanceForm.descricao,
+      valor: parseFloat(advanceForm.valor.replace(",", ".")),
+      tipo: advanceForm.tipo,
+    };
+    const onSuccess = () => {
+      setShowAdvanceForm(false);
+      setEditingAdvance(null);
+      queryClient.invalidateQueries({ queryKey: advancesQueryKey });
+    };
+    if (editingAdvance) {
+      updateAdvanceMutation.mutate({ id: editingAdvance.id, data: payload }, { onSuccess });
+    } else {
+      createAdvanceMutation.mutate({ data: payload }, { onSuccess });
+    }
+  }, [selectedEmployee, advanceForm, editingAdvance, updateAdvanceMutation, createAdvanceMutation, queryClient, advancesQueryKey]);
+
+  const handleDeleteAdvance = useCallback((id: number) => {
+    deleteAdvanceMutation.mutate({ id }, {
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: advancesQueryKey }),
+    });
+  }, [deleteAdvanceMutation, queryClient, advancesQueryKey]);
+
+  const advanceTotal = useMemo(() =>
+    (advances ?? []).filter(a => ["Adiantamento", "Desconto"].includes(a.tipo)).reduce((s, a) => s + Number(a.valor), 0),
+    [advances]);
+
+  const bonusTotal = useMemo(() =>
+    (advances ?? []).filter(a => ["Bônus", "Outro"].includes(a.tipo)).reduce((s, a) => s + Number(a.valor), 0),
+    [advances]);
+
+  const finalAmount = (calendarData?.totalGanho ?? 0) + bonusTotal - advanceTotal;
 
   const handleSharePdf = useCallback(async () => {
     if (!selectedEmployee || !calendarData) return;
@@ -459,6 +546,24 @@ export function Funcionarios() {
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
+            </div>
+            <div className="flex gap-1.5 mt-2 pt-2 border-t flex-wrap">
+              <Button
+                variant={year === today.getFullYear() && month === today.getMonth() + 1 ? "default" : "outline"}
+                size="sm"
+                className="text-xs h-7 px-2.5"
+                onClick={() => { setYear(today.getFullYear()); setMonth(today.getMonth() + 1); }}
+              >
+                Este Mês
+              </Button>
+              <Button
+                variant={year === (month === 1 ? today.getFullYear() - 1 : today.getFullYear()) && month === (today.getMonth() === 0 ? 12 : today.getMonth()) ? "default" : "outline"}
+                size="sm"
+                className="text-xs h-7 px-2.5"
+                onClick={prevMonth}
+              >
+                Mês Anterior
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -712,6 +817,164 @@ export function Funcionarios() {
           </Card>
         </div>
       </div>
+
+      {/* Advances / Adjustments Section */}
+      {selectedEmployee && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-semibold">Adiantamentos e Ajustes</h3>
+              <p className="text-xs text-muted-foreground">Adiantamentos, bônus e descontos registrados para {selectedEmployee.nome}</p>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => handleOpenAdvanceForm()}
+              className="bg-[#0a192f] hover:bg-[#0a192f]/90 text-white text-xs h-8 gap-1.5"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Adicionar
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Card className="shadow-none border">
+              <CardContent className="py-3 px-4">
+                <p className="text-xs text-muted-foreground">Adiantamentos / Descontos</p>
+                <p className="text-lg font-bold text-red-600 dark:text-red-400">{fmt(advanceTotal)}</p>
+              </CardContent>
+            </Card>
+            <Card className="shadow-none border">
+              <CardContent className="py-3 px-4">
+                <p className="text-xs text-muted-foreground">Bônus / Extras</p>
+                <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{fmt(bonusTotal)}</p>
+              </CardContent>
+            </Card>
+            <Card className="shadow-none border bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/30 dark:to-card">
+              <CardContent className="py-3 px-4">
+                <p className="text-xs text-muted-foreground">Final a Receber</p>
+                <p className="text-lg font-bold text-blue-700 dark:text-blue-400">{fmt(finalAmount)}</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="shadow-none border">
+            <CardContent className="p-0">
+              {advancesLoading ? (
+                <div className="p-4 space-y-2">
+                  {[1, 2, 3].map(i => <Skeleton key={i} className="h-10 w-full" />)}
+                </div>
+              ) : !advances?.length ? (
+                <div className="flex flex-col items-center justify-center py-10 text-muted-foreground gap-1">
+                  <p className="text-sm">Nenhum adiantamento ou ajuste registrado</p>
+                  <p className="text-xs">Clique em "Adicionar" para registrar</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Data</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Descrição</TableHead>
+                      <TableHead className="text-right">Valor</TableHead>
+                      <TableHead className="w-[70px]" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {advances.map(adv => (
+                      <TableRow key={adv.id}>
+                        <TableCell className="text-sm">{adv.data}</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={adv.tipo === "Bônus" ? "default" : adv.tipo === "Outro" ? "secondary" : "destructive"}
+                            className="text-xs"
+                          >
+                            {adv.tipo}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{adv.descricao || "—"}</TableCell>
+                        <TableCell className={`text-right text-sm font-semibold ${["Adiantamento", "Desconto"].includes(adv.tipo) ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}>
+                          {["Adiantamento", "Desconto"].includes(adv.tipo) ? "−" : "+"}{fmt(Number(adv.valor))}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1 justify-end">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenAdvanceForm(adv)}>
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDeleteAdvance(adv.id)}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Advance Form Dialog */}
+      <Dialog open={showAdvanceForm} onOpenChange={setShowAdvanceForm}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>{editingAdvance ? "Editar" : "Novo"} Adiantamento/Ajuste</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1.5">
+              <Label>Data</Label>
+              <Input
+                type="date"
+                value={advanceForm.data}
+                onChange={e => setAdvanceForm(prev => ({ ...prev, data: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Tipo</Label>
+              <Select value={advanceForm.tipo} onValueChange={v => setAdvanceForm(prev => ({ ...prev, tipo: v }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {["Adiantamento", "Bônus", "Desconto", "Outro"].map(t => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Descrição (opcional)</Label>
+              <Input
+                placeholder="Ex: Adiantamento quinzenal…"
+                value={advanceForm.descricao}
+                onChange={e => setAdvanceForm(prev => ({ ...prev, descricao: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Valor (R$)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0,00"
+                value={advanceForm.valor}
+                onChange={e => setAdvanceForm(prev => ({ ...prev, valor: e.target.value }))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAdvanceForm(false)}>Cancelar</Button>
+            <Button
+              onClick={handleSaveAdvance}
+              disabled={createAdvanceMutation.isPending || updateAdvanceMutation.isPending}
+              className="bg-[#0a192f] hover:bg-[#0a192f]/90 text-white"
+            >
+              {editingAdvance ? "Salvar" : "Adicionar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -37,6 +37,8 @@ import type {
   DespesasResumo,
   DieselAvgPrice,
   DieselByPlaca,
+  EmployeeAdvance,
+  EmployeeAdvanceInput,
   EmployeeCalendarResponse,
   EmployeeItem,
   ErrorResponse,
@@ -67,6 +69,7 @@ import type {
   HealthStatus,
   ListAbastecimentosParams,
   ListDespesasParams,
+  ListEmployeeAdvancesParams,
   ListFretesParams,
   MensalComparativo,
   MotoristaAjudanteItem,
@@ -2909,4 +2912,287 @@ export function useGetEmployeeCalendar<TData = Awaited<ReturnType<typeof getEmpl
 
 
 
+
+export const getListEmployeeAdvancesUrl = (params?: ListEmployeeAdvancesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/employees/advances?${stringifiedParams}` : `/api/employees/advances`
+}
+
+/**
+ * @summary List advances/adjustments for an employee
+ */
+export const listEmployeeAdvances = async (params?: ListEmployeeAdvancesParams, options?: RequestInit): Promise<EmployeeAdvance[]> => {
+
+  return customFetch<EmployeeAdvance[]>(getListEmployeeAdvancesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListEmployeeAdvancesQueryKey = (params?: ListEmployeeAdvancesParams,) => {
+    return [
+    `/api/employees/advances`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListEmployeeAdvancesQueryOptions = <TData = Awaited<ReturnType<typeof listEmployeeAdvances>>, TError = ErrorType<unknown>>(params?: ListEmployeeAdvancesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listEmployeeAdvances>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListEmployeeAdvancesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listEmployeeAdvances>>> = ({ signal }) => listEmployeeAdvances(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listEmployeeAdvances>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListEmployeeAdvancesQueryResult = NonNullable<Awaited<ReturnType<typeof listEmployeeAdvances>>>
+export type ListEmployeeAdvancesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List advances/adjustments for an employee
+ */
+
+export function useListEmployeeAdvances<TData = Awaited<ReturnType<typeof listEmployeeAdvances>>, TError = ErrorType<unknown>>(
+ params?: ListEmployeeAdvancesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listEmployeeAdvances>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListEmployeeAdvancesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateEmployeeAdvanceUrl = () => {
+
+
+
+
+  return `/api/employees/advances`
+}
+
+/**
+ * @summary Create an employee advance or adjustment
+ */
+export const createEmployeeAdvance = async (employeeAdvanceInput: EmployeeAdvanceInput, options?: RequestInit): Promise<EmployeeAdvance> => {
+
+  return customFetch<EmployeeAdvance>(getCreateEmployeeAdvanceUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(employeeAdvanceInput)
+  }
+);}
+
+
+
+
+export const getCreateEmployeeAdvanceMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEmployeeAdvance>>, TError,{data: BodyType<EmployeeAdvanceInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createEmployeeAdvance>>, TError,{data: BodyType<EmployeeAdvanceInput>}, TContext> => {
+
+const mutationKey = ['createEmployeeAdvance'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createEmployeeAdvance>>, {data: BodyType<EmployeeAdvanceInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createEmployeeAdvance(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateEmployeeAdvanceMutationResult = NonNullable<Awaited<ReturnType<typeof createEmployeeAdvance>>>
+    export type CreateEmployeeAdvanceMutationBody = BodyType<EmployeeAdvanceInput>
+    export type CreateEmployeeAdvanceMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create an employee advance or adjustment
+ */
+export const useCreateEmployeeAdvance = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEmployeeAdvance>>, TError,{data: BodyType<EmployeeAdvanceInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createEmployeeAdvance>>,
+        TError,
+        {data: BodyType<EmployeeAdvanceInput>},
+        TContext
+      > => {
+      return useMutation(getCreateEmployeeAdvanceMutationOptions(options));
+    }
+
+export const getUpdateEmployeeAdvanceUrl = (id: number,) => {
+
+
+
+
+  return `/api/employees/advances/${id}`
+}
+
+export const updateEmployeeAdvance = async (id: number,
+    employeeAdvanceInput: EmployeeAdvanceInput, options?: RequestInit): Promise<EmployeeAdvance> => {
+
+  return customFetch<EmployeeAdvance>(getUpdateEmployeeAdvanceUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(employeeAdvanceInput)
+  }
+);}
+
+
+
+
+export const getUpdateEmployeeAdvanceMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateEmployeeAdvance>>, TError,{id: number;data: BodyType<EmployeeAdvanceInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateEmployeeAdvance>>, TError,{id: number;data: BodyType<EmployeeAdvanceInput>}, TContext> => {
+
+const mutationKey = ['updateEmployeeAdvance'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateEmployeeAdvance>>, {id: number;data: BodyType<EmployeeAdvanceInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateEmployeeAdvance(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateEmployeeAdvanceMutationResult = NonNullable<Awaited<ReturnType<typeof updateEmployeeAdvance>>>
+    export type UpdateEmployeeAdvanceMutationBody = BodyType<EmployeeAdvanceInput>
+    export type UpdateEmployeeAdvanceMutationError = ErrorType<unknown>
+
+    export const useUpdateEmployeeAdvance = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateEmployeeAdvance>>, TError,{id: number;data: BodyType<EmployeeAdvanceInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateEmployeeAdvance>>,
+        TError,
+        {id: number;data: BodyType<EmployeeAdvanceInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateEmployeeAdvanceMutationOptions(options));
+    }
+
+export const getDeleteEmployeeAdvanceUrl = (id: number,) => {
+
+
+
+
+  return `/api/employees/advances/${id}`
+}
+
+export const deleteEmployeeAdvance = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteEmployeeAdvanceUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteEmployeeAdvanceMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteEmployeeAdvance>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteEmployeeAdvance>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteEmployeeAdvance'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteEmployeeAdvance>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteEmployeeAdvance(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteEmployeeAdvanceMutationResult = NonNullable<Awaited<ReturnType<typeof deleteEmployeeAdvance>>>
+
+    export type DeleteEmployeeAdvanceMutationError = ErrorType<unknown>
+
+    export const useDeleteEmployeeAdvance = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteEmployeeAdvance>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteEmployeeAdvance>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteEmployeeAdvanceMutationOptions(options));
+    }
 

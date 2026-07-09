@@ -448,6 +448,27 @@ export interface EmployeeCalendarResponse {
   mediaPorDia: number;
 }
 
+export interface EmployeeAdvance {
+  id: number;
+  nome: string;
+  tipoFuncionario: string;
+  data: string;
+  descricao: string;
+  valor: number;
+  tipo: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EmployeeAdvanceInput {
+  nome: string;
+  tipoFuncionario: string;
+  data: string;
+  descricao?: string;
+  valor: number;
+  tipo: string;
+}
+
 export type ListFretesParams = {
 frota?: string;
 cliente?: string;
@@ -581,5 +602,12 @@ nome: string;
 tipo: string;
 ano: number;
 mes: number;
+};
+
+export type ListEmployeeAdvancesParams = {
+nome?: string;
+tipoFuncionario?: string;
+dateFrom?: string;
+dateTo?: string;
 };
 

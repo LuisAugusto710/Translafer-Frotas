@@ -111,6 +111,17 @@ export function FreteFormModal({
     }
   }, [frete, open]);
 
+  // Auto-fill dtaFrete and vencimento when dataCte changes (new fretes only)
+  useEffect(() => {
+    if (!frete && formData.dataCte) {
+      const [y, m, d] = formData.dataCte.split("-").map(Number);
+      const vencDate = new Date(y, m - 1, d + 15);
+      const vencISO = `${vencDate.getFullYear()}-${String(vencDate.getMonth() + 1).padStart(2, "0")}-${String(vencDate.getDate()).padStart(2, "0")}`;
+      setFormData(prev => ({ ...prev, dtaFrete: formData.dataCte, vencimento: vencISO }));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.dataCte]);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {

@@ -14,6 +14,7 @@ tags:
   - name: despesas
   - name: dashboard
   - name: fleet-configs
+  - name: employees
 paths:
   /healthz:
     get:
@@ -848,6 +849,85 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EmployeeCalendarResponse"
+
+  /employees/advances:
+    get:
+      operationId: listEmployeeAdvances
+      tags: [employees]
+      summary: List advances/adjustments for an employee
+      parameters:
+        - name: nome
+          in: query
+          schema: { type: string }
+        - name: tipoFuncionario
+          in: query
+          schema: { type: string }
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EmployeeAdvance"
+    post:
+      operationId: createEmployeeAdvance
+      tags: [employees]
+      summary: Create an employee advance or adjustment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmployeeAdvanceInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmployeeAdvance"
+
+  /employees/advances/{id}:
+    put:
+      operationId: updateEmployeeAdvance
+      tags: [employees]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmployeeAdvanceInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmployeeAdvance"
+    delete:
+      operationId: deleteEmployeeAdvance
+      tags: [employees]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
 
 components:
   schemas:
@@ -1736,3 +1816,45 @@ components:
           type: integer
         mediaPorDia:
           type: number
+
+    EmployeeAdvance:
+      type: object
+      required: [id, nome, tipoFuncionario, data, descricao, valor, tipo, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        tipoFuncionario:
+          type: string
+        data:
+          type: string
+          format: date
+        descricao:
+          type: string
+        valor:
+          type: number
+        tipo:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    EmployeeAdvanceInput:
+      type: object
+      required: [nome, tipoFuncionario, data, valor, tipo]
+      properties:
+        nome:
+          type: string
+        tipoFuncionario:
+          type: string
+        data:
+          type: string
+          format: date
+        descricao:
+          type: string
+        valor:
+          type: number
+        tipo:
+          type: string

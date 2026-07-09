@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db, despesasTable } from "@workspace/db";
+import { db, despesasTable, employeeAdvancesTable } from "@workspace/db";
 import { sql, and, eq, gte, lte } from "drizzle-orm";
 
 const router = Router();
@@ -81,6 +81,79 @@ router.get("/employees/calendar", async (req, res) => {
     diasNaoTrabalhados,
     mediaPorDia:        Math.round(mediaPorDia * 100) / 100,
   });
+});
+
+// ── Employee Advances ──────────────────────────────────────────────────────────
+router.get("/employees/advances", async (req, res) => {
+  const { nome, tipoFuncionario, dateFrom, dateTo } = req.query as Record<string, string>;
+
+  const conditions = [];
+  if (nome)            conditions.push(eq(employeeAdvancesTable.nome, nome));
+  if (tipoFuncionario) conditions.push(eq(employeeAdvancesTable.tipoFuncionario, tipoFuncionario));
+  if (dateFrom)        conditions.push(gte(employeeAdvancesTable.data, dateFrom));
+  if (dateTo)          conditions.push(lte(employeeAdvancesTable.data, dateTo));
+
+  const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+  const rows = await db.select().from(employeeAdvancesTable).where(where)
+    .orderBy(employeeAdvancesTable.data);
+
+  res.json(rows.map(r => ({
+    ...r,
+    valor: Number(r.valor),
+    createdAt: r.createdAt.toISOString(),
+    updatedAt: r.updatedAt.toISOString(),
+  })));
+});
+
+router.post("/employees/advances", async (req, res) => {
+  const { nome, tipoFuncionario, data, descricao, valor, tipo } = req.body;
+
+  const [row] = await db.insert(employeeAdvancesTable).values({
+    nome:            nome ?? "",
+    tipoFuncionario: tipoFuncionario ?? "",
+    data,
+    descricao:       descricao ?? "",
+    valor:           String(valor ?? 0),
+    tipo:            tipo ?? "Adiantamento",
+  }).returning();
+
+  res.status(201).json({
+    ...row,
+    valor: Number(row.valor),
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  });
+});
+
+router.put("/employees/advances/:id", async (req, res) => {
+  const { nome, tipoFuncionario, data, descricao, valor, tipo } = req.body;
+
+  const update: Record<string, unknown> = { updatedAt: new Date() };
+  if (nome !== undefined)            update.nome = nome;
+  if (tipoFuncionario !== undefined) update.tipoFuncionario = tipoFuncionario;
+  if (data !== undefined)            update.data = data;
+  if (descricao !== undefined)       update.descricao = descricao;
+  if (valor !== undefined)           update.valor = String(valor);
+  if (tipo !== undefined)            update.tipo = tipo;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [row] = await db.update(employeeAdvancesTable).set(update as any)
+    .where(eq(employeeAdvancesTable.id, Number(req.params.id))).returning();
+
+  if (!row) { res.status(404).json({ error: "Não encontrado" }); return; }
+  res.json({
+    ...row,
+    valor: Number(row.valor),
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  });
+});
+
+router.delete("/employees/advances/:id", async (req, res) => {
+  await db.delete(employeeAdvancesTable)
+    .where(eq(employeeAdvancesTable.id, Number(req.params.id)));
+  res.status(204).send();
 });
 
 export default router;

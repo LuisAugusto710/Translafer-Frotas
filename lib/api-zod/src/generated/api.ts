@@ -952,3 +952,85 @@ export const GetEmployeeCalendarResponse = zod.object({
 })
 
 
+/**
+ * @summary List advances/adjustments for an employee
+ */
+export const ListEmployeeAdvancesQueryParams = zod.object({
+  "nome": zod.coerce.string().optional(),
+  "tipoFuncionario": zod.coerce.string().optional(),
+  "dateFrom": zod.date().optional(),
+  "dateTo": zod.date().optional()
+})
+
+export const ListEmployeeAdvancesResponseItem = zod.object({
+  "id": zod.number(),
+  "nome": zod.string(),
+  "tipoFuncionario": zod.string(),
+  "data": zod.coerce.date(),
+  "descricao": zod.string(),
+  "valor": zod.number(),
+  "tipo": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+export const ListEmployeeAdvancesResponse = zod.array(ListEmployeeAdvancesResponseItem)
+
+
+/**
+ * @summary Create an employee advance or adjustment
+ */
+export const CreateEmployeeAdvanceBody = zod.object({
+  "nome": zod.string(),
+  "tipoFuncionario": zod.string(),
+  "data": zod.coerce.date(),
+  "descricao": zod.string().optional(),
+  "valor": zod.number(),
+  "tipo": zod.string()
+})
+
+export const CreateEmployeeAdvanceResponse = zod.object({
+  "id": zod.number(),
+  "nome": zod.string(),
+  "tipoFuncionario": zod.string(),
+  "data": zod.coerce.date(),
+  "descricao": zod.string(),
+  "valor": zod.number(),
+  "tipo": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+export const UpdateEmployeeAdvanceParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateEmployeeAdvanceBody = zod.object({
+  "nome": zod.string(),
+  "tipoFuncionario": zod.string(),
+  "data": zod.coerce.date(),
+  "descricao": zod.string().optional(),
+  "valor": zod.number(),
+  "tipo": zod.string()
+})
+
+export const UpdateEmployeeAdvanceResponse = zod.object({
+  "id": zod.number(),
+  "nome": zod.string(),
+  "tipoFuncionario": zod.string(),
+  "data": zod.coerce.date(),
+  "descricao": zod.string(),
+  "valor": zod.number(),
+  "tipo": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+export const DeleteEmployeeAdvanceParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteEmployeeAdvanceResponse = zod.void()
+
+

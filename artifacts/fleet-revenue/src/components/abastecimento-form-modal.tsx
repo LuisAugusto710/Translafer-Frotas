@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MaskedDateInput } from "@/components/masked-date-input";
 import { useCreateAbastecimento, useUpdateAbastecimento, getListAbastecimentosQueryKey } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { formatInteger } from "@/lib/utils";
 
@@ -85,6 +85,28 @@ export function AbastecimentoFormModal({
       setFormData((prev) => ({ ...prev, kmPercorrido: String(kf - ki) }));
     }
   }, [formData.kmInicio, formData.kmFinal]);
+
+  const isNew = !abastecimento;
+
+  const { data: ultimoAbast } = useQuery({
+    queryKey: ["/api/abastecimentos/ultimo", formData.placa],
+    queryFn: async () => {
+      const res = await fetch(`/api/abastecimentos/ultimo?placa=${encodeURIComponent(formData.placa)}`);
+      if (!res.ok) return null;
+      return res.json() as Promise<{ precoLitro: number | null; kmFinal: number | null }>;
+    },
+    enabled: isNew && !!formData.placa,
+  });
+
+  useEffect(() => {
+    if (!isNew || !ultimoAbast) return;
+    setFormData(prev => ({
+      ...prev,
+      ...(ultimoAbast.precoLitro != null ? { precoLitro: String(ultimoAbast.precoLitro) } : {}),
+      ...(!prev.kmInicio && ultimoAbast.kmFinal != null ? { kmInicio: String(ultimoAbast.kmFinal) } : {}),
+    }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ultimoAbast]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
