@@ -834,14 +834,14 @@ paths:
           in: query
           required: true
           schema: { type: string }
-        - name: ano
+        - name: dateFrom
           in: query
           required: true
-          schema: { type: integer }
-        - name: mes
+          schema: { type: string, format: date }
+        - name: dateTo
           in: query
           required: true
-          schema: { type: integer }
+          schema: { type: string, format: date }
       responses:
         "200":
           description: OK

@@ -600,8 +600,8 @@ dateTo?: string;
 export type GetEmployeeCalendarParams = {
 nome: string;
 tipo: string;
-ano: number;
-mes: number;
+dateFrom: string;
+dateTo: string;
 };
 
 export type ListEmployeeAdvancesParams = {

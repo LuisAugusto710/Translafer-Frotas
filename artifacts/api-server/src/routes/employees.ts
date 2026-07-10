@@ -23,22 +23,23 @@ router.get("/employees", async (_req, res) => {
 });
 
 router.get("/employees/calendar", async (req, res) => {
-  const { nome, tipo, ano, mes } = req.query as Record<string, string>;
+  const { nome, tipo, dateFrom, dateTo } = req.query as Record<string, string>;
 
-  if (!nome || !tipo || !ano || !mes) {
-    return res.status(400).json({ error: "nome, tipo, ano, mes are required" });
+  if (!nome || !tipo || !dateFrom || !dateTo) {
+    return res.status(400).json({ error: "nome, tipo, dateFrom, dateTo are required" });
   }
 
-  const year  = parseInt(ano, 10);
-  const month = parseInt(mes, 10);
+  const startDate = new Date(`${dateFrom}T00:00:00`);
+  const endDate   = new Date(`${dateTo}T00:00:00`);
 
-  if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
-    return res.status(400).json({ error: "Invalid ano or mes" });
+  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime()) || startDate > endDate) {
+    return res.status(400).json({ error: "Invalid dateFrom or dateTo" });
   }
 
-  const daysInMonth = new Date(year, month, 0).getDate();
-  const startDate   = `${year}-${String(month).padStart(2, "0")}-01`;
-  const endDate     = `${year}-${String(month).padStart(2, "0")}-${String(daysInMonth).padStart(2, "0")}`;
+  const totalDays = Math.round((endDate.getTime() - startDate.getTime()) / 86400000) + 1;
+  if (totalDays > 400) {
+    return res.status(400).json({ error: "Range too large (max 400 days)" });
+  }
 
   const valueCol = tipo === "Motorista" ? despesasTable.motorista : despesasTable.ajudante;
   const nameCol  = tipo === "Motorista" ? despesasTable.motoristaNome : despesasTable.ajudanteNome;
@@ -51,8 +52,8 @@ router.get("/employees/calendar", async (req, res) => {
     .from(despesasTable)
     .where(and(
       eq(nameCol, nome),
-      gte(despesasTable.data, startDate),
-      lte(despesasTable.data, endDate),
+      gte(despesasTable.data, dateFrom),
+      lte(despesasTable.data, dateTo),
     ))
     .groupBy(despesasTable.data)
     .orderBy(despesasTable.data);
@@ -63,18 +64,20 @@ router.get("/employees/calendar", async (req, res) => {
   }
 
   const dias = [];
-  for (let d = 1; d <= daysInMonth; d++) {
-    const date  = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  const cursor = new Date(startDate);
+  for (let i = 0; i < totalDays; i++) {
+    const date  = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`;
     const valor = workedMap.get(date) ?? 0;
     dias.push({ date, worked: workedMap.has(date), valor });
+    cursor.setDate(cursor.getDate() + 1);
   }
 
   const totalGanho         = dias.reduce((s, d) => s + d.valor, 0);
   const diasTrabalhados    = dias.filter(d => d.worked).length;
-  const diasNaoTrabalhados = daysInMonth - diasTrabalhados;
+  const diasNaoTrabalhados = totalDays - diasTrabalhados;
   const mediaPorDia        = diasTrabalhados > 0 ? totalGanho / diasTrabalhados : 0;
 
-  res.json({
+  return res.json({
     dias,
     totalGanho:         Math.round(totalGanho * 100) / 100,
     diasTrabalhados,

@@ -29,16 +29,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  ChevronLeft,
-  ChevronRight,
   FileDown,
   Share2,
   Users,
-  CalendarDays,
   Info,
   MessageCircle,
   Clipboard,
-  Check,
   Plus,
   Trash2,
   Pencil,
@@ -49,6 +45,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { PeriodFilter, defaultPeriodValue, type PeriodValue } from "@/components/period-filter";
 
 const MONTH_NAMES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -57,48 +54,132 @@ const MONTH_NAMES = [
 
 const DAY_NAMES = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
 
+const ADJUSTMENT_TYPES = [
+  "Adiantamento Salarial",
+  "Adiantamento em Dinheiro",
+  "Adiantamento Combustível",
+  "Bônus",
+  "Desconto",
+  "Outro",
+] as const;
+
+// Types that add to the final payment. Everything else (including legacy
+// "Adiantamento" records) is treated as a deduction.
+const ADD_TYPES = new Set<string>(["Bônus"]);
+function isAddType(tipo: string): boolean {
+  return ADD_TYPES.has(tipo);
+}
+
 function fmt(value: number): string {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function formatDatePt(iso: string): string {
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+function periodLabel(period: PeriodValue): string {
+  switch (period.preset) {
+    case "hoje":
+      return `Hoje (${formatDatePt(period.dateFrom)})`;
+    case "semana":
+      return `Esta Semana (${formatDatePt(period.dateFrom)} – ${formatDatePt(period.dateTo)})`;
+    case "mes": {
+      const [y, m] = period.dateFrom.split("-").map(Number);
+      return `${MONTH_NAMES[m - 1]} ${y}`;
+    }
+    case "ano":
+      return `Ano ${period.dateFrom.split("-")[0]}`;
+    case "custom":
+    default:
+      return `${formatDatePt(period.dateFrom)} – ${formatDatePt(period.dateTo)}`;
+  }
+}
+
+function monthsBetween(dateFrom: string, dateTo: string): { year: number; month: number }[] {
+  const [fy, fm] = dateFrom.split("-").map(Number);
+  const [ty, tm] = dateTo.split("-").map(Number);
+  const out: { year: number; month: number }[] = [];
+  let y = fy, m = fm;
+  let guard = 0;
+  while ((y < ty || (y === ty && m <= tm)) && guard < 60) {
+    out.push({ year: y, month: m });
+    m++;
+    if (m > 12) { m = 1; y++; }
+    guard++;
+  }
+  return out;
+}
+
+interface DiaInfo { worked: boolean; valor: number }
+type MonthCell = { dayNum: number | null; state: "empty" | "out" | "worked" | "not-worked"; valor: number };
+
+function buildMonthCells(year: number, month: number, dateFrom: string, dateTo: string, diasMap: Map<string, DiaInfo>): MonthCell[] {
+  const firstDow = new Date(year, month - 1, 1).getDay();
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const cells: MonthCell[] = [];
+  for (let i = 0; i < firstDow; i++) cells.push({ dayNum: null, state: "empty", valor: 0 });
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    if (dateStr < dateFrom || dateStr > dateTo) {
+      cells.push({ dayNum: d, state: "out", valor: 0 });
+    } else {
+      const info = diasMap.get(dateStr);
+      cells.push({ dayNum: d, state: info?.worked ? "worked" : "not-worked", valor: info?.valor ?? 0 });
+    }
+  }
+  while (cells.length % 7 !== 0) cells.push({ dayNum: null, state: "empty", valor: 0 });
+  return cells;
+}
+
+function buildCalendarHtml(dateFrom: string, dateTo: string, diasMap: Map<string, DiaInfo>): string {
+  const months = monthsBetween(dateFrom, dateTo);
+  return months.map(({ year, month }) => {
+    const cells = buildMonthCells(year, month, dateFrom, dateTo, diasMap);
+    const cellsHtml = cells.map(c => {
+      if (c.dayNum === null) return `<div class="cell empty"></div>`;
+      if (c.state === "out") return `<div class="cell out"><span class="day-num">${c.dayNum}</span></div>`;
+      const cls = c.state === "worked" ? "cell worked" : "cell not-worked";
+      const label = c.state === "worked" ? "Trabalhou" : "Não trabalhou";
+      const valor = c.state === "worked" && c.valor > 0 ? `<span class="valor">R$ ${c.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>` : "";
+      return `<div class="${cls}"><span class="day-num">${c.dayNum}</span><span class="label">${label}</span>${valor}</div>`;
+    }).join("");
+    return `
+      <div class="month-block">
+        <h3 class="month-title">${MONTH_NAMES[month - 1]} ${year}</h3>
+        <div class="calendar">
+          ${DAY_NAMES.map(d => `<div class="day-header">${d}</div>`).join("")}
+          ${cellsHtml}
+        </div>
+      </div>`;
+  }).join("");
 }
 
 function buildPrintHtml(opts: {
   nome: string;
   tipo: string;
-  mes: number;
-  ano: number;
-  dias: { date: string; worked: boolean; valor: number }[];
+  periodo: string;
+  dateFrom: string;
+  dateTo: string;
+  diasMap: Map<string, DiaInfo>;
   totalGanho: number;
   diasTrabalhados: number;
   diasNaoTrabalhados: number;
   mediaPorDia: number;
+  bonusTotal: number;
+  deductionTotal: number;
+  finalAmount: number;
 }) {
-  const { nome, tipo, mes, ano, dias, totalGanho, diasTrabalhados, diasNaoTrabalhados, mediaPorDia } = opts;
-  const period = `${MONTH_NAMES[mes - 1]} ${ano}`;
+  const { nome, tipo, periodo, dateFrom, dateTo, diasMap, totalGanho, diasTrabalhados, diasNaoTrabalhados, mediaPorDia, bonusTotal, deductionTotal, finalAmount } = opts;
   const now = new Date().toLocaleString("pt-BR");
-
-  const firstDayOfWeek = new Date(ano, mes - 1, 1).getDay();
-  const daysInMonth = dias.length;
-  const totalCells = Math.ceil((firstDayOfWeek + daysInMonth) / 7) * 7;
-
-  const calCells: string[] = [];
-  for (let i = 0; i < totalCells; i++) {
-    const dayNum = i - firstDayOfWeek + 1;
-    if (dayNum < 1 || dayNum > daysInMonth) {
-      calCells.push(`<div class="cell empty"></div>`);
-    } else {
-      const d = dias[dayNum - 1];
-      const cls = d.worked ? "cell worked" : "cell not-worked";
-      const label = d.worked ? "Trabalhou" : "Não trabalhou";
-      const valor = d.worked ? `R$ ${d.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "";
-      calCells.push(`<div class="${cls}"><span class="day-num">${dayNum}</span><span class="label">${label}</span>${valor ? `<span class="valor">${valor}</span>` : ""}</div>`);
-    }
-  }
+  const calendarHtml = buildCalendarHtml(dateFrom, dateTo, diasMap);
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
-<title>Funcionário — ${nome} — ${period}</title>
+<title>Funcionário — ${nome} — ${periodo}</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: Arial, sans-serif; padding: 24px; color: #1a1a2e; }
@@ -107,15 +188,19 @@ function buildPrintHtml(opts: {
   .meta { display: flex; gap: 32px; margin-bottom: 24px; background: #f8f9fa; padding: 12px 16px; border-radius: 8px; }
   .meta-item label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 2px; }
   .meta-item span { font-size: 14px; font-weight: 600; }
-  .calendar { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-bottom: 24px; }
+  .month-block { margin-bottom: 20px; }
+  .month-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+  .calendar { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-bottom: 8px; }
   .day-header { text-align: center; font-size: 11px; font-weight: 700; color: #666; padding: 8px 0; }
-  .cell { border-radius: 6px; padding: 8px 4px; min-height: 72px; display: flex; flex-direction: column; align-items: center; font-size: 11px; }
+  .cell { border-radius: 6px; padding: 8px 4px; min-height: 60px; display: flex; flex-direction: column; align-items: center; font-size: 11px; }
   .cell.empty { background: transparent; }
+  .cell.out { background: #f3f4f6; color: #9ca3af; }
   .cell.worked { background: #d1fae5; border: 1px solid #6ee7b7; }
   .cell.not-worked { background: #fee2e2; border: 1px solid #fca5a5; }
   .day-num { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
   .cell.worked .day-num { color: #065f46; }
   .cell.not-worked .day-num { color: #991b1b; }
+  .cell.out .day-num { color: #9ca3af; font-weight: 600; }
   .label { font-size: 10px; font-weight: 600; }
   .cell.worked .label { color: #047857; }
   .cell.not-worked .label { color: #dc2626; }
@@ -128,7 +213,7 @@ function buildPrintHtml(opts: {
   .summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-size: 13px; }
   .summary-row:last-child { border-bottom: none; }
   .summary-row .val { font-weight: 700; }
-  .summary-row.total .val { color: #047857; font-size: 16px; }
+  .summary-row.total .val { color: #047857; font-size: 18px; }
   .footer { font-size: 10px; color: #999; margin-top: 16px; text-align: right; }
   @media print { body { padding: 12px; } }
 </style>
@@ -139,23 +224,23 @@ function buildPrintHtml(opts: {
 <div class="meta">
   <div class="meta-item"><label>Funcionário</label><span>${nome}</span></div>
   <div class="meta-item"><label>Função</label><span>${tipo}</span></div>
-  <div class="meta-item"><label>Período</label><span>${period}</span></div>
+  <div class="meta-item"><label>Período</label><span>${periodo}</span></div>
 </div>
-<div class="calendar">
-  ${DAY_NAMES.map(d => `<div class="day-header">${d}</div>`).join("")}
-  ${calCells.join("")}
-</div>
+${calendarHtml}
 <div class="legend">
   <div class="legend-item"><div class="legend-dot" style="background:#6ee7b7"></div>Trabalhou</div>
   <div class="legend-item"><div class="legend-dot" style="background:#fca5a5"></div>Não trabalhou</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f3f4f6"></div>Fora do período</div>
 </div>
 <div class="summary">
   <h2>Resumo do Período</h2>
   <div class="summary-row"><span>Dias trabalhados</span><span class="val" style="color:#047857">${diasTrabalhados}</span></div>
   <div class="summary-row"><span>Dias não trabalhados</span><span class="val" style="color:#dc2626">${diasNaoTrabalhados}</span></div>
   <div class="summary-row"><span>Valor por dia trabalhado</span><span class="val">R$ ${mediaPorDia.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
-  <div class="summary-row"><span>Bônus / Extras</span><span class="val">R$ 0,00</span></div>
-  <div class="summary-row total"><span style="font-weight:700">Total a receber</span><span class="val">R$ ${totalGanho.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
+  <div class="summary-row"><span>Total ganho (dias trabalhados)</span><span class="val">R$ ${totalGanho.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
+  <div class="summary-row"><span>Bônus</span><span class="val" style="color:#047857">+ R$ ${bonusTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
+  <div class="summary-row"><span>Adiantamentos / Descontos</span><span class="val" style="color:#dc2626">− R$ ${deductionTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
+  <div class="summary-row total"><span style="font-weight:700">Valor Final a Receber</span><span class="val">R$ ${finalAmount.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
 </div>
 <p class="footer">Gerado em ${now}</p>
 </body>
@@ -168,10 +253,8 @@ interface SelectedEmployee {
 }
 
 export function Funcionarios() {
-  const today = new Date();
   const [selectedEmployee, setSelectedEmployee] = useState<SelectedEmployee | null>(null);
-  const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth() + 1);
+  const [period, setPeriod] = useState<PeriodValue>(() => defaultPeriodValue("mes"));
 
   const queryClient = useQueryClient();
 
@@ -179,8 +262,8 @@ export function Funcionarios() {
 
   const calendarEnabled = !!selectedEmployee;
   const calendarParams = selectedEmployee
-    ? { nome: selectedEmployee.nome, tipo: selectedEmployee.tipo, ano: year, mes: month }
-    : { nome: "", tipo: "", ano: year, mes: month };
+    ? { nome: selectedEmployee.nome, tipo: selectedEmployee.tipo, dateFrom: period.dateFrom, dateTo: period.dateTo }
+    : { nome: "", tipo: "", dateFrom: period.dateFrom, dateTo: period.dateTo };
 
   const { data: calendarData, isLoading: calendarLoading } = useGetEmployeeCalendar(
     calendarParams,
@@ -192,120 +275,30 @@ export function Funcionarios() {
     },
   );
 
-  const firstDayOfWeek = useMemo(() => new Date(year, month - 1, 1).getDay(), [year, month]);
-  const daysInMonth = useMemo(() => (calendarData?.dias.length ?? new Date(year, month, 0).getDate()), [calendarData, year, month]);
+  const diasMap = useMemo(() => {
+    const m = new Map<string, DiaInfo>();
+    (calendarData?.dias ?? []).forEach(d => m.set(d.date, { worked: d.worked, valor: d.valor }));
+    return m;
+  }, [calendarData]);
 
-  const totalCells = Math.ceil((firstDayOfWeek + daysInMonth) / 7) * 7;
+  const monthsInRange = useMemo(() => monthsBetween(period.dateFrom, period.dateTo), [period.dateFrom, period.dateTo]);
 
-  const cells = useMemo(() => {
-    const arr: Array<{ dayNum: number | null; worked: boolean; valor: number }> = [];
-    for (let i = 0; i < totalCells; i++) {
-      const dayNum = i - firstDayOfWeek + 1;
-      if (dayNum < 1 || dayNum > daysInMonth) {
-        arr.push({ dayNum: null, worked: false, valor: 0 });
-      } else {
-        const dayStr = `${year}-${String(month).padStart(2, "0")}-${String(dayNum).padStart(2, "0")}`;
-        const dayData = calendarData?.dias.find(d => d.date === dayStr);
-        arr.push({ dayNum, worked: dayData?.worked ?? false, valor: dayData?.valor ?? 0 });
-      }
-    }
-    return arr;
-  }, [totalCells, firstDayOfWeek, daysInMonth, year, month, calendarData]);
-
-  const prevMonth = useCallback(() => {
-    if (month === 1) { setMonth(12); setYear(y => y - 1); }
-    else setMonth(m => m - 1);
-  }, [month]);
-
-  const nextMonth = useCallback(() => {
-    if (month === 12) { setMonth(1); setYear(y => y + 1); }
-    else setMonth(m => m + 1);
-  }, [month]);
+  const monthGrids = useMemo(
+    () => monthsInRange.map(({ year, month }) => ({
+      year,
+      month,
+      cells: buildMonthCells(year, month, period.dateFrom, period.dateTo, diasMap),
+    })),
+    [monthsInRange, period.dateFrom, period.dateTo, diasMap],
+  );
 
   const handleEmployeeSelect = useCallback((value: string) => {
     const [nome, tipo] = value.split("||");
     setSelectedEmployee({ nome, tipo });
-    queryClient.invalidateQueries({ queryKey: getGetEmployeeCalendarQueryKey({ nome, tipo, ano: year, mes: month }) });
-  }, [queryClient, year, month]);
-
-  const handleSavePdf = useCallback(() => {
-    if (!selectedEmployee || !calendarData) return;
-    const html = buildPrintHtml({
-      nome: selectedEmployee.nome,
-      tipo: selectedEmployee.tipo,
-      mes: month,
-      ano: year,
-      dias: calendarData.dias,
-      totalGanho: calendarData.totalGanho,
-      diasTrabalhados: calendarData.diasTrabalhados,
-      diasNaoTrabalhados: calendarData.diasNaoTrabalhados,
-      mediaPorDia: calendarData.mediaPorDia,
-    });
-    const win = window.open("", "_blank");
-    if (!win) return;
-    win.document.write(html);
-    win.document.close();
-    win.focus();
-    setTimeout(() => { win.print(); }, 400);
-  }, [selectedEmployee, calendarData, month, year]);
+    queryClient.invalidateQueries({ queryKey: getGetEmployeeCalendarQueryKey({ nome, tipo, dateFrom: period.dateFrom, dateTo: period.dateTo }) });
+  }, [queryClient, period.dateFrom, period.dateTo]);
 
   const { toast } = useToast();
-
-  const buildShareText = useCallback(() => {
-    if (!selectedEmployee || !calendarData) return "";
-    const period = `${MONTH_NAMES[month - 1]} ${year}`;
-    return [
-      `Olá,`,
-      ``,
-      `Segue abaixo o relatório de trabalho referente ao período de *${period}*:`,
-      ``,
-      `👤 *Funcionário:* ${selectedEmployee.nome}`,
-      `🏷️ *Função:* ${selectedEmployee.tipo}`,
-      `📅 *Período:* ${period}`,
-      `✅ *Dias trabalhados:* ${calendarData.diasTrabalhados}`,
-      `❌ *Dias não trabalhados:* ${calendarData.diasNaoTrabalhados}`,
-      `💰 *Valor por dia:* ${fmt(calendarData.mediaPorDia)}`,
-      `💵 *Total a receber:* ${fmt(calendarData.totalGanho)}`,
-      ``,
-      `Atenciosamente,`,
-      `LAFER Transportes`,
-    ].join("\n");
-  }, [selectedEmployee, calendarData, month, year]);
-
-  const handleShareWhatsApp = useCallback(() => {
-    const text = buildShareText();
-    if (!text) return;
-    const encoded = encodeURIComponent(text);
-    window.open(`https://wa.me/?text=${encoded}`, "_blank", "noopener,noreferrer");
-  }, [buildShareText]);
-
-  const handleShareNative = useCallback(async () => {
-    const text = buildShareText();
-    if (!text || !selectedEmployee) return;
-    const period = `${MONTH_NAMES[month - 1]} ${year}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `Relatório — ${selectedEmployee.nome} — ${period}`,
-          text,
-        });
-      } else {
-        await navigator.clipboard.writeText(text);
-        toast({ title: "Resumo copiado!", description: "Texto copiado para a área de transferência." });
-      }
-    } catch { /* user cancelled */ }
-  }, [buildShareText, selectedEmployee, month, year, toast]);
-
-  const handleCopyClipboard = useCallback(async () => {
-    const text = buildShareText();
-    if (!text) return;
-    try {
-      await navigator.clipboard.writeText(text);
-      toast({ title: "Copiado!", description: "Resumo copiado para a área de transferência." });
-    } catch {
-      toast({ title: "Erro", description: "Não foi possível copiar.", variant: "destructive" });
-    }
-  }, [buildShareText, toast]);
 
   const [showAdvanceForm, setShowAdvanceForm] = useState(false);
   const [editingAdvance, setEditingAdvance] = useState<EmployeeAdvance | null>(null);
@@ -313,12 +306,12 @@ export function Funcionarios() {
     data: new Date().toISOString().split("T")[0],
     descricao: "",
     valor: "",
-    tipo: "Adiantamento",
+    tipo: "Adiantamento em Dinheiro" as string,
   });
 
   const advancesParams = selectedEmployee
-    ? { nome: selectedEmployee.nome, tipoFuncionario: selectedEmployee.tipo }
-    : { nome: "", tipoFuncionario: "" };
+    ? { nome: selectedEmployee.nome, tipoFuncionario: selectedEmployee.tipo, dateFrom: period.dateFrom, dateTo: period.dateTo }
+    : { nome: "", tipoFuncionario: "", dateFrom: period.dateFrom, dateTo: period.dateTo };
 
   const { data: advances, isLoading: advancesLoading } = useListEmployeeAdvances(
     advancesParams,
@@ -337,7 +330,7 @@ export function Funcionarios() {
       setAdvanceForm({ data: advance.data, descricao: advance.descricao, valor: String(advance.valor), tipo: advance.tipo });
     } else {
       setEditingAdvance(null);
-      setAdvanceForm({ data: new Date().toISOString().split("T")[0], descricao: "", valor: "", tipo: "Adiantamento" });
+      setAdvanceForm({ data: new Date().toISOString().split("T")[0], descricao: "", valor: "", tipo: "Adiantamento em Dinheiro" });
     }
     setShowAdvanceForm(true);
   }, []);
@@ -370,32 +363,109 @@ export function Funcionarios() {
     });
   }, [deleteAdvanceMutation, queryClient, advancesQueryKey]);
 
-  const advanceTotal = useMemo(() =>
-    (advances ?? []).filter(a => ["Adiantamento", "Desconto"].includes(a.tipo)).reduce((s, a) => s + Number(a.valor), 0),
-    [advances]);
-
   const bonusTotal = useMemo(() =>
-    (advances ?? []).filter(a => ["Bônus", "Outro"].includes(a.tipo)).reduce((s, a) => s + Number(a.valor), 0),
+    (advances ?? []).filter(a => isAddType(a.tipo)).reduce((s, a) => s + Number(a.valor), 0),
     [advances]);
 
-  const finalAmount = (calendarData?.totalGanho ?? 0) + bonusTotal - advanceTotal;
+  const deductionTotal = useMemo(() =>
+    (advances ?? []).filter(a => !isAddType(a.tipo)).reduce((s, a) => s + Number(a.valor), 0),
+    [advances]);
 
-  const handleSharePdf = useCallback(async () => {
-    if (!selectedEmployee || !calendarData) return;
+  const finalAmount = (calendarData?.totalGanho ?? 0) + bonusTotal - deductionTotal;
 
-    const html = buildPrintHtml({
+  const buildShareText = useCallback(() => {
+    if (!selectedEmployee || !calendarData) return "";
+    const label = periodLabel(period);
+    return [
+      `Olá,`,
+      ``,
+      `Segue abaixo o relatório de trabalho referente ao período de *${label}*:`,
+      ``,
+      `👤 *Funcionário:* ${selectedEmployee.nome}`,
+      `🏷️ *Função:* ${selectedEmployee.tipo}`,
+      `📅 *Período:* ${label}`,
+      `✅ *Dias trabalhados:* ${calendarData.diasTrabalhados}`,
+      `❌ *Dias não trabalhados:* ${calendarData.diasNaoTrabalhados}`,
+      `💰 *Valor por dia:* ${fmt(calendarData.mediaPorDia)}`,
+      `💵 *Total ganho:* ${fmt(calendarData.totalGanho)}`,
+      `➕ *Bônus:* ${fmt(bonusTotal)}`,
+      `➖ *Adiantamentos/Descontos:* ${fmt(deductionTotal)}`,
+      `🏁 *Valor Final a Receber:* ${fmt(finalAmount)}`,
+      ``,
+      `Atenciosamente,`,
+      `LAFER Transportes`,
+    ].join("\n");
+  }, [selectedEmployee, calendarData, period, bonusTotal, deductionTotal, finalAmount]);
+
+  const handleShareWhatsApp = useCallback(() => {
+    const text = buildShareText();
+    if (!text) return;
+    const encoded = encodeURIComponent(text);
+    window.open(`https://wa.me/?text=${encoded}`, "_blank", "noopener,noreferrer");
+  }, [buildShareText]);
+
+  const handleShareNative = useCallback(async () => {
+    const text = buildShareText();
+    if (!text || !selectedEmployee) return;
+    const label = periodLabel(period);
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `Relatório — ${selectedEmployee.nome} — ${label}`,
+          text,
+        });
+      } else {
+        await navigator.clipboard.writeText(text);
+        toast({ title: "Resumo copiado!", description: "Texto copiado para a área de transferência." });
+      }
+    } catch { /* user cancelled */ }
+  }, [buildShareText, selectedEmployee, period, toast]);
+
+  const handleCopyClipboard = useCallback(async () => {
+    const text = buildShareText();
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ title: "Copiado!", description: "Resumo copiado para a área de transferência." });
+    } catch {
+      toast({ title: "Erro", description: "Não foi possível copiar.", variant: "destructive" });
+    }
+  }, [buildShareText, toast]);
+
+  const generatePrintHtml = useCallback(() => {
+    if (!selectedEmployee || !calendarData) return null;
+    return buildPrintHtml({
       nome: selectedEmployee.nome,
       tipo: selectedEmployee.tipo,
-      mes: month,
-      ano: year,
-      dias: calendarData.dias,
+      periodo: periodLabel(period),
+      dateFrom: period.dateFrom,
+      dateTo: period.dateTo,
+      diasMap,
       totalGanho: calendarData.totalGanho,
       diasTrabalhados: calendarData.diasTrabalhados,
       diasNaoTrabalhados: calendarData.diasNaoTrabalhados,
       mediaPorDia: calendarData.mediaPorDia,
+      bonusTotal,
+      deductionTotal,
+      finalAmount,
     });
+  }, [selectedEmployee, calendarData, period, diasMap, bonusTotal, deductionTotal, finalAmount]);
 
-    // Parse the HTML string and inject into an off-screen container
+  const handleSavePdf = useCallback(() => {
+    const html = generatePrintHtml();
+    if (!html) return;
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    setTimeout(() => { win.print(); }, 400);
+  }, [generatePrintHtml]);
+
+  const handleSharePdf = useCallback(async () => {
+    const html = generatePrintHtml();
+    if (!html || !selectedEmployee) return;
+
     const parser = new DOMParser();
     const parsed = parser.parseFromString(html, "text/html");
     const styleEl = parsed.querySelector("style");
@@ -442,17 +512,16 @@ export function Funcionarios() {
       }
 
       const blob = pdf.output("blob");
-      const period = `${MONTH_NAMES[month - 1]}-${year}`;
-      const filename = `relatorio-${selectedEmployee.nome.replace(/\s+/g, "-")}-${period}.pdf`;
+      const label = periodLabel(period).replace(/[\s/]+/g, "-");
+      const filename = `relatorio-${selectedEmployee.nome.replace(/\s+/g, "-")}-${label}.pdf`;
       const pdfFile = new File([blob], filename, { type: "application/pdf" });
 
       if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
         await navigator.share({
-          title: `Relatório — ${selectedEmployee.nome} — ${period}`,
+          title: `Relatório — ${selectedEmployee.nome} — ${periodLabel(period)}`,
           files: [pdfFile],
         });
       } else {
-        // Fallback: trigger download
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -470,7 +539,7 @@ export function Funcionarios() {
     } finally {
       document.body.removeChild(container);
     }
-  }, [selectedEmployee, calendarData, month, year, toast]);
+  }, [generatePrintHtml, selectedEmployee, period, toast]);
 
   const isLoading = employeesLoading;
 
@@ -485,7 +554,7 @@ export function Funcionarios() {
       </div>
 
       {/* Selector row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {/* Employee selector */}
         <Card className="shadow-none border">
           <CardContent className="py-3 px-4">
@@ -533,38 +602,7 @@ export function Funcionarios() {
         <Card className="shadow-none border">
           <CardContent className="py-3 px-4">
             <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Período</p>
-            <div className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4 text-muted-foreground shrink-0" />
-              <div className="flex items-center gap-1 flex-1">
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={prevMonth}>
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span className="text-sm font-semibold flex-1 text-center">
-                  {MONTH_NAMES[month - 1]} {year}
-                </span>
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={nextMonth}>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            <div className="flex gap-1.5 mt-2 pt-2 border-t flex-wrap">
-              <Button
-                variant={year === today.getFullYear() && month === today.getMonth() + 1 ? "default" : "outline"}
-                size="sm"
-                className="text-xs h-7 px-2.5"
-                onClick={() => { setYear(today.getFullYear()); setMonth(today.getMonth() + 1); }}
-              >
-                Este Mês
-              </Button>
-              <Button
-                variant={year === (month === 1 ? today.getFullYear() - 1 : today.getFullYear()) && month === (today.getMonth() === 0 ? 12 : today.getMonth()) ? "default" : "outline"}
-                size="sm"
-                className="text-xs h-7 px-2.5"
-                onClick={prevMonth}
-              >
-                Mês Anterior
-              </Button>
-            </div>
+            <PeriodFilter value={period} onChange={setPeriod} />
           </CardContent>
         </Card>
       </div>
@@ -574,17 +612,7 @@ export function Funcionarios() {
         {/* Calendar */}
         <div className="lg:col-span-2">
           <Card className="shadow-none border">
-            <CardContent className="p-4">
-              {/* Day headers */}
-              <div className="grid grid-cols-7 gap-1 mb-1">
-                {DAY_NAMES.map(d => (
-                  <div key={d} className="text-center text-xs font-bold text-muted-foreground py-2">
-                    {d}
-                  </div>
-                ))}
-              </div>
-
-              {/* Calendar grid */}
+            <CardContent className="p-4 space-y-4">
               {!selectedEmployee ? (
                 <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
                   <Users className="h-10 w-10 opacity-30" />
@@ -597,40 +625,62 @@ export function Funcionarios() {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-7 gap-1">
-                  {cells.map((cell, i) => {
-                    if (cell.dayNum === null) {
-                      return <div key={i} className="h-11 sm:h-16 rounded-lg" />;
-                    }
-                    return (
-                      <div
-                        key={i}
-                        className={`h-11 sm:h-16 rounded-lg border flex flex-col items-center justify-center gap-0 sm:gap-0.5 ${
-                          cell.worked
-                            ? "bg-green-50 border-green-200 dark:bg-green-950/40 dark:border-green-900"
-                            : "bg-red-50 border-red-200 dark:bg-red-950/40 dark:border-red-900"
-                        }`}
-                      >
-                        <span className={`text-xs sm:text-sm font-bold leading-none ${cell.worked ? "text-green-800 dark:text-green-300" : "text-red-700 dark:text-red-400"}`}>
-                          {cell.dayNum}
-                        </span>
-                        <span className={`text-[8px] sm:text-[10px] font-semibold leading-tight ${cell.worked ? "text-green-700 dark:text-green-400" : "text-red-600 dark:text-red-500"}`}>
-                          {cell.worked ? "Trab." : "Não"}
-                        </span>
-                        {cell.worked && cell.valor > 0 && (
-                          <span className="hidden sm:block text-[9px] text-green-600 dark:text-green-500 leading-none">
-                            {fmt(cell.valor)}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                monthGrids.map(({ year, month, cells }) => (
+                  <div key={`${year}-${month}`}>
+                    {monthGrids.length > 1 && (
+                      <p className="text-sm font-semibold mb-2">{MONTH_NAMES[month - 1]} {year}</p>
+                    )}
+                    <div className="grid grid-cols-7 gap-1 mb-1">
+                      {DAY_NAMES.map(d => (
+                        <div key={d} className="text-center text-xs font-bold text-muted-foreground py-2">
+                          {d}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-7 gap-1">
+                      {cells.map((cell, i) => {
+                        if (cell.dayNum === null) {
+                          return <div key={i} className="h-11 sm:h-16 rounded-lg" />;
+                        }
+                        if (cell.state === "out") {
+                          return (
+                            <div key={i} className="h-11 sm:h-16 rounded-lg border border-dashed bg-muted/40 flex items-center justify-center">
+                              <span className="text-xs sm:text-sm font-medium text-muted-foreground/60">{cell.dayNum}</span>
+                            </div>
+                          );
+                        }
+                        const worked = cell.state === "worked";
+                        return (
+                          <div
+                            key={i}
+                            className={`h-11 sm:h-16 rounded-lg border flex flex-col items-center justify-center gap-0 sm:gap-0.5 ${
+                              worked
+                                ? "bg-green-50 border-green-200 dark:bg-green-950/40 dark:border-green-900"
+                                : "bg-red-50 border-red-200 dark:bg-red-950/40 dark:border-red-900"
+                            }`}
+                          >
+                            <span className={`text-xs sm:text-sm font-bold leading-none ${worked ? "text-green-800 dark:text-green-300" : "text-red-700 dark:text-red-400"}`}>
+                              {cell.dayNum}
+                            </span>
+                            <span className={`text-[8px] sm:text-[10px] font-semibold leading-tight ${worked ? "text-green-700 dark:text-green-400" : "text-red-600 dark:text-red-500"}`}>
+                              {worked ? "Trab." : "Não"}
+                            </span>
+                            {worked && cell.valor > 0 && (
+                              <span className="hidden sm:block text-[9px] text-green-600 dark:text-green-500 leading-none">
+                                {fmt(cell.valor)}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))
               )}
 
               {/* Legend */}
               {selectedEmployee && !calendarLoading && (
-                <div className="flex gap-4 mt-3 pt-3 border-t">
+                <div className="flex gap-4 pt-3 border-t flex-wrap">
                   <div className="flex items-center gap-1.5">
                     <div className="h-3 w-3 rounded bg-green-400" />
                     <span className="text-xs text-muted-foreground">Trabalhou</span>
@@ -639,6 +689,12 @@ export function Funcionarios() {
                     <div className="h-3 w-3 rounded bg-red-400" />
                     <span className="text-xs text-muted-foreground">Não trabalhou</span>
                   </div>
+                  {monthsInRange.length > 1 && (
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-3 w-3 rounded border border-dashed bg-muted/40" />
+                      <span className="text-xs text-muted-foreground">Fora do período</span>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -647,15 +703,15 @@ export function Funcionarios() {
 
         {/* Summary panel */}
         <div className="space-y-3">
-          {/* Total highlight */}
-          <Card className="shadow-none border bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/30 dark:to-card">
+          {/* Final amount highlight */}
+          <Card className="shadow-none border-2 border-blue-300 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/40 dark:to-card">
             <CardContent className="py-4 px-4">
-              <p className="text-xs text-muted-foreground mb-1">Valor a receber no período</p>
+              <p className="text-xs text-blue-700/80 dark:text-blue-400/80 mb-1 font-semibold uppercase tracking-wide">Valor Final a Receber</p>
               {calendarLoading && selectedEmployee ? (
-                <Skeleton className="h-7 w-36" />
+                <Skeleton className="h-9 w-40" />
               ) : (
-                <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">
-                  {selectedEmployee ? fmt(calendarData?.totalGanho ?? 0) : "—"}
+                <p className="text-3xl font-extrabold text-blue-700 dark:text-blue-400">
+                  {selectedEmployee ? fmt(finalAmount) : "—"}
                 </p>
               )}
             </CardContent>
@@ -684,9 +740,19 @@ export function Funcionarios() {
                   color: "",
                 },
                 {
-                  label: "Bônus / Extras",
-                  value: "R$ 0,00",
+                  label: "Total ganho",
+                  value: selectedEmployee ? fmt(calendarData?.totalGanho ?? 0) : "—",
                   color: "",
+                },
+                {
+                  label: "Bônus",
+                  value: selectedEmployee ? `+ ${fmt(bonusTotal)}` : "—",
+                  color: "text-emerald-600 dark:text-emerald-400",
+                },
+                {
+                  label: "Adiantamentos / Descontos",
+                  value: selectedEmployee ? `− ${fmt(deductionTotal)}` : "—",
+                  color: "text-red-600 dark:text-red-400",
                 },
               ].map(row => (
                 <div key={row.label} className="flex items-center justify-between py-1 border-b border-dashed last:border-0">
@@ -701,12 +767,12 @@ export function Funcionarios() {
 
               {/* Total */}
               <div className="pt-1 border-t flex items-center justify-between">
-                <span className="text-xs font-bold">Total a receber</span>
+                <span className="text-xs font-bold">Valor Final a Receber</span>
                 {calendarLoading && selectedEmployee ? (
                   <Skeleton className="h-5 w-24" />
                 ) : (
-                  <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
-                    {selectedEmployee ? fmt(calendarData?.totalGanho ?? 0) : "—"}
+                  <span className="text-sm font-bold text-blue-700 dark:text-blue-400">
+                    {selectedEmployee ? fmt(finalAmount) : "—"}
                   </span>
                 )}
               </div>
@@ -716,7 +782,7 @@ export function Funcionarios() {
                 <div className="mt-2 rounded-md bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 p-2 flex gap-2">
                   <Info className="h-3.5 w-3.5 text-blue-500 shrink-0 mt-0.5" />
                   <p className="text-[10px] text-blue-700 dark:text-blue-400 leading-snug">
-                    O valor por dia é calculado com base no total do período dividido pelo número de dias trabalhados.
+                    Valor Final = Total ganho + Bônus − Adiantamentos/Descontos, recalculado automaticamente conforme os ajustes de pagamento.
                   </p>
                 </div>
               )}
@@ -774,12 +840,24 @@ export function Funcionarios() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuItem
-                      onClick={handleSharePdf}
+                      onClick={handleShareWhatsApp}
+                      className="gap-2 cursor-pointer"
+                    >
+                      <MessageCircle className="h-4 w-4 text-green-500" />
+                      <div>
+                        <p className="text-xs font-semibold">WhatsApp (texto)</p>
+                        <p className="text-[10px] text-muted-foreground leading-tight">
+                          Envia o resumo como mensagem de texto
+                        </p>
+                      </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleShareNative}
                       className="gap-2 cursor-pointer"
                     >
                       <Share2 className="h-4 w-4 text-blue-500" />
                       <div>
-                        <p className="text-xs font-semibold">Compartilhar PDF</p>
+                        <p className="text-xs font-semibold">Compartilhar…</p>
                         <p className="text-[10px] text-muted-foreground leading-tight">
                           WhatsApp, Email, Teams, Telegram…
                         </p>
@@ -799,14 +877,14 @@ export function Funcionarios() {
                       </div>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={handleSavePdf}
+                      onClick={handleSharePdf}
                       className="gap-2 cursor-pointer"
                     >
                       <FileDown className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-xs font-semibold">Baixar PDF</p>
+                        <p className="text-xs font-semibold">Enviar PDF</p>
                         <p className="text-[10px] text-muted-foreground leading-tight">
-                          Abre diálogo de impressão/PDF
+                          Gera e compartilha o PDF do período
                         </p>
                       </div>
                     </DropdownMenuItem>
@@ -818,13 +896,13 @@ export function Funcionarios() {
         </div>
       </div>
 
-      {/* Advances / Adjustments Section */}
+      {/* Payment Adjustments Section */}
       {selectedEmployee && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-semibold">Adiantamentos e Ajustes</h3>
-              <p className="text-xs text-muted-foreground">Adiantamentos, bônus e descontos registrados para {selectedEmployee.nome}</p>
+              <h3 className="text-base font-semibold">Ajustes de Pagamento</h3>
+              <p className="text-xs text-muted-foreground">Adiantamentos, bônus e descontos registrados para {selectedEmployee.nome} no período selecionado</p>
             </div>
             <Button
               size="sm"
@@ -840,12 +918,12 @@ export function Funcionarios() {
             <Card className="shadow-none border">
               <CardContent className="py-3 px-4">
                 <p className="text-xs text-muted-foreground">Adiantamentos / Descontos</p>
-                <p className="text-lg font-bold text-red-600 dark:text-red-400">{fmt(advanceTotal)}</p>
+                <p className="text-lg font-bold text-red-600 dark:text-red-400">{fmt(deductionTotal)}</p>
               </CardContent>
             </Card>
             <Card className="shadow-none border">
               <CardContent className="py-3 px-4">
-                <p className="text-xs text-muted-foreground">Bônus / Extras</p>
+                <p className="text-xs text-muted-foreground">Bônus</p>
                 <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{fmt(bonusTotal)}</p>
               </CardContent>
             </Card>
@@ -865,7 +943,7 @@ export function Funcionarios() {
                 </div>
               ) : !advances?.length ? (
                 <div className="flex flex-col items-center justify-center py-10 text-muted-foreground gap-1">
-                  <p className="text-sm">Nenhum adiantamento ou ajuste registrado</p>
+                  <p className="text-sm">Nenhum ajuste de pagamento registrado neste período</p>
                   <p className="text-xs">Clique em "Adicionar" para registrar</p>
                 </div>
               ) : (
@@ -885,15 +963,15 @@ export function Funcionarios() {
                         <TableCell className="text-sm">{adv.data}</TableCell>
                         <TableCell>
                           <Badge
-                            variant={adv.tipo === "Bônus" ? "default" : adv.tipo === "Outro" ? "secondary" : "destructive"}
+                            variant={isAddType(adv.tipo) ? "default" : "destructive"}
                             className="text-xs"
                           >
                             {adv.tipo}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">{adv.descricao || "—"}</TableCell>
-                        <TableCell className={`text-right text-sm font-semibold ${["Adiantamento", "Desconto"].includes(adv.tipo) ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}>
-                          {["Adiantamento", "Desconto"].includes(adv.tipo) ? "−" : "+"}{fmt(Number(adv.valor))}
+                        <TableCell className={`text-right text-sm font-semibold ${isAddType(adv.tipo) ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+                          {isAddType(adv.tipo) ? "+" : "−"}{fmt(Number(adv.valor))}
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1 justify-end">
@@ -915,11 +993,11 @@ export function Funcionarios() {
         </div>
       )}
 
-      {/* Advance Form Dialog */}
+      {/* Payment Adjustment Form Dialog */}
       <Dialog open={showAdvanceForm} onOpenChange={setShowAdvanceForm}>
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
-            <DialogTitle>{editingAdvance ? "Editar" : "Novo"} Adiantamento/Ajuste</DialogTitle>
+            <DialogTitle>{editingAdvance ? "Editar" : "Novo"} Ajuste de Pagamento</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-1.5">
@@ -937,7 +1015,7 @@ export function Funcionarios() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {["Adiantamento", "Bônus", "Desconto", "Outro"].map(t => (
+                  {ADJUSTMENT_TYPES.map(t => (
                     <SelectItem key={t} value={t}>{t}</SelectItem>
                   ))}
                 </SelectContent>

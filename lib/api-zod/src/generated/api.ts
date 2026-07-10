@@ -935,8 +935,8 @@ export const ListEmployeesResponse = zod.array(ListEmployeesResponseItem)
 export const GetEmployeeCalendarQueryParams = zod.object({
   "nome": zod.coerce.string(),
   "tipo": zod.coerce.string(),
-  "ano": zod.coerce.number(),
-  "mes": zod.coerce.number()
+  "dateFrom": zod.date(),
+  "dateTo": zod.date()
 })
 
 export const GetEmployeeCalendarResponse = zod.object({

@@ -9,6 +9,6 @@
 export type GetEmployeeCalendarParams = {
 nome: string;
 tipo: string;
-ano: number;
-mes: number;
+dateFrom: Date;
+dateTo: Date;
 };
