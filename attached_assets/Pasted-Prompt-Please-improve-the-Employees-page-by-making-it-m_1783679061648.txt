@@ -1,0 +1,152 @@
+Prompt:
+
+Please improve the Employees page by making it more dynamic, intuitive, and consistent with the rest of the application, without changing the overall design, layout, or visual identity.
+
+⸻
+
+1. Add the same Date Filter used on the Dashboard
+
+At the top of the Employees page, add the same date filter component used on the Dashboard.
+
+The filter should support:
+
+* Today
+* This Week
+* This Month
+* This Year
+* Custom Date Range
+
+The appearance, behavior, and user experience should be identical to the Dashboard filter.
+
+⸻
+
+2. Dynamic Employee Information
+
+Whenever the user changes the selected period, the page must automatically update all information for the selected employee.
+
+The following should be recalculated in real time:
+
+* Worked days
+* Days not worked
+* Calendar
+* Total amount earned
+* Average earnings per worked day
+* Final amount to receive
+* Any advances or deductions
+* PDF preview (if applicable)
+
+No manual refresh should be required.
+
+⸻
+
+3. Dynamic Calendar
+
+The employee calendar must reflect only the selected period.
+
+For example:
+
+* If “This Month” is selected, display only that month’s calendar.
+* If a custom range is selected, display the appropriate calendar(s) and highlight only the worked days within that period.
+* When the selected period changes, the calendar must update automatically.
+
+The worked days should continue to be determined automatically from the data already stored in the Expenses module.
+
+⸻
+
+4. Simplify the Advances Section
+
+The current “Advances” functionality should be redesigned to be more intuitive for the user.
+
+Instead of using technical accounting terminology, create a simple section called:
+
+Payment Adjustments
+
+Within this section, provide a clear and user-friendly way to record amounts that should affect the employee’s final payment.
+
+Allow the user to add adjustments such as:
+
+* Salary Advance
+* Cash Advance
+* Fuel Advance
+* Bonus
+* Discount
+* Other
+
+Each adjustment should contain:
+
+* Date
+* Description
+* Amount
+* Type
+
+The interface should be simple and easy to understand, even for users with no accounting knowledge.
+
+⸻
+
+5. Automatic Payment Calculation
+
+Whenever an adjustment is added, edited, or removed, automatically recalculate the employee’s final payment.
+
+The calculation should be:
+
+Final Amount to Receive = Total Earned + Bonuses − Advances − Discounts
+
+The updated amount should be displayed immediately.
+
+No manual recalculation should be necessary.
+
+⸻
+
+6. Payment Summary
+
+Display a clear summary containing:
+
+* Days Worked
+* Days Not Worked
+* Total Earned
+* Total Bonuses
+* Total Advances
+* Total Discounts
+* Final Amount to Receive
+
+The Final Amount to Receive should be visually emphasized, as it is the most important information on the page.
+
+⸻
+
+7. PDF Integration
+
+The generated PDF should respect the selected period and include:
+
+* Employee Name
+* Selected Period
+* Calendar
+* Days Worked
+* Days Not Worked
+* Total Earned
+* Bonuses
+* Advances
+* Discounts
+* Final Amount to Receive
+
+The values shown in the PDF must always match the values displayed on the screen.
+
+⸻
+
+8. Performance
+
+Ensure that:
+
+* Changing the period updates the page instantly.
+* Database queries are optimized.
+* Only the necessary data is loaded.
+* The page remains responsive even with years of historical data.
+
+⸻
+
+Important
+
+* Do not redesign the application.
+* Do not change the existing navigation or layout.
+* Reuse the same date filter component already implemented on the Dashboard.
+* Focus on making the Employees page dynamic, intuitive, and automatically synchronized with the selected period and the existing data in the database.
+* Ensure payment adjustments are easy to understand and that the Final Amount to Receive is always calculated and updated automatically.
