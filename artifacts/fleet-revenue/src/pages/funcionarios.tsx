@@ -45,7 +45,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { PeriodFilter, defaultPeriodValue, type PeriodValue } from "@/components/period-filter";
+import { PeriodFilter, defaultPeriod, type PeriodValue } from "@/components/period-filter";
 
 const MONTH_NAMES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -80,21 +80,9 @@ function formatDatePt(iso: string): string {
 }
 
 function periodLabel(period: PeriodValue): string {
-  switch (period.preset) {
-    case "hoje":
-      return `Hoje (${formatDatePt(period.dateFrom)})`;
-    case "semana":
-      return `Esta Semana (${formatDatePt(period.dateFrom)} – ${formatDatePt(period.dateTo)})`;
-    case "mes": {
-      const [y, m] = period.dateFrom.split("-").map(Number);
-      return `${MONTH_NAMES[m - 1]} ${y}`;
-    }
-    case "ano":
-      return `Ano ${period.dateFrom.split("-")[0]}`;
-    case "custom":
-    default:
-      return `${formatDatePt(period.dateFrom)} – ${formatDatePt(period.dateTo)}`;
-  }
+  if (!period.dateFrom || !period.dateTo) return "Período não definido";
+  if (period.dateFrom === period.dateTo) return formatDatePt(period.dateFrom);
+  return `${formatDatePt(period.dateFrom)} – ${formatDatePt(period.dateTo)}`;
 }
 
 function monthsBetween(dateFrom: string, dateTo: string): { year: number; month: number }[] {
@@ -254,13 +242,15 @@ interface SelectedEmployee {
 
 export function Funcionarios() {
   const [selectedEmployee, setSelectedEmployee] = useState<SelectedEmployee | null>(null);
-  const [period, setPeriod] = useState<PeriodValue>(() => defaultPeriodValue("mes"));
+  const [period, setPeriod] = useState<PeriodValue>(() => defaultPeriod());
 
   const queryClient = useQueryClient();
 
   const { data: employees, isLoading: employeesLoading } = useListEmployees();
 
-  const calendarEnabled = !!selectedEmployee;
+  const periodValid = !!period.dateFrom && !!period.dateTo && period.dateFrom <= period.dateTo;
+
+  const calendarEnabled = !!selectedEmployee && periodValid;
   const calendarParams = selectedEmployee
     ? { nome: selectedEmployee.nome, tipo: selectedEmployee.tipo, dateFrom: period.dateFrom, dateTo: period.dateTo }
     : { nome: "", tipo: "", dateFrom: period.dateFrom, dateTo: period.dateTo };
@@ -281,7 +271,10 @@ export function Funcionarios() {
     return m;
   }, [calendarData]);
 
-  const monthsInRange = useMemo(() => monthsBetween(period.dateFrom, period.dateTo), [period.dateFrom, period.dateTo]);
+  const monthsInRange = useMemo(
+    () => periodValid ? monthsBetween(period.dateFrom, period.dateTo) : [],
+    [period.dateFrom, period.dateTo, periodValid],
+  );
 
   const monthGrids = useMemo(
     () => monthsInRange.map(({ year, month }) => ({
@@ -315,7 +308,7 @@ export function Funcionarios() {
 
   const { data: advances, isLoading: advancesLoading } = useListEmployeeAdvances(
     advancesParams,
-    { query: { enabled: !!selectedEmployee, queryKey: getListEmployeeAdvancesQueryKey(advancesParams) } },
+    { query: { enabled: !!selectedEmployee && periodValid, queryKey: getListEmployeeAdvancesQueryKey(advancesParams) } },
   );
 
   const createAdvanceMutation = useCreateEmployeeAdvance();
