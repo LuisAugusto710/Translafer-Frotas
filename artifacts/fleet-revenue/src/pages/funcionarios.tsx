@@ -907,23 +907,23 @@ export function Funcionarios() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             <Card className="shadow-none border">
-              <CardContent className="py-3 px-4">
-                <p className="text-xs text-muted-foreground">Adiantamentos / Descontos</p>
-                <p className="text-lg font-bold text-red-600 dark:text-red-400">{fmt(deductionTotal)}</p>
+              <CardContent className="py-2.5 px-3 sm:py-3 sm:px-4">
+                <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">Adiant. / Desc.</p>
+                <p className="text-sm sm:text-lg font-bold text-red-600 dark:text-red-400 mt-0.5">{fmt(deductionTotal)}</p>
               </CardContent>
             </Card>
             <Card className="shadow-none border">
-              <CardContent className="py-3 px-4">
-                <p className="text-xs text-muted-foreground">Bônus</p>
-                <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{fmt(bonusTotal)}</p>
+              <CardContent className="py-2.5 px-3 sm:py-3 sm:px-4">
+                <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">Bônus</p>
+                <p className="text-sm sm:text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">{fmt(bonusTotal)}</p>
               </CardContent>
             </Card>
             <Card className="shadow-none border bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/30 dark:to-card">
-              <CardContent className="py-3 px-4">
-                <p className="text-xs text-muted-foreground">Final a Receber</p>
-                <p className="text-lg font-bold text-blue-700 dark:text-blue-400">{fmt(finalAmount)}</p>
+              <CardContent className="py-2.5 px-3 sm:py-3 sm:px-4">
+                <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">Final a Receber</p>
+                <p className="text-sm sm:text-lg font-bold text-blue-700 dark:text-blue-400 mt-0.5">{fmt(finalAmount)}</p>
               </CardContent>
             </Card>
           </div>
@@ -940,34 +940,37 @@ export function Funcionarios() {
                   <p className="text-xs">Clique em "Adicionar" para registrar</p>
                 </div>
               ) : (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Data</TableHead>
+                      <TableHead className="whitespace-nowrap">Data</TableHead>
                       <TableHead>Tipo</TableHead>
-                      <TableHead>Descrição</TableHead>
-                      <TableHead className="text-right">Valor</TableHead>
-                      <TableHead className="w-[70px]" />
+                      <TableHead className="hidden sm:table-cell">Descrição</TableHead>
+                      <TableHead className="text-right whitespace-nowrap">Valor</TableHead>
+                      <TableHead className="w-[64px]" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {advances.map(adv => (
                       <TableRow key={adv.id}>
-                        <TableCell className="text-sm">{adv.data}</TableCell>
+                        <TableCell className="text-sm whitespace-nowrap">
+                          {adv.data.split("-").reverse().join("/")}
+                        </TableCell>
                         <TableCell>
                           <Badge
                             variant={isAddType(adv.tipo) ? "default" : "destructive"}
-                            className="text-xs"
+                            className="text-xs whitespace-nowrap"
                           >
                             {adv.tipo}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{adv.descricao || "—"}</TableCell>
-                        <TableCell className={`text-right text-sm font-semibold ${isAddType(adv.tipo) ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+                        <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{adv.descricao || "—"}</TableCell>
+                        <TableCell className={`text-right text-sm font-semibold whitespace-nowrap ${isAddType(adv.tipo) ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
                           {isAddType(adv.tipo) ? "+" : "−"}{fmt(Number(adv.valor))}
                         </TableCell>
-                        <TableCell>
-                          <div className="flex gap-1 justify-end">
+                        <TableCell className="pr-2">
+                          <div className="flex gap-0.5 justify-end">
                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenAdvanceForm(adv)}>
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
@@ -980,6 +983,7 @@ export function Funcionarios() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               )}
             </CardContent>
           </Card>
