@@ -1,0 +1,165 @@
+Prompt:
+
+Please redesign the Employee PDF Report to follow professional document design standards while preserving all existing data and functionality. The current PDF looks too basic and lacks proper margins, spacing, and visual organization. The goal is to make it suitable for printing and sharing with employees.
+
+Overall Design
+
+Create a clean, modern, and professional PDF layout following common payroll and work report document standards.
+
+The PDF should have:
+
+* Standard A4 portrait format.
+* Consistent margins on all sides (approximately 20–25 mm).
+* Proper spacing between sections.
+* A clear visual hierarchy.
+* Excellent readability when printed or viewed digitally.
+
+The content should never touch the edges of the page.
+
+⸻
+
+Header
+
+Create a professional header containing:
+
+* Company logo (if available).
+* Company name.
+* Report title: Employee Work Report.
+* Report generation date.
+* Selected reporting period.
+
+The header should be visually separated from the rest of the document with a subtle divider.
+
+⸻
+
+Employee Information
+
+Display the employee information inside a well-organized information box, including:
+
+* Employee Name
+* Role (Driver or Assistant)
+* Selected Period
+* Days Worked
+* Days Not Worked
+
+Align the information neatly in two columns where appropriate.
+
+⸻
+
+Calendar
+
+Improve the calendar section:
+
+* Keep all days aligned in a grid.
+* Differentiate weekends with a subtle background color.
+* Highlight worked days with a soft success color.
+* Highlight non-worked days with a neutral or light gray color.
+* Keep the colors printer-friendly and readable in grayscale.
+* Add enough spacing so the calendar does not appear crowded.
+
+⸻
+
+Payment Summary
+
+Create a dedicated summary card with values such as:
+
+* Total Earned
+* Bonuses
+* Advances
+* Discounts
+* Final Amount to Receive
+
+The Final Amount to Receive should be visually emphasized with a larger font and stronger weight.
+
+Format all monetary values consistently.
+
+⸻
+
+Typography
+
+Use professional typography throughout the document.
+
+Requirements:
+
+* Clear font hierarchy.
+* Larger headings.
+* Medium-weight section titles.
+* Comfortable body text size.
+* Consistent line spacing.
+
+Avoid oversized text or crowded paragraphs.
+
+⸻
+
+Tables
+
+If tables are present:
+
+* Add proper cell padding.
+* Improve header styling.
+* Use subtle alternating row colors (zebra striping).
+* Ensure columns are aligned correctly.
+* Prevent text from touching cell borders.
+
+⸻
+
+Margins and Spacing
+
+This is one of the most important improvements.
+
+Ensure:
+
+* No content touches the page borders.
+* Equal left and right margins.
+* Comfortable top and bottom margins.
+* Adequate spacing between every section.
+
+The PDF should look like a professionally formatted business document.
+
+⸻
+
+Footer
+
+Add a clean footer containing:
+
+* Page number (if multiple pages).
+* Report generation timestamp.
+* Company name (small and unobtrusive).
+
+Do not include the previous “LAFER TRANSPORTS” title that was removed.
+
+⸻
+
+Visual Style
+
+Keep the design:
+
+* Minimalist
+* Elegant
+* Professional
+* Easy to read
+* Suitable for printing
+* Suitable for sharing with employees
+
+Avoid excessive colors, heavy borders, or decorative elements.
+
+⸻
+
+Responsiveness
+
+Although the PDF targets A4 printing, ensure the layout adapts gracefully if additional content causes multiple pages.
+
+Prevent:
+
+* Content overflow.
+* Broken tables.
+* Elements being split awkwardly between pages.
+
+⸻
+
+Important
+
+* Do not remove any existing information from the report.
+* Do not change the business logic or calculations.
+* Only improve the visual presentation and document structure.
+* Follow professional documentation standards with proper margins, spacing, typography, and section organization so the final PDF has the appearance of a polished payroll/work report rather than a simple exported page.
