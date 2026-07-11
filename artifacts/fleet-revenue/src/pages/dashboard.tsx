@@ -58,7 +58,7 @@ const CHART_STYLE = {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function pct(value: number, total: number) {
-  return total > 0 ? Math.round((value / total) * 10) / 10 : 0;
+  return total > 0 ? Math.round((value / total) * 1000) / 10 : 0;
 }
 
 function truncate(s: string, n: number) {
