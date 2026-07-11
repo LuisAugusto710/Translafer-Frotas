@@ -1,0 +1,109 @@
+Prompt:
+
+Please modify the Expenses module so that the Diesel Price (R$/L) is no longer calculated using the average price of previous refuelings.
+
+Instead, I want the system to always use the price per liter (R$/L) from the most recent refueling for the selected fleet.
+
+New Business Logic
+
+When creating or editing an expense:
+
+1. Read the selected Fleet Number.
+2. Search the Diesel table for the most recent refueling of that fleet.
+3. Retrieve the R$/L value from that latest refueling.
+4. Use this value in all diesel-related calculations on the Expenses page.
+
+The historical average should never be used.
+
+⸻
+
+Example
+
+Fleet 4104
+
+Diesel history:
+
+Date	R$/L
+01/07/2026	5.89
+05/07/2026	5.95
+10/07/2026	6.02
+
+When creating a new expense for Fleet 4104, the system must automatically use:
+
+R$ 6.02/L
+
+⸻
+
+Automatic Updates
+
+Whenever a new refueling is recorded for a fleet:
+
+* The new R$/L value should become the default price for future expenses of that fleet.
+* The update should happen automatically without requiring any manual action.
+
+Example:
+
+A new refueling is added:
+
+Date	R$/L
+15/07/2026	6.15
+
+From that moment on, every new expense created for Fleet 4104 should automatically use:
+
+R$ 6.15/L
+
+⸻
+
+Historical Data
+
+Do not recalculate existing expenses.
+
+Expenses that were already created must keep the diesel price that was valid at the time they were recorded.
+
+Only newly created expenses should use the latest available R$/L.
+
+⸻
+
+Fleet Independence
+
+Each fleet must maintain its own latest diesel price.
+
+Example:
+
+Fleet 4104 → Latest price: R$ 6.15/L
+
+Fleet 4108 → Latest price: R$ 5.98/L
+
+When creating an expense:
+
+* Selecting Fleet 4104 should automatically use R$ 6.15/L.
+* Selecting Fleet 4108 should automatically use R$ 5.98/L.
+
+The system must never use the latest price from another fleet.
+
+⸻
+
+Validation
+
+If the selected fleet has no refueling history:
+
+* Leave the Diesel Price field empty or set it to 0 (according to the application’s current behavior).
+* Display a clear message informing the user that no previous refueling records were found for that fleet.
+* Do not use prices from other fleets.
+
+⸻
+
+Performance
+
+* Retrieve only the latest refueling record for the selected fleet.
+* Avoid calculating averages or scanning unnecessary records.
+* Use an optimized query (e.g., ORDER BY RefuelingDate DESC LIMIT 1) to obtain the latest R$/L.
+
+⸻
+
+Important
+
+* Do not redesign the application.
+* Do not modify unrelated functionality.
+* Remove the use of the historical average completely.
+* Always use the R$/L from the latest refueling of the selected fleet for new expense calculations, updating automatically whenever a new refueling is recorded, while preserving all historical expense records.

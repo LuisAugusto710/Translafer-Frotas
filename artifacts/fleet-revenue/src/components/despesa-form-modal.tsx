@@ -10,9 +10,8 @@ import {
   useListFretes, getListFretesQueryKey,
   useListAbastecimentos, getListAbastecimentosQueryKey,
   useListFleetConfigs, useUpsertFleetConfig,
-  useGetDieselAvgPrice,
 } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
 
@@ -81,9 +80,19 @@ export function DespesaFormModal({
   const isEditing = !!despesa?.id;
   const canAutoFetch = open && !isEditing && !!formData.data && !!formData.frota;
 
-  // Always fetch fleet configs and avg diesel price (light queries, cached)
+  // Always fetch fleet configs (light query, cached)
   const { data: fleetConfigs } = useListFleetConfigs();
-  const { data: dieselAvgData } = useGetDieselAvgPrice();
+
+  // Fetch the most recent diesel price for the selected fleet
+  const { data: ultimoAbastFrota } = useQuery<{ precoLitro: number | null; kmFinal: number | null }>({
+    queryKey: ["/api/abastecimentos/ultimo", formData.frota],
+    queryFn: async ({ signal }) => {
+      if (!formData.frota) return { precoLitro: null, kmFinal: null };
+      const res = await fetch(`/api/abastecimentos/ultimo?placa=${encodeURIComponent(formData.frota)}`, { signal, credentials: "include" });
+      return res.json();
+    },
+    enabled: open && !!formData.frota,
+  });
 
   const { data: fretesDodia } = useListFretes(
     { frota: formData.frota, dateFrom: formData.data, dateTo: formData.data, limit: 1000 },
@@ -149,12 +158,13 @@ export function DespesaFormModal({
 
     const lt = km / kml;
     const updates: Record<string, string> = { dieselLt: lt.toFixed(3) };
-    const avgPreco = dieselAvgData?.avgPrecoPorLitro;
-    if (avgPreco != null && avgPreco > 0) {
-      updates.dieselRs = (lt * avgPreco).toFixed(2);
+    // Use the latest refueling price for this specific fleet (never the global average)
+    const latestPreco = ultimoAbastFrota?.precoLitro;
+    if (latestPreco != null && latestPreco > 0) {
+      updates.dieselRs = (lt * latestPreco).toFixed(2);
     }
     setFormData((prev) => ({ ...prev, ...updates }));
-  }, [formData.km, formData.data, kmPorLitro, dieselAvgData, abastecimentosDaFrota, canAutoFetch]);
+  }, [formData.km, formData.data, kmPorLitro, ultimoAbastFrota, abastecimentosDaFrota, canAutoFetch]);
 
   useEffect(() => {
     if (!open) return;
@@ -397,6 +407,18 @@ export function DespesaFormModal({
                     : "Ex: 2.5"
                 }
               />
+              {/* Diesel price hint: shows latest refueling price for the selected fleet */}
+              {formData.frota && ultimoAbastFrota != null && (
+                ultimoAbastFrota.precoLitro != null ? (
+                  <p className="text-xs text-muted-foreground">
+                    Preço diesel (último abast.): <span className="font-medium text-foreground">R$ {ultimoAbastFrota.precoLitro.toFixed(2)}/L</span> — frota {formData.frota}
+                  </p>
+                ) : (
+                  <p className="text-xs text-amber-600 dark:text-amber-400">
+                    Nenhum abastecimento encontrado para a frota {formData.frota}. Preço diesel não calculado automaticamente.
+                  </p>
+                )
+              )}
             </div>
 
             {/* Remaining numeric fields (km, frete, motorista, ajudante rendered above) */}
