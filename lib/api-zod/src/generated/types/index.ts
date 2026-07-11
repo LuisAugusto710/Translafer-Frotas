@@ -63,6 +63,7 @@ export * from './listFretesParams';
 export * from './mensalComparativo';
 export * from './motoristaAjudanteItem';
 export * from './motoristaAjudanteItemTipo';
+export * from './nextCteResponse';
 export * from './periodoRevenue';
 export * from './placaSummary';
 export * from './recentFrete';

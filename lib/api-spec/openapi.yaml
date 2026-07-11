@@ -85,6 +85,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Frete"
+        "409":
+          description: CTE/NF number already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /fretes/bulk:
     post:
@@ -103,6 +109,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BulkFreteResult"
+
+  /fretes/next-cte:
+    get:
+      operationId: getNextCte
+      tags: [fretes]
+      summary: Get the next available sequential CTE number
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NextCteResponse"
 
   /fretes/{id}:
     get:
@@ -931,6 +950,14 @@ paths:
 
 components:
   schemas:
+    NextCteResponse:
+      type: object
+      required: [nextCte]
+      properties:
+        nextCte:
+          type: integer
+          description: Next available sequential CTE number
+
     HealthStatus:
       type: object
       properties:

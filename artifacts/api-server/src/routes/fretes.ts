@@ -98,9 +98,22 @@ function normalizeFrete(body: Record<string, unknown>): Record<string, unknown> 
 }
 
 router.post("/fretes", async (req, res) => {
+  const normalized = normalizeFrete(req.body);
+
+  if (normalized.cteNf) {
+    const [existing] = await db.select({ id: fretesTable.id })
+      .from(fretesTable)
+      .where(eq(fretesTable.cteNf, String(normalized.cteNf)))
+      .limit(1);
+    if (existing) {
+      res.status(409).json({ error: "CTE/NF já existe. Use outro número." });
+      return;
+    }
+  }
+
   const [row] = await db.insert(fretesTable)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .values(normalizeFrete(req.body) as any)
+    .values(normalized as any)
     .returning();
   res.status(201).json(fmt(row));
 });
@@ -113,6 +126,13 @@ router.post("/fretes/bulk", async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const inserted = await db.insert(fretesTable).values(values as any).returning();
   res.status(201).json({ created: inserted.length, fretes: inserted.map(fmt) });
+});
+
+router.get("/fretes/next-cte", async (req, res) => {
+  const [result] = await db.select({
+    maxCte: sql<number>`COALESCE(MAX(CASE WHEN ${fretesTable.cteNf} ~ '^[0-9]+$' THEN CAST(${fretesTable.cteNf} AS INTEGER) ELSE 0 END), 0)`,
+  }).from(fretesTable);
+  res.json({ nextCte: Number(result.maxCte) + 1 });
 });
 
 router.get("/fretes/:id", async (req, res) => {

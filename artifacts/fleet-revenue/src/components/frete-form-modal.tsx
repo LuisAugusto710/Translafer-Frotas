@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MaskedDateInput } from "@/components/masked-date-input";
-import { useCreateFrete, useUpdateFrete, getListFretesQueryKey } from "@workspace/api-client-react";
+import { useCreateFrete, useUpdateFrete, getListFretesQueryKey, useGetNextCte, getGetNextCteQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
@@ -42,9 +42,20 @@ export function FreteFormModal({
   const createMutation = useCreateFrete();
   const updateMutation = useUpdateFrete();
 
+  const isNew = open && !frete;
+
+  const { data: nextCteData, isLoading: isLoadingNextCte } = useGetNextCte({
+    query: {
+      enabled: isNew,
+      queryKey: getGetNextCteQueryKey(),
+    },
+  });
+
   const [pesoTipo, setPesoTipo] = useState<PesoTipo>("peso");
   const [horas, setHoras] = useState("0");
   const [minutos, setMinutos] = useState("0");
+  const [cteError, setCteError] = useState<string | null>(null);
+  const cteAutoFilled = useRef(false);
 
   const [formData, setFormData] = useState({
     dataCte: "",
@@ -65,6 +76,8 @@ export function FreteFormModal({
 
   useEffect(() => {
     if (open) {
+      setCteError(null);
+      cteAutoFilled.current = false;
       if (frete) {
         const tempoInfo = extractTempoFromObs(frete.obs || "");
         const tipo: PesoTipo = tempoInfo ? "tempo" : "peso";
@@ -111,6 +124,14 @@ export function FreteFormModal({
     }
   }, [frete, open]);
 
+  // Auto-fill CTE number when next-cte data arrives (new fretes only, field not yet edited)
+  useEffect(() => {
+    if (isNew && nextCteData && !cteAutoFilled.current) {
+      cteAutoFilled.current = true;
+      setFormData(prev => prev.cteNf === "" ? { ...prev, cteNf: String(nextCteData.nextCte) } : prev);
+    }
+  }, [isNew, nextCteData]);
+
   // Auto-fill dtaFrete and vencimento when dataCte changes (new fretes only)
   useEffect(() => {
     if (!frete && formData.dataCte) {
@@ -126,11 +147,13 @@ export function FreteFormModal({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+    if (name === "cteNf") setCteError(null);
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setCteError(null);
 
     let pesoValue: number | undefined;
     let obsValue = formData.obs;
@@ -187,8 +210,8 @@ export function FreteFormModal({
             title: "Sucesso",
             description: `Frete ${isEditing ? "atualizado" : "criado"} com sucesso.`,
           });
-          // Invalidate all fretes queries (paginated + search) and dashboard
           queryClient.invalidateQueries({ queryKey: ["/api/fretes"] });
+          queryClient.invalidateQueries({ queryKey: getGetNextCteQueryKey() });
           queryClient.invalidateQueries({
             predicate: (query) =>
               typeof query.queryKey[0] === "string" &&
@@ -196,13 +219,18 @@ export function FreteFormModal({
           });
           onOpenChange(false);
         },
-        onError: (err) => {
-          toast({
-            title: "Erro",
-            description: "Ocorreu um erro ao salvar o frete.",
-            variant: "destructive",
-          });
-          console.error(err);
+        onError: (err: any) => {
+          if (err?.status === 409) {
+            const msg = err?.data?.error ?? "CTE/NF já existe. Use outro número.";
+            setCteError(msg);
+          } else {
+            toast({
+              title: "Erro",
+              description: "Ocorreu um erro ao salvar o frete.",
+              variant: "destructive",
+            });
+            console.error(err);
+          }
         },
       }
     );
@@ -325,13 +353,29 @@ export function FreteFormModal({
 
             {/* CTE/NF */}
             <div className="space-y-2">
-              <Label htmlFor="cteNf">CTE/NF</Label>
+              <Label htmlFor="cteNf" className={cteError ? "text-red-500" : ""}>
+                CTE/NF
+                {isNew && isLoadingNextCte && (
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    gerando…
+                  </span>
+                )}
+              </Label>
               <Input
                 id="cteNf"
                 name="cteNf"
                 value={formData.cteNf}
                 onChange={handleChange}
+                className={cteError ? "border-red-500 focus-visible:ring-red-500" : ""}
+                placeholder={isNew && isLoadingNextCte ? "Carregando…" : ""}
               />
+              {cteError ? (
+                <p className="text-xs text-red-500">{cteError}</p>
+              ) : isNew && !isLoadingNextCte && formData.cteNf ? (
+                <p className="text-xs text-muted-foreground">
+                  Gerado automaticamente — pode ser editado manualmente.
+                </p>
+              ) : null}
             </div>
 
             {/* Peso / Tempo — full row */}

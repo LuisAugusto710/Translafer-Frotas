@@ -73,6 +73,7 @@ import type {
   ListFretesParams,
   MensalComparativo,
   MotoristaAjudanteItem,
+  NextCteResponse,
   PeriodoRevenue,
   PlacaSummary,
   RecentFrete,
@@ -292,7 +293,7 @@ export const createFrete = async (freteInput: FreteInput, options?: RequestInit)
 
 
 
-export const getCreateFreteMutationOptions = <TError = ErrorType<unknown>,
+export const getCreateFreteMutationOptions = <TError = ErrorType<ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFrete>>, TError,{data: BodyType<FreteInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createFrete>>, TError,{data: BodyType<FreteInput>}, TContext> => {
 
@@ -321,9 +322,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateFreteMutationResult = NonNullable<Awaited<ReturnType<typeof createFrete>>>
     export type CreateFreteMutationBody = BodyType<FreteInput>
-    export type CreateFreteMutationError = ErrorType<unknown>
+    export type CreateFreteMutationError = ErrorType<ErrorResponse>
 
-    export const useCreateFrete = <TError = ErrorType<unknown>,
+    export const useCreateFrete = <TError = ErrorType<ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFrete>>, TError,{data: BodyType<FreteInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof createFrete>>,
@@ -397,6 +398,83 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getBulkCreateFretesMutationOptions(options));
     }
+
+export const getGetNextCteUrl = () => {
+
+
+
+
+  return `/api/fretes/next-cte`
+}
+
+/**
+ * @summary Get the next available sequential CTE number
+ */
+export const getNextCte = async ( options?: RequestInit): Promise<NextCteResponse> => {
+
+  return customFetch<NextCteResponse>(getGetNextCteUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetNextCteQueryKey = () => {
+    return [
+    `/api/fretes/next-cte`
+    ] as const;
+    }
+
+
+export const getGetNextCteQueryOptions = <TData = Awaited<ReturnType<typeof getNextCte>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getNextCte>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetNextCteQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getNextCte>>> = ({ signal }) => getNextCte({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getNextCte>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetNextCteQueryResult = NonNullable<Awaited<ReturnType<typeof getNextCte>>>
+export type GetNextCteQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get the next available sequential CTE number
+ */
+
+export function useGetNextCte<TData = Awaited<ReturnType<typeof getNextCte>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getNextCte>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetNextCteQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getGetFreteUrl = (id: number,) => {
 

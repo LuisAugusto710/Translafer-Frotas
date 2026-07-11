@@ -1,0 +1,78 @@
+Prompt:
+
+Please improve the Add Freight page by implementing an automatic CTE Number generation system without changing the application’s design, layout, or existing workflow.
+
+Automatic CTE Number Generation
+
+When the user opens the Add Freight form, the CTE Number field should be automatically populated.
+
+The system must:
+
+1. Retrieve the highest CTE Number currently stored in the database.
+2. Increment that value by 1.
+3. Automatically fill the CTE Number field with the new value.
+
+Example
+
+Existing CTE numbers:
+
+* 1050
+* 1051
+* 1052
+* 1053
+
+When creating a new freight, the field should automatically display:
+
+1054
+
+The next freight should automatically receive:
+
+1055
+
+And so on.
+
+⸻
+
+Validation
+
+Before saving the new freight:
+
+* Verify that the generated CTE Number does not already exist.
+* If another user has created a freight simultaneously and the number is already in use, automatically generate the next available number.
+* Prevent duplicate CTE Numbers under all circumstances.
+
+⸻
+
+Manual Override
+
+The user should still be able to manually edit the CTE Number if necessary.
+
+If the user changes the number manually:
+
+* Validate that it does not already exist.
+* Display a clear validation message if a duplicate CTE Number is entered.
+* Do not allow duplicate CTE Numbers to be saved.
+
+⸻
+
+Database Logic
+
+* Always determine the next number using the current highest CTE Number stored in the database.
+* Ignore deleted records if they should not be reused.
+* Ensure the numbering remains sequential for newly created freights.
+* The generation logic must be atomic to avoid duplicate numbers when multiple users create freights at the same time.
+
+⸻
+
+Performance
+
+* Retrieve only the highest existing CTE Number instead of scanning the entire table.
+* Ensure the automatic generation remains fast even with a large number of freight records.
+
+⸻
+
+Important
+
+* Do not redesign the application.
+* Do not modify unrelated functionality.
+* Only implement automatic sequential CTE Number generation while preserving the option for manual editing and ensuring duplicate CTE Numbers can never be created.

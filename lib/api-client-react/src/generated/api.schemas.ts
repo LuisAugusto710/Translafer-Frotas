@@ -5,6 +5,11 @@
  * Fleet Revenue Management API
  * OpenAPI spec version: 0.2.0
  */
+export interface NextCteResponse {
+  /** Next available sequential CTE number */
+  nextCte: number;
+}
+
 export interface HealthStatus {
   status: string;
 }
