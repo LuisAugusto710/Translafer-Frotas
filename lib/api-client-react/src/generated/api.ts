@@ -60,6 +60,7 @@ import type {
   GetEmployeeCalendarParams,
   GetFleetPerformanceParams,
   GetMensalComparativoParams,
+  GetNextCteParams,
   GetRecentFretesParams,
   GetRevenueByFrotaParams,
   GetRevenueByPeriodoParams,
@@ -399,20 +400,27 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getBulkCreateFretesMutationOptions(options));
     }
 
-export const getGetNextCteUrl = () => {
+export const getGetNextCteUrl = (params?: GetNextCteParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/fretes/next-cte`
+  return stringifiedParams.length > 0 ? `/api/fretes/next-cte?${stringifiedParams}` : `/api/fretes/next-cte`
 }
 
 /**
- * @summary Get the next available sequential CTE number
+ * @summary Get the next available sequential CTE number for a carrier
  */
-export const getNextCte = async ( options?: RequestInit): Promise<NextCteResponse> => {
+export const getNextCte = async (params?: GetNextCteParams, options?: RequestInit): Promise<NextCteResponse> => {
 
-  return customFetch<NextCteResponse>(getGetNextCteUrl(),
+  return customFetch<NextCteResponse>(getGetNextCteUrl(params),
   {
     ...options,
     method: 'GET'
@@ -425,23 +433,23 @@ export const getNextCte = async ( options?: RequestInit): Promise<NextCteRespons
 
 
 
-export const getGetNextCteQueryKey = () => {
+export const getGetNextCteQueryKey = (params?: GetNextCteParams,) => {
     return [
-    `/api/fretes/next-cte`
+    `/api/fretes/next-cte`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getGetNextCteQueryOptions = <TData = Awaited<ReturnType<typeof getNextCte>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getNextCte>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetNextCteQueryOptions = <TData = Awaited<ReturnType<typeof getNextCte>>, TError = ErrorType<unknown>>(params?: GetNextCteParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getNextCte>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetNextCteQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetNextCteQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getNextCte>>> = ({ signal }) => getNextCte({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getNextCte>>> = ({ signal }) => getNextCte(params, { signal, ...requestOptions });
 
 
 
@@ -455,15 +463,15 @@ export type GetNextCteQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Get the next available sequential CTE number
+ * @summary Get the next available sequential CTE number for a carrier
  */
 
 export function useGetNextCte<TData = Awaited<ReturnType<typeof getNextCte>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getNextCte>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ params?: GetNextCteParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getNextCte>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetNextCteQueryOptions(options)
+  const queryOptions = getGetNextCteQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

@@ -1,0 +1,117 @@
+Prompt:
+
+Please improve the Freights page by implementing an automatic CTE Number generation system per Carrier (Transportadora), without changing the application’s design, layout, or existing workflow.
+
+Automatic CTE Number by Carrier
+
+Each carrier (Transportadora) has its own independent CTE numbering sequence.
+
+When the user selects or types the Carrier Name, the system should automatically:
+
+1. Search the database for the highest CTE Number already registered for that specific carrier.
+2. Increment that CTE Number by 1.
+3. Automatically populate the CTE Number field with the next available value for that carrier.
+
+The numbering must be independent for each carrier.
+
+⸻
+
+Example
+
+Current database:
+
+Carrier: ABC Transportes
+
+* CTE 1500
+* CTE 1501
+* CTE 1502
+
+Next automatically generated CTE:
+
+1503
+
+⸻
+
+Carrier: XPTO Logística
+
+* CTE 890
+* CTE 891
+* CTE 892
+
+Next automatically generated CTE:
+
+893
+
+Notice that each carrier maintains its own sequence independently.
+
+⸻
+
+Automatic Update
+
+Whenever the user changes the selected carrier:
+
+* Immediately search for the latest CTE of that carrier.
+* Update the CTE field automatically with the next sequential number.
+* No page refresh should be required.
+
+⸻
+
+New Carrier
+
+If the selected carrier has no previous freights:
+
+* Start the sequence from a configurable initial value (for example, 1, unless another starting number is already defined for that carrier).
+* Save the sequence normally from that point onward.
+
+⸻
+
+Manual Override
+
+The user should still be allowed to manually edit the CTE Number if necessary.
+
+If the user enters a custom CTE Number:
+
+* Validate that it does not already exist for the same carrier.
+* Display a clear validation message if a duplicate is detected.
+* Prevent duplicate CTE Numbers for the same carrier.
+
+Different carriers may have the same CTE Number, since each carrier has its own independent sequence.
+
+Example:
+
+* ABC Transportes → CTE 1503
+* XPTO Logística → CTE 1503
+
+This is valid because they belong to different carriers.
+
+⸻
+
+Database Logic
+
+The sequence must always be determined by:
+
+* Carrier Name
+* Highest existing CTE Number for that carrier
+
+Never use the global highest CTE Number across all carriers.
+
+The logic should be safe for concurrent users to avoid duplicate CTE Numbers when multiple users create freights for the same carrier simultaneously.
+
+⸻
+
+Performance
+
+* Query only the records belonging to the selected carrier.
+* Retrieve only the highest CTE Number.
+* Use indexed queries for maximum performance.
+* Keep the automatic generation instantaneous.
+
+⸻
+
+Important
+
+* Do not redesign the application.
+* Do not modify unrelated functionality.
+* Maintain independent CTE sequences for each carrier.
+* Automatically generate the next CTE Number as soon as the user selects or enters the carrier name.
+* Ensure duplicate CTE Numbers cannot exist within the same carrier, while allowing the same CTE Number to exist for different carriers.

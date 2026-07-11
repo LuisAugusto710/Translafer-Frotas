@@ -486,6 +486,13 @@ limit?: number;
 offset?: number;
 };
 
+export type GetNextCteParams = {
+/**
+ * Carrier name to scope the CTE sequence (omit for global max)
+ */
+transp?: string;
+};
+
 export type ListAbastecimentosParams = {
 placa?: string;
 search?: string;

@@ -114,7 +114,12 @@ paths:
     get:
       operationId: getNextCte
       tags: [fretes]
-      summary: Get the next available sequential CTE number
+      summary: Get the next available sequential CTE number for a carrier
+      parameters:
+        - name: transp
+          in: query
+          schema: { type: string }
+          description: Carrier name to scope the CTE sequence (omit for global max)
       responses:
         "200":
           description: OK

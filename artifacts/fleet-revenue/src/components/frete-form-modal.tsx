@@ -42,20 +42,13 @@ export function FreteFormModal({
   const createMutation = useCreateFrete();
   const updateMutation = useUpdateFrete();
 
-  const isNew = open && !frete;
-
-  const { data: nextCteData, isLoading: isLoadingNextCte } = useGetNextCte({
-    query: {
-      enabled: isNew,
-      queryKey: getGetNextCteQueryKey(),
-    },
-  });
-
+  // All state must be declared before derived values that depend on them
   const [pesoTipo, setPesoTipo] = useState<PesoTipo>("peso");
   const [horas, setHoras] = useState("0");
   const [minutos, setMinutos] = useState("0");
   const [cteError, setCteError] = useState<string | null>(null);
-  const cteAutoFilled = useRef(false);
+  // Tracks whether the user manually typed a CTE number; resets when carrier changes
+  const cteManuallyEdited = useRef(false);
 
   const [formData, setFormData] = useState({
     dataCte: "",
@@ -74,10 +67,24 @@ export function FreteFormModal({
     obs: "",
   });
 
+  const isNew = open && !frete;
+
+  // Per-carrier CTE sequence: pass transp so each carrier gets its own counter
+  const nextCteParams = isNew ? { transp: formData.transp || undefined } : undefined;
+  const { data: nextCteData, isLoading: isLoadingNextCte } = useGetNextCte(
+    nextCteParams,
+    {
+      query: {
+        enabled: isNew,
+        queryKey: getGetNextCteQueryKey(nextCteParams),
+      },
+    }
+  );
+
   useEffect(() => {
     if (open) {
       setCteError(null);
-      cteAutoFilled.current = false;
+      cteManuallyEdited.current = false;
       if (frete) {
         const tempoInfo = extractTempoFromObs(frete.obs || "");
         const tipo: PesoTipo = tempoInfo ? "tempo" : "peso";
@@ -124,11 +131,12 @@ export function FreteFormModal({
     }
   }, [frete, open]);
 
-  // Auto-fill CTE number when next-cte data arrives (new fretes only, field not yet edited)
+  // Auto-fill CTE when next-cte data changes (per-carrier).
+  // Always fills unless the user has manually typed a custom CTE.
+  // Carrier change resets cteManuallyEdited so the new carrier's sequence is picked up.
   useEffect(() => {
-    if (isNew && nextCteData && !cteAutoFilled.current) {
-      cteAutoFilled.current = true;
-      setFormData(prev => prev.cteNf === "" ? { ...prev, cteNf: String(nextCteData.nextCte) } : prev);
+    if (isNew && nextCteData && !cteManuallyEdited.current) {
+      setFormData(prev => ({ ...prev, cteNf: String(nextCteData.nextCte) }));
     }
   }, [isNew, nextCteData]);
 
@@ -147,7 +155,13 @@ export function FreteFormModal({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    if (name === "cteNf") setCteError(null);
+    if (name === "cteNf") {
+      setCteError(null);
+      cteManuallyEdited.current = true; // User typed → stop auto-overwriting
+    }
+    if (name === "transp") {
+      cteManuallyEdited.current = false; // Carrier changed → re-enable auto-fill
+    }
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -373,7 +387,9 @@ export function FreteFormModal({
                 <p className="text-xs text-red-500">{cteError}</p>
               ) : isNew && !isLoadingNextCte && formData.cteNf ? (
                 <p className="text-xs text-muted-foreground">
-                  Gerado automaticamente — pode ser editado manualmente.
+                  {formData.transp
+                    ? `Sequência de ${formData.transp} — pode ser editado manualmente.`
+                    : "Gerado automaticamente — pode ser editado manualmente."}
                 </p>
               ) : null}
             </div>

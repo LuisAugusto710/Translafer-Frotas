@@ -48,6 +48,7 @@ export * from './getDieselByPlacaParams';
 export * from './getEmployeeCalendarParams';
 export * from './getFleetPerformanceParams';
 export * from './getMensalComparativoParams';
+export * from './getNextCteParams';
 export * from './getRecentFretesParams';
 export * from './getRevenueByFrotaParams';
 export * from './getRevenueByPeriodoParams';

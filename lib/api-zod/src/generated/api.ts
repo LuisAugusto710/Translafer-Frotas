@@ -143,8 +143,12 @@ export const BulkCreateFretesResponse = zod.object({
 
 
 /**
- * @summary Get the next available sequential CTE number
+ * @summary Get the next available sequential CTE number for a carrier
  */
+export const GetNextCteQueryParams = zod.object({
+  "transp": zod.coerce.string().optional().describe('Carrier name to scope the CTE sequence (omit for global max)')
+})
+
 export const GetNextCteResponse = zod.object({
   "nextCte": zod.number().describe('Next available sequential CTE number')
 })

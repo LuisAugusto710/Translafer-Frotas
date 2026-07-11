@@ -101,12 +101,20 @@ router.post("/fretes", async (req, res) => {
   const normalized = normalizeFrete(req.body);
 
   if (normalized.cteNf) {
+    // Uniqueness is scoped per carrier: same CTE number is valid for different carriers
+    const dupeConditions: ReturnType<typeof eq>[] = [
+      eq(fretesTable.cteNf, String(normalized.cteNf)),
+    ];
+    if (normalized.transp) {
+      dupeConditions.push(eq(fretesTable.transp, String(normalized.transp)));
+    }
     const [existing] = await db.select({ id: fretesTable.id })
       .from(fretesTable)
-      .where(eq(fretesTable.cteNf, String(normalized.cteNf)))
+      .where(and(...dupeConditions))
       .limit(1);
     if (existing) {
-      res.status(409).json({ error: "CTE/NF já existe. Use outro número." });
+      const scope = normalized.transp ? ` para ${String(normalized.transp)}` : "";
+      res.status(409).json({ error: `CTE/NF já existe${scope}. Use outro número.` });
       return;
     }
   }
@@ -129,9 +137,11 @@ router.post("/fretes/bulk", async (req, res) => {
 });
 
 router.get("/fretes/next-cte", async (req, res) => {
+  const transp = req.query.transp ? String(req.query.transp) : undefined;
+  const where = transp ? eq(fretesTable.transp, transp) : undefined;
   const [result] = await db.select({
     maxCte: sql<number>`COALESCE(MAX(CASE WHEN ${fretesTable.cteNf} ~ '^[0-9]+$' THEN CAST(${fretesTable.cteNf} AS INTEGER) ELSE 0 END), 0)`,
-  }).from(fretesTable);
+  }).from(fretesTable).where(where);
   res.json({ nextCte: Number(result.maxCte) + 1 });
 });
 
