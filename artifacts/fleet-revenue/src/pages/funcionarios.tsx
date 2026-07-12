@@ -178,345 +178,81 @@ function buildPrintHtml(opts: {
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: Arial, sans-serif;
     background: #ffffff;
-    color: #1e293b;
-    padding: 56px 64px 48px 64px;
+    color: #1a1a2e;
+    padding: 24px 28px 20px 28px;
     font-size: 13px;
-    line-height: 1.55;
+    line-height: 1.5;
   }
 
-  /* ── Header ── */
-  .header {
-    margin-bottom: 28px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #e2e8f0;
-  }
-  .header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
-  .report-title {
-    font-size: 22px;
-    font-weight: 700;
-    color: #0f172a;
-    letter-spacing: -0.3px;
-    margin-bottom: 4px;
-  }
-  .report-subtitle {
-    font-size: 12px;
-    color: #64748b;
-    font-weight: 400;
-  }
-  .header-meta {
-    text-align: right;
-  }
-  .header-meta .gen-date {
-    font-size: 11px;
-    color: #94a3b8;
-    margin-bottom: 2px;
-  }
-  .header-meta .period-badge {
-    display: inline-block;
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    border-radius: 4px;
-    padding: 4px 10px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #334155;
-  }
-
-  /* ── Employee info card ── */
-  .info-card {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-left: 4px solid #3b82f6;
-    border-radius: 6px;
-    padding: 16px 20px;
-    margin-bottom: 28px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px 32px;
-  }
-  .info-item {
-    display: flex;
-    flex-direction: column;
-  }
-  .info-label {
-    font-size: 10px;
-    font-weight: 700;
-    color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    margin-bottom: 2px;
-  }
-  .info-value {
-    font-size: 13px;
-    font-weight: 600;
-    color: #0f172a;
-  }
-  .info-value.accent-green { color: #16a34a; }
-  .info-value.accent-red   { color: #dc2626; }
-
-  /* ── Section heading ── */
-  .section-title {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: #64748b;
-    margin-bottom: 12px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid #f1f5f9;
-  }
-
-  /* ── Calendar ── */
-  .month-block { margin-bottom: 24px; }
-  .month-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: #334155;
-    margin-bottom: 8px;
-  }
-  .calendar {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 3px;
-  }
-  .day-header {
-    text-align: center;
-    font-size: 10px;
-    font-weight: 700;
-    color: #64748b;
-    padding: 6px 0;
-    background: #f8fafc;
-    border-radius: 3px;
-    letter-spacing: 0.3px;
-  }
-  .day-header-we {
-    background: #f1f5f9;
-    color: #94a3b8;
-  }
-  .cell {
-    border-radius: 4px;
-    padding: 7px 4px 5px;
-    min-height: 58px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .cell.empty      { background: transparent; }
-  .cell.weekend-bg { background: #f8fafc; }
-  .cell.out        { background: #f8fafc; }
-  .cell.weekend-out{ background: #f1f5f9; }
-  .cell.worked     { background: #dcfce7; border: 1px solid #86efac; }
-  .cell.not-worked { background: #f1f5f9; border: 1px solid #e2e8f0; }
-  .cell.weekend-border.worked     { border-color: #4ade80; }
-  .cell.weekend-border.not-worked { border-color: #cbd5e1; background: #e9eef5; }
-  .day-num {
-    font-weight: 700;
-    font-size: 12px;
-    margin-bottom: 3px;
-  }
-  .cell.worked .day-num     { color: #15803d; }
-  .cell.not-worked .day-num { color: #64748b; }
-  .cell.out .day-num        { color: #cbd5e1; font-weight: 500; }
-  .label {
-    font-size: 9px;
-    font-weight: 600;
-    text-align: center;
-    line-height: 1.2;
-  }
-  .cell.worked .label     { color: #16a34a; }
-  .cell.not-worked .label { color: #94a3b8; }
-  .valor {
-    font-size: 8px;
-    color: #15803d;
-    margin-top: 2px;
-    font-weight: 600;
-  }
-
-  /* ── Legend ── */
-  .legend {
-    display: flex;
-    gap: 20px;
-    margin: 8px 0 28px;
-    font-size: 11px;
-    color: #64748b;
-  }
-  .legend-item { display: flex; align-items: center; gap: 6px; }
-  .legend-dot { width: 11px; height: 11px; border-radius: 3px; }
-
-  /* ── Summary card ── */
-  .summary {
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    overflow: hidden;
-    margin-bottom: 32px;
-  }
-  .summary-header {
-    background: #f8fafc;
-    padding: 11px 18px;
-    border-bottom: 1px solid #e2e8f0;
-  }
-  .summary-header h2 {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: #64748b;
-  }
-  .summary-body { padding: 0 18px; }
-  .summary-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #f1f5f9;
-    font-size: 13px;
-  }
+  h1 { font-size: 20px; font-weight: bold; margin-bottom: 4px; }
+  .subtitle { font-size: 12px; color: #555; margin-bottom: 14px; }
+  .meta { display: flex; gap: 28px; margin-bottom: 16px; background: #f8f9fa; padding: 10px 14px; border-radius: 8px; flex-wrap: wrap; }
+  .meta-item label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 2px; }
+  .meta-item span { font-size: 13px; font-weight: 600; }
+  .month-block { margin-bottom: 14px; }
+  .month-title { font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+  .calendar { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+  .day-header { text-align: center; font-size: 10px; font-weight: 700; color: #666; padding: 5px 0; }
+  .day-header-we { color: #999; background: #f3f4f6; border-radius: 3px; }
+  .cell { border-radius: 5px; padding: 5px 3px 4px; min-height: 50px; display: flex; flex-direction: column; align-items: center; font-size: 10px; }
+  .cell.empty { background: transparent; }
+  .cell.weekend-bg { background: #f9fafb; }
+  .cell.out { background: #f3f4f6; color: #9ca3af; }
+  .cell.weekend-out { background: #eff0f2; }
+  .cell.worked { background: #d1fae5; border: 1px solid #6ee7b7; }
+  .cell.not-worked { background: #f3f4f6; border: 1px solid #e5e7eb; }
+  .cell.weekend-border.worked { border-color: #34d399; }
+  .cell.weekend-border.not-worked { background: #eaecef; border-color: #d1d5db; }
+  .day-num { font-weight: 700; font-size: 12px; margin-bottom: 2px; }
+  .cell.worked .day-num { color: #065f46; }
+  .cell.not-worked .day-num { color: #6b7280; }
+  .cell.out .day-num { color: #9ca3af; font-weight: 600; }
+  .label { font-size: 9px; font-weight: 600; text-align: center; line-height: 1.1; }
+  .cell.worked .label { color: #047857; }
+  .cell.not-worked .label { color: #9ca3af; }
+  .valor { font-size: 8px; color: #374151; margin-top: 1px; }
+  .legend { display: flex; gap: 14px; margin: 6px 0 14px; font-size: 11px; color: #555; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+  .summary { background: #f8f9fa; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; }
+  .summary h2 { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+  .summary-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #e5e7eb; font-size: 12px; }
   .summary-row:last-child { border-bottom: none; }
-  .summary-row .lbl { color: #475569; }
-  .summary-row .val { font-weight: 700; color: #0f172a; }
-  .summary-row .val.green { color: #16a34a; }
-  .summary-row .val.red   { color: #dc2626; }
-
-  /* Final amount row */
-  .summary-total {
-    background: #f0fdf4;
-    margin: 0 -18px;
-    padding: 14px 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 2px solid #86efac;
-  }
-  .summary-total .lbl {
-    font-size: 13px;
-    font-weight: 700;
-    color: #15803d;
-  }
-  .summary-total .val {
-    font-size: 20px;
-    font-weight: 800;
-    color: #15803d;
-    letter-spacing: -0.5px;
-  }
-
-  /* ── Footer ── */
-  .footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 14px;
-    border-top: 1px solid #e2e8f0;
-    font-size: 10px;
-    color: #94a3b8;
-  }
-
-  @media print {
-    body { padding: 40px 48px 36px; }
-    .month-block { page-break-inside: avoid; }
-    .summary { page-break-inside: avoid; }
-  }
+  .summary-row .val { font-weight: 700; }
+  .summary-row.total { margin-top: 2px; }
+  .summary-row.total span:first-child { font-weight: 700; font-size: 13px; }
+  .summary-row.total .val { color: #047857; font-size: 16px; }
+  .footer { font-size: 10px; color: #999; margin-top: 12px; text-align: right; }
+  @media print { body { padding: 20px 24px; } .month-block { page-break-inside: avoid; } }
 </style>
 </head>
 <body>
-
-<!-- Header -->
-<div class="header">
-  <div class="header-top">
-    <div>
-      <div class="report-title">Relatório de Trabalho</div>
-      <div class="report-subtitle">Calendário de dias trabalhados e resumo financeiro do período</div>
-    </div>
-    <div class="header-meta">
-      <div class="gen-date">Gerado em ${now}</div>
-      <div class="period-badge">${periodo}</div>
-    </div>
-  </div>
+<h1>Calendário de Trabalho</h1>
+<p class="subtitle">Visualize os dias trabalhados e o valor a ser pago no período selecionado.</p>
+<div class="meta">
+  <div class="meta-item"><label>Funcionário</label><span>${nome}</span></div>
+  <div class="meta-item"><label>Função</label><span>${tipo}</span></div>
+  <div class="meta-item"><label>Período</label><span>${periodo}</span></div>
+  <div class="meta-item"><label>Dias trabalhados</label><span style="color:#047857">${diasTrabalhados}</span></div>
+  <div class="meta-item"><label>Dias não trabalhados</label><span style="color:#dc2626">${diasNaoTrabalhados}</span></div>
 </div>
-
-<!-- Employee info -->
-<div class="info-card">
-  <div class="info-item">
-    <span class="info-label">Funcionário</span>
-    <span class="info-value">${nome}</span>
-  </div>
-  <div class="info-item">
-    <span class="info-label">Dias Trabalhados</span>
-    <span class="info-value accent-green">${diasTrabalhados} dia${diasTrabalhados !== 1 ? "s" : ""}</span>
-  </div>
-  <div class="info-item">
-    <span class="info-label">Função</span>
-    <span class="info-value">${tipo}</span>
-  </div>
-  <div class="info-item">
-    <span class="info-label">Dias Não Trabalhados</span>
-    <span class="info-value accent-red">${diasNaoTrabalhados} dia${diasNaoTrabalhados !== 1 ? "s" : ""}</span>
-  </div>
-</div>
-
-<!-- Calendar section -->
-<div class="section-title">Calendário de Trabalho</div>
 ${calendarHtml}
-
-<!-- Legend -->
 <div class="legend">
-  <div class="legend-item">
-    <div class="legend-dot" style="background:#86efac;border:1px solid #4ade80"></div>
-    Trabalhou
-  </div>
-  <div class="legend-item">
-    <div class="legend-dot" style="background:#e2e8f0;border:1px solid #cbd5e1"></div>
-    Não trabalhou
-  </div>
-  <div class="legend-item">
-    <div class="legend-dot" style="background:#f1f5f9;border:1px solid #e2e8f0"></div>
-    Fora do período / Final de semana
-  </div>
+  <div class="legend-item"><div class="legend-dot" style="background:#6ee7b7"></div>Trabalhou</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e5e7eb"></div>Não trabalhou</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f3f4f6;border:1px solid #e5e7eb"></div>Fora do período / Final de semana</div>
 </div>
-
-<!-- Payment summary -->
-<div class="section-title">Resumo Financeiro</div>
 <div class="summary">
-  <div class="summary-header"><h2>Detalhamento de Valores</h2></div>
-  <div class="summary-body">
-    <div class="summary-row">
-      <span class="lbl">Dias trabalhados</span>
-      <span class="val green">${diasTrabalhados}</span>
-    </div>
-    <div class="summary-row">
-      <span class="lbl">Valor por dia trabalhado</span>
-      <span class="val">R$ ${mediaPorDia.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-    </div>
-    <div class="summary-row">
-      <span class="lbl">Total ganho (dias trabalhados)</span>
-      <span class="val">R$ ${totalGanho.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-    </div>
-    <div class="summary-row">
-      <span class="lbl">Bônus</span>
-      <span class="val green">+ R$ ${bonusTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-    </div>
-    <div class="summary-row">
-      <span class="lbl">Adiantamentos / Descontos</span>
-      <span class="val red">− R$ ${deductionTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-    </div>
-    <div class="summary-total">
-      <span class="lbl">Valor Final a Receber</span>
-      <span class="val">R$ ${finalAmount.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-    </div>
-  </div>
+  <h2>Resumo do Período</h2>
+  <div class="summary-row"><span>Valor por dia trabalhado</span><span class="val">R$ ${mediaPorDia.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
+  <div class="summary-row"><span>Total ganho (dias trabalhados)</span><span class="val">R$ ${totalGanho.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
+  <div class="summary-row"><span>Bônus</span><span class="val" style="color:#047857">+ R$ ${bonusTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
+  <div class="summary-row"><span>Adiantamentos / Descontos</span><span class="val" style="color:#dc2626">− R$ ${deductionTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
+  <div class="summary-row total"><span>Valor Final a Receber</span><span class="val">R$ ${finalAmount.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
 </div>
-
-<!-- Footer -->
-<div class="footer">
-  <span>Relatório de Trabalho — ${nome}</span>
-  <span>Gerado em ${now}</span>
-</div>
-
+<p class="footer">Gerado em ${now}</p>
 </body>
 </html>`;
 }
