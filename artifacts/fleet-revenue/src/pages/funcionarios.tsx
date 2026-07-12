@@ -181,22 +181,24 @@ function buildPrintHtml(opts: {
     font-family: Arial, sans-serif;
     background: #ffffff;
     color: #1a1a2e;
-    padding: 24px 28px 20px 28px;
+    /* 20px top/bottom, 52px left/right → ~13 mm side margins on printed A4 */
+    padding: 20px 52px 16px 52px;
     font-size: 13px;
-    line-height: 1.5;
+    line-height: 1.45;
   }
 
-  h1 { font-size: 20px; font-weight: bold; margin-bottom: 4px; }
-  .subtitle { font-size: 12px; color: #555; margin-bottom: 14px; }
-  .meta { display: flex; gap: 28px; margin-bottom: 16px; background: #f8f9fa; padding: 10px 14px; border-radius: 8px; flex-wrap: wrap; }
-  .meta-item label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 2px; }
-  .meta-item span { font-size: 13px; font-weight: 600; }
-  .month-block { margin-bottom: 14px; }
-  .month-title { font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+  h1 { font-size: 19px; font-weight: bold; margin-bottom: 3px; }
+  .subtitle { font-size: 11px; color: #555; margin-bottom: 12px; }
+  .meta { display: flex; gap: 24px; margin-bottom: 12px; background: #f8f9fa; padding: 8px 12px; border-radius: 8px; flex-wrap: wrap; }
+  .meta-item label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 1px; }
+  .meta-item span { font-size: 12px; font-weight: 600; }
+  .month-block { margin-bottom: 10px; }
+  .month-title { font-size: 11px; font-weight: 700; margin-bottom: 5px; }
   .calendar { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
-  .day-header { text-align: center; font-size: 10px; font-weight: 700; color: #666; padding: 5px 0; }
+  .day-header { text-align: center; font-size: 9px; font-weight: 700; color: #666; padding: 4px 0; }
   .day-header-we { color: #999; background: #f3f4f6; border-radius: 3px; }
-  .cell { border-radius: 5px; padding: 5px 3px 4px; min-height: 50px; display: flex; flex-direction: column; align-items: center; font-size: 10px; }
+  /* min-height 44px keeps a 6-row month within ~1120px rendered height (1 A4 page) */
+  .cell { border-radius: 4px; padding: 4px 3px 3px; min-height: 44px; display: flex; flex-direction: column; align-items: center; font-size: 9px; }
   .cell.empty { background: transparent; }
   .cell.weekend-bg { background: #f9fafb; }
   .cell.out { background: #f3f4f6; color: #9ca3af; }
@@ -205,27 +207,26 @@ function buildPrintHtml(opts: {
   .cell.not-worked { background: #f3f4f6; border: 1px solid #e5e7eb; }
   .cell.weekend-border.worked { border-color: #34d399; }
   .cell.weekend-border.not-worked { background: #eaecef; border-color: #d1d5db; }
-  .day-num { font-weight: 700; font-size: 12px; margin-bottom: 2px; }
+  .day-num { font-weight: 700; font-size: 11px; margin-bottom: 1px; }
   .cell.worked .day-num { color: #065f46; }
   .cell.not-worked .day-num { color: #6b7280; }
   .cell.out .day-num { color: #9ca3af; font-weight: 600; }
-  .label { font-size: 9px; font-weight: 600; text-align: center; line-height: 1.1; }
+  .label { font-size: 8px; font-weight: 600; text-align: center; line-height: 1.1; }
   .cell.worked .label { color: #047857; }
   .cell.not-worked .label { color: #9ca3af; }
-  .valor { font-size: 8px; color: #374151; margin-top: 1px; }
-  .legend { display: flex; gap: 14px; margin: 6px 0 14px; font-size: 11px; color: #555; flex-wrap: wrap; }
-  .legend-item { display: flex; align-items: center; gap: 5px; }
-  .legend-dot { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
-  .summary { background: #f8f9fa; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; }
-  .summary h2 { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
-  .summary-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #e5e7eb; font-size: 12px; }
+  .valor { font-size: 7px; color: #374151; margin-top: 1px; }
+  .legend { display: flex; gap: 12px; margin: 5px 0 10px; font-size: 10px; color: #555; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .summary { background: #f8f9fa; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
+  .summary h2 { font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+  .summary-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #e5e7eb; font-size: 11px; }
   .summary-row:last-child { border-bottom: none; }
   .summary-row .val { font-weight: 700; }
-  .summary-row.total { margin-top: 2px; }
-  .summary-row.total span:first-child { font-weight: 700; font-size: 13px; }
-  .summary-row.total .val { color: #047857; font-size: 16px; }
-  .footer { font-size: 10px; color: #999; margin-top: 12px; text-align: right; }
-  @media print { body { padding: 20px 24px; } .month-block { page-break-inside: avoid; } }
+  .summary-row.total span:first-child { font-weight: 700; font-size: 12px; }
+  .summary-row.total .val { color: #047857; font-size: 15px; }
+  .footer { font-size: 9px; color: #999; margin-top: 10px; text-align: right; }
+  @media print { body { padding: 16px 48px; } .month-block { page-break-inside: avoid; } }
 </style>
 </head>
 <body>
