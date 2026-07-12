@@ -1,0 +1,196 @@
+Prompt:
+
+Please improve the PDF generation and sharing on the Employees page. When the user clicks Share and chooses PDF, the generated document must be a high-quality PDF that faithfully reproduces the Employees page while being optimized for printing and sharing via WhatsApp.
+
+Objective
+
+The generated PDF should look exactly like the Employees page, preserving:
+
+* Layout
+* Colors
+* Typography
+* Cards
+* Calendar
+* Icons (where appropriate)
+* Borders
+* Spacing
+* Visual hierarchy
+
+The PDF should appear as if the user exported the page directly, rather than a simplified report.
+
+⸻
+
+1. Single-Page PDF
+
+This is a strict requirement.
+
+The entire content must fit on one A4 portrait page whenever possible.
+
+Requirements:
+
+* Automatically scale the content if necessary.
+* Preserve readability while fitting everything on one page.
+* Prevent any content from overflowing onto a second page.
+* Avoid clipping or cropping any information.
+
+⸻
+
+2. Professional Margins
+
+The current PDF has little or no margin.
+
+Add proper document margins:
+
+* Top: approximately 20 mm
+* Bottom: approximately 20 mm
+* Left: approximately 20 mm
+* Right: approximately 20 mm
+
+No content should touch the page edges.
+
+The document should look professional when opened in WhatsApp, printed, or viewed on any PDF reader.
+
+⸻
+
+3. Preserve the Current Design
+
+The PDF should be a faithful representation of the Employees page.
+
+Keep exactly the same:
+
+* Color palette
+* Background colors
+* Cards
+* Calendar colors
+* Borders
+* Rounded corners
+* Icons
+* Typography
+* Spacing
+* Overall layout
+
+Do not convert it into a plain text report.
+
+⸻
+
+4. High-Quality Rendering
+
+Generate the PDF using high-resolution rendering.
+
+Requirements:
+
+* Sharp text.
+* Crisp icons.
+* Smooth borders.
+* High-resolution graphics.
+* No blurry images.
+* No pixelated text.
+
+The exported PDF should look identical to the web page.
+
+⸻
+
+5. Optimize for WhatsApp
+
+Since the PDF will mainly be shared through WhatsApp:
+
+* Keep the file size reasonably small without sacrificing quality.
+* Ensure the PDF opens quickly.
+* Preserve margins when viewed inside WhatsApp.
+* Prevent scaling issues caused by WhatsApp’s PDF preview.
+
+⸻
+
+6. Calendar
+
+The calendar should appear exactly as displayed on the Employees page.
+
+Maintain:
+
+* Worked day colors.
+* Non-worked day colors.
+* Today’s highlight (if applicable).
+* Borders.
+* Alignment.
+* Cell sizes.
+
+Do not simplify or redraw the calendar differently.
+
+⸻
+
+7. Payment Summary
+
+Maintain the current payment summary exactly as shown on screen.
+
+Include:
+
+* Total Earned
+* Bonuses
+* Advances
+* Discounts
+* Final Amount to Receive
+
+Preserve the same colors, emphasis, and formatting used in the interface.
+
+⸻
+
+8. Responsive Scaling
+
+If the content becomes too large:
+
+* Reduce spacing proportionally.
+* Slightly reduce font sizes.
+* Scale cards proportionally.
+* Reduce calendar cell size if necessary.
+
+Never remove information simply to fit the page.
+
+⸻
+
+9. Share Function
+
+When the user clicks Share:
+
+1. Generate the optimized PDF.
+2. Use that PDF as the shared file.
+3. Share the PDF directly through:
+    * WhatsApp
+    * Email
+    * AirDrop
+    * Android Share Sheet
+    * iOS Share Sheet
+    * Other supported applications
+
+The shared file must always be the optimized single-page PDF.
+
+⸻
+
+10. Printing Compatibility
+
+The generated PDF should also be suitable for printing.
+
+Requirements:
+
+* Standard A4 size.
+* Proper margins.
+* Consistent spacing.
+* No cropped elements.
+* No overflow.
+* Professional appearance on paper.
+
+⸻
+
+Performance
+
+* Generate the PDF efficiently.
+* Avoid unnecessary rendering passes.
+* Maintain high visual fidelity while keeping the file size reasonable.
+* Ensure PDF generation remains fast on desktop and mobile devices.
+
+⸻
+
+Important
+
+* Do not redesign the Employees page.
+* Do not change any business logic or calculations.
+* The generated PDF should be an almost pixel-perfect representation of the Employees page, preserving its colors, layout, and styling while adding proper document margins and ensuring the entire content fits cleanly onto a single A4 page suitable for sharing via WhatsApp and printing.

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import {
   useListEmployees,
   useGetEmployeeCalendar,
@@ -316,6 +316,9 @@ export function Funcionarios() {
 
   const { toast } = useToast();
 
+  /** Ref for the content zone that gets captured into the PDF */
+  const pdfRef = useRef<HTMLDivElement>(null);
+
   const [showAdvanceForm, setShowAdvanceForm] = useState(false);
   const [editingAdvance, setEditingAdvance] = useState<EmployeeAdvance | null>(null);
   const [advanceForm, setAdvanceForm] = useState({
@@ -448,100 +451,104 @@ export function Funcionarios() {
     }
   }, [buildShareText, toast]);
 
-  const generatePrintHtml = useCallback(() => {
-    if (!selectedEmployee || !calendarData) return null;
-    return buildPrintHtml({
-      nome: selectedEmployee.nome,
-      tipo: selectedEmployee.tipo,
-      periodo: periodLabel(period),
-      dateFrom: period.dateFrom,
-      dateTo: period.dateTo,
-      diasMap,
-      totalGanho: calendarData.totalGanho,
-      diasTrabalhados: calendarData.diasTrabalhados,
-      diasNaoTrabalhados: calendarData.diasNaoTrabalhados,
-      mediaPorDia: calendarData.mediaPorDia,
-      bonusTotal,
-      deductionTotal,
-      finalAmount,
-    });
-  }, [selectedEmployee, calendarData, period, diasMap, bonusTotal, deductionTotal, finalAmount]);
+  /**
+   * Captures the pdfRef element as a PDF blob.
+   * - Hides [data-pdf-exclude] elements during capture.
+   * - Forces light-mode so colours are always correct in the PDF.
+   * - Adds 20 mm margins on all sides; scales content down if it exceeds
+   *   the printable area so everything fits on one A4 page.
+   */
+  const capturePageAsPdf = useCallback(async (): Promise<{ blob: Blob; filename: string } | null> => {
+    if (!selectedEmployee || !calendarData || !pdfRef.current) return null;
 
-  const handleSavePdf = useCallback(() => {
-    const html = generatePrintHtml();
-    if (!html) return;
-    const win = window.open("", "_blank");
-    if (!win) return;
-    win.document.write(html);
-    win.document.close();
-    win.focus();
-    setTimeout(() => { win.print(); }, 400);
-  }, [generatePrintHtml]);
+    const el = pdfRef.current;
 
-  const handleSharePdf = useCallback(async () => {
-    const html = generatePrintHtml();
-    if (!html || !selectedEmployee) return;
+    // Hide action buttons and anything else marked as PDF-exclude
+    const excluded = Array.from(el.querySelectorAll<HTMLElement>("[data-pdf-exclude]"));
+    excluded.forEach(e => { e.dataset.pdfOldDisplay = e.style.display; e.style.display = "none"; });
 
-    const parser = new DOMParser();
-    const parsed = parser.parseFromString(html, "text/html");
-    const styleEl = parsed.querySelector("style");
-
-    const container = document.createElement("div");
-    container.style.cssText =
-      "position:fixed;top:-9999px;left:-9999px;width:794px;background:#fff;";
-
-    if (styleEl) {
-      const s = document.createElement("style");
-      s.textContent = styleEl.textContent ?? "";
-      container.appendChild(s);
-    }
-    const content = document.createElement("div");
-    content.innerHTML = parsed.body?.innerHTML ?? "";
-    container.appendChild(content);
-    document.body.appendChild(container);
+    // Force light mode so CSS variables resolve to light colours
+    const wasDark = document.documentElement.classList.contains("dark");
+    if (wasDark) document.documentElement.classList.remove("dark");
 
     try {
-      toast({ title: "Gerando PDF…", description: "Por favor aguarde." });
-
       const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
         import("html2canvas"),
         import("jspdf"),
       ]);
 
-      const canvas = await html2canvas(container, {
+      const canvas = await html2canvas(el, {
         scale: 2,
         useCORS: true,
         backgroundColor: "#ffffff",
+        logging: false,
       });
 
-      const imgData = canvas.toDataURL("image/png");
+      const MARGIN = 20; // mm — ~20 mm on all sides
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = (canvas.height * pdfW) / canvas.width;
-      const pageH = pdf.internal.pageSize.getHeight();
+      const pageW = pdf.internal.pageSize.getWidth();  // 210 mm
+      const pageH = pdf.internal.pageSize.getHeight(); // 297 mm
+      const printW = pageW - 2 * MARGIN; // 170 mm
+      const printH = pageH - 2 * MARGIN; // 257 mm
 
-      let yPos = 0;
-      while (yPos < pdfH) {
-        if (yPos > 0) pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, -yPos, pdfW, pdfH);
-        yPos += pageH;
-      }
+      const aspect = canvas.height / canvas.width;
+      let imgW = printW;
+      let imgH = imgW * aspect;
+      // Scale down if the content is taller than the printable area
+      if (imgH > printH) { imgH = printH; imgW = imgH / aspect; }
+
+      // Centre horizontally if we had to shrink the width
+      const x = MARGIN + (printW - imgW) / 2;
+      pdf.addImage(canvas.toDataURL("image/png"), "PNG", x, MARGIN, imgW, imgH);
 
       const blob = pdf.output("blob");
       const label = periodLabel(period).replace(/[\s/]+/g, "-");
       const filename = `relatorio-${selectedEmployee.nome.replace(/\s+/g, "-")}-${label}.pdf`;
-      const pdfFile = new File([blob], filename, { type: "application/pdf" });
+      return { blob, filename };
+    } finally {
+      // Always restore dark mode and excluded elements
+      if (wasDark) document.documentElement.classList.add("dark");
+      excluded.forEach(e => { e.style.display = e.dataset.pdfOldDisplay ?? ""; delete e.dataset.pdfOldDisplay; });
+    }
+  }, [selectedEmployee, calendarData, period]);
 
+  const handleSavePdf = useCallback(async () => {
+    if (!selectedEmployee || !calendarData) return;
+    toast({ title: "Gerando PDF…", description: "Por favor aguarde." });
+    try {
+      const result = await capturePageAsPdf();
+      if (!result) return;
+      const url = URL.createObjectURL(result.blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = result.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast({ title: "PDF salvo!", description: "O arquivo foi baixado no seu dispositivo." });
+    } catch {
+      toast({ title: "Erro", description: "Não foi possível gerar o PDF.", variant: "destructive" });
+    }
+  }, [selectedEmployee, calendarData, capturePageAsPdf, toast]);
+
+  const handleSharePdf = useCallback(async () => {
+    if (!selectedEmployee || !calendarData) return;
+    toast({ title: "Gerando PDF…", description: "Por favor aguarde." });
+    try {
+      const result = await capturePageAsPdf();
+      if (!result) return;
+      const pdfFile = new File([result.blob], result.filename, { type: "application/pdf" });
       if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
         await navigator.share({
           title: `Relatório — ${selectedEmployee.nome} — ${periodLabel(period)}`,
           files: [pdfFile],
         });
       } else {
-        const url = URL.createObjectURL(blob);
+        const url = URL.createObjectURL(result.blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = filename;
+        a.download = result.filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -552,15 +559,15 @@ export function Funcionarios() {
       if ((err as Error)?.name !== "AbortError") {
         toast({ title: "Erro", description: "Não foi possível gerar o PDF.", variant: "destructive" });
       }
-    } finally {
-      document.body.removeChild(container);
     }
-  }, [generatePrintHtml, selectedEmployee, period, toast]);
+  }, [selectedEmployee, calendarData, capturePageAsPdf, period, toast]);
 
   const isLoading = employeesLoading;
 
   return (
     <div className="space-y-4">
+      {/* ↓ Everything inside this div is captured by html2canvas for the PDF */}
+      <div ref={pdfRef} className="space-y-4">
       {/* Header row */}
       <div>
         <h2 className="text-xl font-bold text-foreground">Calendário de Trabalho</h2>
@@ -805,8 +812,8 @@ export function Funcionarios() {
             </CardContent>
           </Card>
 
-          {/* Actions */}
-          <Card className="shadow-none border">
+          {/* Actions — excluded from PDF capture */}
+          <Card data-pdf-exclude className="shadow-none border">
             <CardHeader className="pb-2 pt-4 px-4">
               <CardTitle className="text-sm font-semibold">Ações</CardTitle>
             </CardHeader>
@@ -911,6 +918,7 @@ export function Funcionarios() {
           </Card>
         </div>
       </div>
+      </div>{/* end pdfRef capture zone */}
 
       {/* Payment Adjustments Section */}
       {selectedEmployee && (
