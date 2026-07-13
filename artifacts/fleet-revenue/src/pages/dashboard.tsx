@@ -123,7 +123,8 @@ function KpiCard({ title, value, sub, icon, valueColor = "text-foreground", load
             {loading ? (
               <Skeleton className="h-7 w-24 mt-2" />
             ) : (
-              <p className={`text-base sm:text-lg font-bold mt-1.5 tracking-tight break-words leading-tight ${valueColor}`}>
+              <p className={`font-bold mt-1.5 tracking-tight leading-tight whitespace-nowrap ${valueColor}`}
+               style={{ fontSize: "clamp(11px, 2.8vw, 15px)" }}>
                 {value}
               </p>
             )}

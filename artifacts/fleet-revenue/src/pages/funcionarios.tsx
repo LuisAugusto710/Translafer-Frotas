@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   useListEmployees,
   useGetEmployeeCalendar,
@@ -125,29 +125,18 @@ function buildCalendarHtml(dateFrom: string, dateTo: string, diasMap: Map<string
   const months = monthsBetween(dateFrom, dateTo);
   return months.map(({ year, month }) => {
     const cells = buildMonthCells(year, month, dateFrom, dateTo, diasMap);
-    const cellsHtml = cells.map((c, i) => {
-      const col = i % 7; // 0=DOM, 6=SÁB
-      const isWeekend = col === 0 || col === 6;
-      if (c.dayNum === null) return `<div class="cell empty${isWeekend ? " weekend-bg" : ""}"></div>`;
-      if (c.state === "out") return `<div class="cell out${isWeekend ? " weekend-out" : ""}"><span class="day-num">${c.dayNum}</span></div>`;
+    const cellsHtml = cells.map(c => {
+      if (c.dayNum === null) return `<div class="cell empty"></div>`;
+      if (c.state === "out") return `<div class="cell out"><span class="dn">${c.dayNum}</span></div>`;
       const cls = c.state === "worked" ? "cell worked" : "cell not-worked";
-      const label = c.state === "worked" ? "Trabalhou" : "Não trabalhou";
-      const valor = c.state === "worked" && c.valor > 0
-        ? `<span class="valor">R$ ${c.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>` : "";
-      return `<div class="${cls}${isWeekend ? " weekend-border" : ""}"><span class="day-num">${c.dayNum}</span><span class="label">${label}</span>${valor}</div>`;
+      const lbl = c.state === "worked" ? "Trab." : "Não";
+      const val = c.state === "worked" && c.valor > 0
+        ? `<span class="cv">R$${c.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>` : "";
+      return `<div class="${cls}"><span class="dn">${c.dayNum}</span><span class="cl">${lbl}</span>${val}</div>`;
     }).join("");
-    const dayHeaders = DAY_NAMES.map((d, i) => {
-      const isWe = i === 0 || i === 6;
-      return `<div class="day-header${isWe ? " day-header-we" : ""}">${d}</div>`;
-    }).join("");
-    return `
-      <div class="month-block">
-        <h3 class="month-title">${MONTH_NAMES[month - 1]} ${year}</h3>
-        <div class="calendar">
-          ${dayHeaders}
-          ${cellsHtml}
-        </div>
-      </div>`;
+    const headers = DAY_NAMES.map(d => `<div class="dh">${d}</div>`).join("");
+    const title = months.length > 1 ? `<p class="month-title">${MONTH_NAMES[month - 1]} ${year}</p>` : "";
+    return `<div class="month-block">${title}<div class="cal-grid">${headers}${cellsHtml}</div></div>`;
   }).join("");
 }
 
@@ -169,89 +158,112 @@ function buildPrintHtml(opts: {
   const { nome, tipo, periodo, dateFrom, dateTo, diasMap, totalGanho, diasTrabalhados, diasNaoTrabalhados, mediaPorDia, bonusTotal, deductionTotal, finalAmount } = opts;
   const now = new Date().toLocaleString("pt-BR");
   const calendarHtml = buildCalendarHtml(dateFrom, dateTo, diasMap);
+  const fmt = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
-<title>Relatório de Trabalho — ${nome} — ${periodo}</title>
+<title>Relatório — ${nome} — ${periodo}</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     background: #ffffff;
-    color: #1a1a2e;
-    /* 20px top/bottom, 52px left/right → ~13 mm side margins on printed A4 */
-    padding: 20px 52px 16px 52px;
-    font-size: 13px;
-    line-height: 1.45;
+    color: #0f172a;
+    padding: 22px 24px 16px;
+    font-size: 12px;
+    line-height: 1.4;
+    width: 794px;
   }
-
-  h1 { font-size: 19px; font-weight: bold; margin-bottom: 3px; }
-  .subtitle { font-size: 11px; color: #555; margin-bottom: 12px; }
-  .meta { display: flex; gap: 24px; margin-bottom: 12px; background: #f8f9fa; padding: 8px 12px; border-radius: 8px; flex-wrap: wrap; }
-  .meta-item label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 1px; }
-  .meta-item span { font-size: 12px; font-weight: 600; }
-  .month-block { margin-bottom: 10px; }
-  .month-title { font-size: 11px; font-weight: 700; margin-bottom: 5px; }
-  .calendar { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
-  .day-header { text-align: center; font-size: 9px; font-weight: 700; color: #666; padding: 4px 0; }
-  .day-header-we { color: #999; background: #f3f4f6; border-radius: 3px; }
-  /* min-height 44px keeps a 6-row month within ~1120px rendered height (1 A4 page) */
-  .cell { border-radius: 4px; padding: 4px 3px 3px; min-height: 44px; display: flex; flex-direction: column; align-items: center; font-size: 9px; }
-  .cell.empty { background: transparent; }
-  .cell.weekend-bg { background: #f9fafb; }
-  .cell.out { background: #f3f4f6; color: #9ca3af; }
-  .cell.weekend-out { background: #eff0f2; }
-  .cell.worked { background: #d1fae5; border: 1px solid #6ee7b7; }
-  .cell.not-worked { background: #f3f4f6; border: 1px solid #e5e7eb; }
-  .cell.weekend-border.worked { border-color: #34d399; }
-  .cell.weekend-border.not-worked { background: #eaecef; border-color: #d1d5db; }
-  .day-num { font-weight: 700; font-size: 11px; margin-bottom: 1px; }
-  .cell.worked .day-num { color: #065f46; }
-  .cell.not-worked .day-num { color: #6b7280; }
-  .cell.out .day-num { color: #9ca3af; font-weight: 600; }
-  .label { font-size: 8px; font-weight: 600; text-align: center; line-height: 1.1; }
-  .cell.worked .label { color: #047857; }
-  .cell.not-worked .label { color: #9ca3af; }
-  .valor { font-size: 7px; color: #374151; margin-top: 1px; }
-  .legend { display: flex; gap: 12px; margin: 5px 0 10px; font-size: 10px; color: #555; flex-wrap: wrap; }
-  .legend-item { display: flex; align-items: center; gap: 4px; }
-  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
-  .summary { background: #f8f9fa; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
-  .summary h2 { font-size: 12px; font-weight: 700; margin-bottom: 6px; }
-  .summary-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #e5e7eb; font-size: 11px; }
-  .summary-row:last-child { border-bottom: none; }
-  .summary-row .val { font-weight: 700; }
-  .summary-row.total span:first-child { font-weight: 700; font-size: 12px; }
-  .summary-row.total .val { color: #047857; font-size: 15px; }
-  .footer { font-size: 9px; color: #999; margin-top: 10px; text-align: right; }
-  @media print { body { padding: 16px 48px; } .month-block { page-break-inside: avoid; } }
+  h1 { font-size: 17px; font-weight: 700; margin-bottom: 2px; }
+  .sub { font-size: 10px; color: #64748b; margin-bottom: 11px; }
+  .meta-row { display: flex; gap: 6px; margin-bottom: 11px; }
+  .mc { flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 7px 9px; }
+  .mc label { font-size: 8px; color: #94a3b8; text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 2px; font-weight: 600; }
+  .mc .v { font-size: 11px; font-weight: 700; }
+  .mc .v.g { color: #059669; }
+  .mc .v.r { color: #dc2626; }
+  .content { display: grid; grid-template-columns: 3fr 2fr; gap: 12px; }
+  .month-block { margin-bottom: 8px; }
+  .month-title { font-size: 10px; font-weight: 700; margin-bottom: 5px; color: #1e293b; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+  .dh { text-align: center; font-size: 8px; font-weight: 700; color: #94a3b8; padding: 3px 0; }
+  .cell { border-radius: 4px; min-height: 37px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 2px; }
+  .cell.empty { }
+  .cell.out { background: #f8fafc; border: 1px dashed #e2e8f0; }
+  .cell.worked { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .cell.not-worked { background: #fef2f2; border: 1px solid #fecaca; }
+  .dn { font-size: 9px; font-weight: 700; }
+  .cell.worked .dn { color: #166534; }
+  .cell.not-worked .dn { color: #991b1b; }
+  .cell.out .dn { color: #94a3b8; font-weight: 500; }
+  .cl { font-size: 6.5px; font-weight: 600; line-height: 1; }
+  .cell.worked .cl { color: #15803d; }
+  .cell.not-worked .cl { color: #b91c1c; }
+  .cv { font-size: 6px; color: #16a34a; }
+  .legend { display: flex; gap: 8px; margin-top: 6px; }
+  .li { display: flex; align-items: center; gap: 3px; font-size: 8.5px; color: #64748b; }
+  .ld { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+  .summary-col { display: flex; flex-direction: column; gap: 8px; }
+  .final-card { background: linear-gradient(135deg,#eff6ff 0%,#ffffff 100%); border: 2px solid #93c5fd; border-radius: 10px; padding: 10px 12px; }
+  .fl { font-size: 8px; color: #3b82f6; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+  .fv { font-size: 19px; font-weight: 800; color: #1d4ed8; }
+  .sum-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; }
+  .sum-card h3 { font-size: 10px; font-weight: 700; margin-bottom: 7px; color: #1e293b; }
+  .sr { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px dashed #e2e8f0; }
+  .sr:last-child { border-bottom: none; }
+  .sl { font-size: 9px; color: #64748b; }
+  .sv { font-size: 9px; font-weight: 700; }
+  .sv.g { color: #059669; }
+  .sv.r { color: #dc2626; }
+  .sv.b { color: #1d4ed8; }
+  .info { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 6px 8px; }
+  .info p { font-size: 7.5px; color: #1e40af; line-height: 1.4; }
+  .footer { font-size: 8px; color: #94a3b8; text-align: right; margin-top: 8px; }
 </style>
 </head>
 <body>
 <h1>Calendário de Trabalho</h1>
-<p class="subtitle">Visualize os dias trabalhados e o valor a ser pago no período selecionado.</p>
-<div class="meta">
-  <div class="meta-item"><label>Funcionário</label><span>${nome}</span></div>
-  <div class="meta-item"><label>Função</label><span>${tipo}</span></div>
-  <div class="meta-item"><label>Período</label><span>${periodo}</span></div>
-  <div class="meta-item"><label>Dias trabalhados</label><span style="color:#047857">${diasTrabalhados}</span></div>
-  <div class="meta-item"><label>Dias não trabalhados</label><span style="color:#dc2626">${diasNaoTrabalhados}</span></div>
+<p class="sub">Dias trabalhados e valor a receber no período selecionado.</p>
+<div class="meta-row">
+  <div class="mc"><label>Funcionário</label><span class="v">${nome}</span></div>
+  <div class="mc"><label>Função</label><span class="v">${tipo}</span></div>
+  <div class="mc"><label>Período</label><span class="v">${periodo}</span></div>
+  <div class="mc"><label>Dias trabalhados</label><span class="v g">${diasTrabalhados}</span></div>
+  <div class="mc"><label>Dias não trabalhados</label><span class="v r">${diasNaoTrabalhados}</span></div>
 </div>
-${calendarHtml}
-<div class="legend">
-  <div class="legend-item"><div class="legend-dot" style="background:#6ee7b7"></div>Trabalhou</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#e5e7eb"></div>Não trabalhou</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#f3f4f6;border:1px solid #e5e7eb"></div>Fora do período / Final de semana</div>
-</div>
-<div class="summary">
-  <h2>Resumo do Período</h2>
-  <div class="summary-row"><span>Valor por dia trabalhado</span><span class="val">R$ ${mediaPorDia.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
-  <div class="summary-row"><span>Total ganho (dias trabalhados)</span><span class="val">R$ ${totalGanho.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
-  <div class="summary-row"><span>Bônus</span><span class="val" style="color:#047857">+ R$ ${bonusTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
-  <div class="summary-row"><span>Adiantamentos / Descontos</span><span class="val" style="color:#dc2626">− R$ ${deductionTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
-  <div class="summary-row total"><span>Valor Final a Receber</span><span class="val">R$ ${finalAmount.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>
+<div class="content">
+  <div>
+    ${calendarHtml}
+    <div class="legend">
+      <div class="li"><div class="ld" style="background:#bbf7d0;border:1px solid #86efac"></div>Trabalhou</div>
+      <div class="li"><div class="ld" style="background:#fecaca;border:1px solid #fca5a5"></div>Não trabalhou</div>
+      <div class="li"><div class="ld" style="background:#f8fafc;border:1px dashed #e2e8f0"></div>Fora do período</div>
+    </div>
+  </div>
+  <div class="summary-col">
+    <div class="final-card">
+      <div class="fl">Valor Final a Receber</div>
+      <div class="fv">R$ ${fmt(finalAmount)}</div>
+    </div>
+    <div class="sum-card">
+      <h3>Resumo do Período</h3>
+      <div class="sr"><span class="sl">Dias trabalhados</span><span class="sv g">${diasTrabalhados}</span></div>
+      <div class="sr"><span class="sl">Dias não trabalhados</span><span class="sv r">${diasNaoTrabalhados}</span></div>
+      <div class="sr"><span class="sl">Valor por dia</span><span class="sv">R$ ${fmt(mediaPorDia)}</span></div>
+      <div class="sr"><span class="sl">Total ganho</span><span class="sv">R$ ${fmt(totalGanho)}</span></div>
+      <div class="sr"><span class="sl">Bônus</span><span class="sv g">+ R$ ${fmt(bonusTotal)}</span></div>
+      <div class="sr"><span class="sl">Adiantamentos/Desc.</span><span class="sv r">− R$ ${fmt(deductionTotal)}</span></div>
+      <div class="sr" style="border-top:1px solid #e2e8f0;margin-top:4px;padding-top:8px">
+        <span class="sl" style="font-weight:700">Valor Final</span>
+        <span class="sv b">R$ ${fmt(finalAmount)}</span>
+      </div>
+    </div>
+    <div class="info">
+      <p>Valor Final = Total ganho + Bônus − Adiantamentos/Descontos, recalculado automaticamente conforme os ajustes de pagamento.</p>
+    </div>
+  </div>
 </div>
 <p class="footer">Gerado em ${now}</p>
 </body>
@@ -315,9 +327,6 @@ export function Funcionarios() {
   }, [queryClient, period.dateFrom, period.dateTo]);
 
   const { toast } = useToast();
-
-  /** Ref for the content zone that gets captured into the PDF */
-  const pdfRef = useRef<HTMLDivElement>(null);
 
   const [showAdvanceForm, setShowAdvanceForm] = useState(false);
   const [editingAdvance, setEditingAdvance] = useState<EmployeeAdvance | null>(null);
@@ -452,24 +461,71 @@ export function Funcionarios() {
   }, [buildShareText, toast]);
 
   /**
-   * Captures the pdfRef element as a PDF blob.
-   * - Hides [data-pdf-exclude] elements during capture.
-   * - Forces light-mode so colours are always correct in the PDF.
-   * - Adds 20 mm margins on all sides; scales content down if it exceeds
-   *   the printable area so everything fits on one A4 page.
+   * Renders the employee calendar to an isolated off-screen HTML container
+   * (system fonts only — no Google Fonts → canvas never tainted → toDataURL succeeds).
+   * Produces a PDF blob with 20 mm margins on all sides, scaled to fit one A4 page.
    */
   const capturePageAsPdf = useCallback(async (): Promise<{ blob: Blob; filename: string } | null> => {
-    if (!selectedEmployee || !calendarData || !pdfRef.current) return null;
+    if (!selectedEmployee || !calendarData) return null;
 
-    const el = pdfRef.current;
+    // Build an isolated HTML document using system fonts (no Google Fonts) so the
+    // canvas is never cross-origin-tainted and toDataURL() succeeds on all browsers.
+    const html = buildPrintHtml({
+      nome: selectedEmployee.nome,
+      tipo: selectedEmployee.tipo,
+      periodo: periodLabel(period),
+      dateFrom: period.dateFrom,
+      dateTo: period.dateTo,
+      diasMap,
+      totalGanho: calendarData.totalGanho,
+      diasTrabalhados: calendarData.diasTrabalhados,
+      diasNaoTrabalhados: calendarData.diasNaoTrabalhados,
+      mediaPorDia: calendarData.mediaPorDia,
+      bonusTotal,
+      deductionTotal,
+      finalAmount,
+    });
+    if (!html) return null;
 
-    // Hide action buttons and anything else marked as PDF-exclude
-    const excluded = Array.from(el.querySelectorAll<HTMLElement>("[data-pdf-exclude]"));
-    excluded.forEach(e => { e.dataset.pdfOldDisplay = e.style.display; e.style.display = "none"; });
+    // Parse the generated HTML and inject into an off-screen container so that
+    // the browser lays it out at A4 width (794 px) without affecting the visible page.
+    const parser = new DOMParser();
+    const parsed = parser.parseFromString(html, "text/html");
 
-    // Force light mode so CSS variables resolve to light colours
-    const wasDark = document.documentElement.classList.contains("dark");
-    if (wasDark) document.documentElement.classList.remove("dark");
+    const container = document.createElement("div");
+    container.style.cssText = [
+      "position:fixed",
+      "top:-9999px",
+      "left:-9999px",
+      "width:794px",
+      "background:#fff",
+      "overflow:visible",
+      "z-index:-9999",
+    ].join(";");
+
+    // Copy <style> so the layout renders correctly
+    const styleEl = parsed.querySelector("style");
+    if (styleEl) {
+      const s = document.createElement("style");
+      s.textContent = styleEl.textContent ?? "";
+      container.appendChild(s);
+    }
+    // Copy <body> content
+    const bodyEl = parsed.querySelector("body");
+    const content = document.createElement("div");
+    content.innerHTML = bodyEl?.innerHTML ?? "";
+    // Apply body-level styles from the template (padding / font / width)
+    content.style.cssText = [
+      "font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif",
+      "background:#ffffff",
+      "color:#0f172a",
+      "padding:22px 24px 16px",
+      "font-size:12px",
+      "line-height:1.4",
+      "width:794px",
+    ].join(";");
+    container.appendChild(content);
+    document.body.appendChild(container);
 
     try {
       const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
@@ -477,14 +533,15 @@ export function Funcionarios() {
         import("jspdf"),
       ]);
 
-      const canvas = await html2canvas(el, {
+      const canvas = await html2canvas(container, {
         scale: 2,
         useCORS: true,
+        allowTaint: false,
         backgroundColor: "#ffffff",
         logging: false,
       });
 
-      const MARGIN = 20; // mm — ~20 mm on all sides
+      const MARGIN = 20; // mm — 20 mm on all sides
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
       const pageW = pdf.internal.pageSize.getWidth();  // 210 mm
       const pageH = pdf.internal.pageSize.getHeight(); // 297 mm
@@ -494,7 +551,7 @@ export function Funcionarios() {
       const aspect = canvas.height / canvas.width;
       let imgW = printW;
       let imgH = imgW * aspect;
-      // Scale down if the content is taller than the printable area
+      // Scale down uniformly if content is taller than the printable area
       if (imgH > printH) { imgH = printH; imgW = imgH / aspect; }
 
       // Centre horizontally if we had to shrink the width
@@ -506,11 +563,9 @@ export function Funcionarios() {
       const filename = `relatorio-${selectedEmployee.nome.replace(/\s+/g, "-")}-${label}.pdf`;
       return { blob, filename };
     } finally {
-      // Always restore dark mode and excluded elements
-      if (wasDark) document.documentElement.classList.add("dark");
-      excluded.forEach(e => { e.style.display = e.dataset.pdfOldDisplay ?? ""; delete e.dataset.pdfOldDisplay; });
+      document.body.removeChild(container);
     }
-  }, [selectedEmployee, calendarData, period]);
+  }, [selectedEmployee, calendarData, period, diasMap, bonusTotal, deductionTotal, finalAmount]);
 
   const handleSavePdf = useCallback(async () => {
     if (!selectedEmployee || !calendarData) return;
@@ -566,8 +621,6 @@ export function Funcionarios() {
 
   return (
     <div className="space-y-4">
-      {/* ↓ Everything inside this div is captured by html2canvas for the PDF */}
-      <div ref={pdfRef} className="space-y-4">
       {/* Header row */}
       <div>
         <h2 className="text-xl font-bold text-foreground">Calendário de Trabalho</h2>
@@ -812,8 +865,8 @@ export function Funcionarios() {
             </CardContent>
           </Card>
 
-          {/* Actions — excluded from PDF capture */}
-          <Card data-pdf-exclude className="shadow-none border">
+          {/* Actions */}
+          <Card className="shadow-none border">
             <CardHeader className="pb-2 pt-4 px-4">
               <CardTitle className="text-sm font-semibold">Ações</CardTitle>
             </CardHeader>
@@ -918,7 +971,6 @@ export function Funcionarios() {
           </Card>
         </div>
       </div>
-      </div>{/* end pdfRef capture zone */}
 
       {/* Payment Adjustments Section */}
       {selectedEmployee && (

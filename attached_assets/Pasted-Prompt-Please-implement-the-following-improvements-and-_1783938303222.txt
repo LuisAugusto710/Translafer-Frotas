@@ -1,0 +1,117 @@
+Prompt:
+
+Please implement the following improvements and fixes without changing the application’s layout, navigation, or existing functionality.
+
+⸻
+
+1. Improve Dashboard Responsiveness
+
+The Dashboard is not displaying numeric values correctly on smaller screens. As shown in the attached image, some numbers are wrapping onto multiple lines, making the interface difficult to read.
+
+Requirements
+
+Review the responsiveness of all Dashboard components, especially:
+
+* KPI cards
+* Summary cards
+* Charts
+* Tables
+* Statistics panels
+
+Ensure that:
+
+* Numbers never wrap onto multiple lines.
+* Currency values remain on a single line.
+* Percentages remain on a single line.
+* Large values automatically scale their font size when necessary.
+* Cards resize proportionally across different screen sizes.
+* Text and numbers remain vertically and horizontally aligned.
+* No overlapping or clipping occurs.
+* Cards maintain equal heights whenever possible.
+* Padding and spacing are adjusted dynamically for mobile devices.
+
+If necessary, use techniques such as:
+
+* Fluid typography (clamp())
+* Flexbox or CSS Grid
+* Dynamic font scaling
+* Responsive breakpoints
+* Text overflow prevention
+* Intelligent resizing instead of wrapping
+
+The Dashboard should remain clean and professional on:
+
+* Desktop
+* Laptop
+* Tablet
+* Mobile phones (including small screens)
+
+⸻
+
+2. Fix PDF Generation on the Employees Page
+
+Currently, when I try to generate a PDF from the Employees page, an error occurs and the PDF is not generated.
+
+I want you to investigate the root cause instead of applying a workaround.
+
+Investigation Checklist
+
+Please verify:
+
+* PDF generation library configuration.
+* Missing dependencies.
+* Runtime errors.
+* Browser console errors.
+* Backend/server logs.
+* Missing fonts or assets.
+* Invalid HTML elements.
+* CSS rendering issues.
+* Canvas rendering (if used).
+* Image loading failures.
+* Memory limitations.
+* Unsupported CSS properties.
+* Invalid page dimensions.
+* Problems introduced by recent changes.
+
+⸻
+
+Error Handling
+
+If PDF generation fails for any reason:
+
+* Display a clear and user-friendly error message explaining what went wrong.
+* Log the complete technical error in the console or server logs.
+* Preserve all page data so the user does not lose any work.
+* Prevent the application from crashing.
+
+⸻
+
+Validation
+
+After fixing the issue, verify that:
+
+* The PDF is generated successfully.
+* The PDF matches the Employees page layout.
+* The PDF fits on a single A4 page.
+* Margins are preserved.
+* Colors and formatting are maintained.
+* The PDF can be downloaded.
+* The PDF can be shared through WhatsApp and the native share menu without errors.
+* PDF generation works consistently on desktop and mobile devices.
+
+⸻
+
+Performance
+
+* Optimize the PDF generation process.
+* Avoid unnecessary rendering operations.
+* Ensure the PDF is generated quickly.
+* Keep file size reasonable while maintaining high visual quality.
+
+⸻
+
+Important
+
+* Do not redesign the application.
+* Do not modify unrelated functionality.
+* Focus on making the Dashboard fully responsive so numbers never break onto multiple lines, and identify and permanently fix the root cause preventing PDF generation on the Employees page.
