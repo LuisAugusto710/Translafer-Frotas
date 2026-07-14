@@ -108,11 +108,21 @@ export function FreteFormModal({
           obs: stripTempoFromObs(frete.obs || ""),
         });
       } else {
+        // Pre-compute date-dependent fields here so they are always set even
+        // when the date value hasn't changed between two consecutive new-frete
+        // sessions (same calendar day). Relying solely on useEffect([dataCte])
+        // fails in that case because React skips effects whose dependencies
+        // didn't actually change.
+        const todayISO = new Date().toISOString().split("T")[0];
+        const [ty, tm, td] = todayISO.split("-").map(Number);
+        const vencDate = new Date(ty, tm - 1, td + 15);
+        const vencISO = `${vencDate.getFullYear()}-${String(vencDate.getMonth() + 1).padStart(2, "0")}-${String(vencDate.getDate()).padStart(2, "0")}`;
+
         setPesoTipo("peso");
         setHoras("0");
         setMinutos("0");
         setFormData({
-          dataCte: new Date().toISOString().split("T")[0],
+          dataCte: todayISO,
           origem: "",
           transporte: "",
           frota: "",
@@ -123,8 +133,8 @@ export function FreteFormModal({
           peso: "",
           frete: "",
           pedagio: "0",
-          dtaFrete: "",
-          vencimento: "",
+          dtaFrete: todayISO,
+          vencimento: vencISO,
           obs: "",
         });
       }
@@ -225,7 +235,12 @@ export function FreteFormModal({
             description: `Frete ${isEditing ? "atualizado" : "criado"} com sucesso.`,
           });
           queryClient.invalidateQueries({ queryKey: ["/api/fretes"] });
-          queryClient.invalidateQueries({ queryKey: getGetNextCteQueryKey() });
+          // Remove (not just invalidate) every next-cte cache entry so the
+          // next form open always fetches fresh data. invalidateQueries only
+          // marks entries stale and returns the cached (stale) value while
+          // refetching; if the cached value happens to equal the new value
+          // React won't re-run the useEffect that populates cteNf.
+          queryClient.removeQueries({ queryKey: getGetNextCteQueryKey() });
           queryClient.invalidateQueries({
             predicate: (query) =>
               typeof query.queryKey[0] === "string" &&

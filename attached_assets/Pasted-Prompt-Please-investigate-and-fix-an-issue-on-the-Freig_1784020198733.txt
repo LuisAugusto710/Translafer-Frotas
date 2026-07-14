@@ -1,0 +1,112 @@
+Prompt:
+
+Please investigate and fix an issue on the Freights page related to creating multiple freight records. Do not change the application’s layout or workflow. Instead, identify the root cause and implement a permanent solution.
+
+Problem Description
+
+After creating a freight, when I try to create another freight with the same Freight Date, some fields are not being updated automatically.
+
+Specifically:
+
+* The CTE Number is not recalculated.
+* The Freight Date is not refreshed correctly.
+* The form appears to retain values from the previous record instead of preparing a new one.
+
+This behavior is incorrect.
+
+⸻
+
+1. Automatically Prepare the Form for a New Freight
+
+After a freight is successfully saved, the form should automatically prepare itself for the next record.
+
+The following fields should be updated automatically:
+
+* CTE Number
+* Freight Date
+* Freight Due Date
+
+The remaining fields should behave according to the application’s current logic (either remain filled if intended to speed up data entry, or be cleared if appropriate).
+
+⸻
+
+2. Recalculate the CTE Number
+
+Every time a new freight is started, the application must recalculate the next available CTE Number.
+
+The calculation must:
+
+* Use the selected Carrier (Transportadora).
+* Retrieve the highest CTE Number for that carrier.
+* Add 1.
+* Populate the CTE field automatically.
+
+This calculation must happen every time a new freight is created, even if the Freight Date is the same as the previous record.
+
+It must never reuse the previous CTE Number.
+
+⸻
+
+3. Refresh the Date Fields
+
+When a new freight is started:
+
+* The Freight Date should automatically be filled using the CTE Date (according to the existing business rule).
+* The Freight Due Date should automatically be recalculated as CTE Date + 15 days.
+* This must occur every time a new freight is created, regardless of whether the selected date is the same as the previous freight.
+
+The date fields should not remain stale from the previous form submission.
+
+⸻
+
+4. Investigate the Root Cause
+
+Do not apply a workaround.
+
+Investigate why the automatic field updates stop working after saving a freight.
+
+Verify:
+
+* Form state reset.
+* React state/hooks (if applicable).
+* Default form values.
+* Auto-fill logic.
+* Event listeners.
+* API responses after save.
+* Cache/state synchronization.
+* Component lifecycle.
+* Validation logic.
+* Asynchronous updates.
+
+Identify and permanently fix the actual cause.
+
+⸻
+
+5. Validation
+
+After implementing the fix, verify the following scenarios:
+
+* Create multiple freights with the same date.
+* Create multiple freights with different dates.
+* Change the carrier before saving.
+* Save several freights consecutively without reloading the page.
+* Verify that the CTE Number always increments correctly for the selected carrier.
+* Verify that the Freight Date and Freight Due Date are always recalculated correctly.
+
+⸻
+
+6. Performance
+
+Ensure that:
+
+* The automatic updates occur instantly after saving.
+* No unnecessary database queries are executed.
+* The form remains responsive even after many consecutive freight entries.
+
+⸻
+
+Important
+
+* Do not redesign the application.
+* Do not modify unrelated functionality.
+* Focus on ensuring that after every successful freight creation, the form is correctly reset and all automatically generated fields (especially the CTE Number, Freight Date, and Freight Due Date) are recalculated every time, even when creating multiple freights with the same date.
