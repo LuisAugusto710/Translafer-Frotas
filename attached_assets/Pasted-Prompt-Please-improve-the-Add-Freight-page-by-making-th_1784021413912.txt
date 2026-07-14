@@ -1,0 +1,98 @@
+Prompt:
+
+Please improve the Add Freight page by making the Carrier Name (Transportadora) lookup case-insensitive, ensuring that the automatic CTE Number generation always works regardless of how the user types the carrier’s name.
+
+Problem
+
+Currently, the automatic CTE Number generation only works if the carrier name matches exactly the way it is stored in the database.
+
+For example:
+
+If the carrier is stored as:
+
+Transvale
+
+The following inputs should all be recognized as the same carrier:
+
+* transvale
+* TRANSVALE
+* TransVale
+* trAnSvAlE
+* TRANSvale
+
+All of them should return the same carrier record and generate the correct next CTE Number.
+
+⸻
+
+Required Behavior
+
+When the user types or selects a carrier name:
+
+1. Normalize the input before searching.
+2. Perform a case-insensitive comparison.
+3. Ignore differences between uppercase and lowercase letters.
+4. Match the existing carrier in the database.
+5. Retrieve the highest CTE Number associated with that carrier.
+6. Automatically fill the CTE field with the next sequential number.
+
+⸻
+
+Text Normalization
+
+Before performing the lookup, normalize both the user input and the stored database value by:
+
+* Ignoring uppercase/lowercase differences.
+* Trimming leading and trailing spaces.
+* Replacing multiple spaces with a single space.
+* Using the same normalization rules already implemented throughout the application.
+
+Example:
+
+Database:
+
+Transvale Logística
+
+User input:
+
+transvale logística
+TRANSVALE LOGÍSTICA
+TrAnSvAlE LoGíStIcA
+
+All of these should match the same carrier.
+
+⸻
+
+Automatic CTE Generation
+
+After identifying the correct carrier:
+
+* Retrieve the latest CTE Number for that carrier.
+* Add 1.
+* Automatically populate the CTE field.
+
+This should happen immediately after the carrier is selected or entered, without requiring any additional action from the user.
+
+⸻
+
+Validation
+
+If no matching carrier exists:
+
+* Display a clear message informing the user that this is a new carrier.
+* Start the CTE sequence from the configured initial value (or according to the application’s current business rules).
+
+⸻
+
+Performance
+
+* Use efficient case-insensitive database queries.
+* Avoid loading all carrier records into memory.
+* Ensure the lookup remains fast even with a large number of carriers.
+
+⸻
+
+Important
+
+* Do not redesign the application.
+* Do not modify unrelated functionality.
+* Only improve the carrier lookup so that the automatic CTE Number generation works regardless of whether the user types the carrier name in uppercase, lowercase, or mixed case, always using the correct CTE sequence for the matched carrier.

@@ -137,8 +137,12 @@ router.post("/fretes/bulk", async (req, res) => {
 });
 
 router.get("/fretes/next-cte", async (req, res) => {
-  const transp = req.query.transp ? String(req.query.transp) : undefined;
-  const where = transp ? eq(fretesTable.transp, transp) : undefined;
+  // Trim and normalise casing so "LAFER", "lafer", "Lafer" all resolve to the
+  // same carrier sequence. ILIKE is a native Postgres case-insensitive string
+  // comparison; no wildcards are used here so it behaves as an exact match
+  // modulo case (and avoids a full table scan thanks to any functional index).
+  const transp = req.query.transp ? String(req.query.transp).trim() : undefined;
+  const where = transp ? ilike(fretesTable.transp, transp) : undefined;
   const [result] = await db.select({
     maxCte: sql<number>`COALESCE(MAX(CASE WHEN ${fretesTable.cteNf} ~ '^[0-9]+$' THEN CAST(${fretesTable.cteNf} AS INTEGER) ELSE 0 END), 0)`,
   }).from(fretesTable).where(where);
