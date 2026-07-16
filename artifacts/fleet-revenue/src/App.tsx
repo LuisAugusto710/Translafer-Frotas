@@ -16,6 +16,7 @@ import { Fretes } from "@/pages/fretes";
 import { Diesel } from "@/pages/diesel";
 import { Despesas } from "@/pages/despesas";
 import { Funcionarios } from "@/pages/funcionarios";
+import { Manutencao } from "@/pages/manutencao";
 import { Login } from "@/pages/login";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { UNAUTHORIZED_EVENT } from "@/lib/api-fetch";
@@ -47,6 +48,7 @@ function AuthedRoutes() {
         <Route path="/diesel" component={Diesel} />
         <Route path="/despesas" component={Despesas} />
         <Route path="/funcionarios" component={Funcionarios} />
+        <Route path="/manutencao" component={Manutencao} />
         <Route path="/dashboard" component={Dashboard} />
         <Route component={NotFound} />
       </Switch>

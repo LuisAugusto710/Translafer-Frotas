@@ -474,6 +474,83 @@ export interface EmployeeAdvanceInput {
   tipo: string;
 }
 
+export type ManutencaoInputTipo = typeof ManutencaoInputTipo[keyof typeof ManutencaoInputTipo];
+
+
+export const ManutencaoInputTipo = {
+  Preventiva: 'Preventiva',
+  Corretiva: 'Corretiva',
+  Emergencial: 'Emergencial',
+} as const;
+
+export interface ManutencaoInput {
+  dataManutencao: string;
+  frota: string;
+  km: number;
+  tipo: ManutencaoInputTipo;
+  procedimento: string;
+  categoria: string;
+  oficina: string;
+  custo: number;
+  /** @nullable */
+  obs?: string | null;
+  /** @nullable */
+  anexoNome?: string | null;
+  /** @nullable */
+  anexoTipo?: string | null;
+  /**
+     * Base64-encoded file content
+     * @nullable
+     */
+  anexoDados?: string | null;
+}
+
+export interface ManutencaoUpdate {
+  dataManutencao?: string;
+  frota?: string;
+  km?: number;
+  tipo?: string;
+  procedimento?: string;
+  categoria?: string;
+  oficina?: string;
+  custo?: number;
+  /** @nullable */
+  obs?: string | null;
+  /** @nullable */
+  anexoNome?: string | null;
+  /** @nullable */
+  anexoTipo?: string | null;
+  /** @nullable */
+  anexoDados?: string | null;
+}
+
+export interface Manutencao {
+  id: number;
+  /** @nullable */
+  dataManutencao: string | null;
+  frota: string;
+  km: number;
+  tipo: string;
+  procedimento: string;
+  categoria: string;
+  oficina: string;
+  custo: number;
+  /** @nullable */
+  obs?: string | null;
+  temAnexo: boolean;
+  /** @nullable */
+  anexoNome?: string | null;
+  /** @nullable */
+  anexoTipo?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ManutencaoListResponse {
+  manutencoes: Manutencao[];
+  total: number;
+}
+
 export type ListFretesParams = {
 frota?: string;
 cliente?: string;
@@ -621,5 +698,17 @@ nome?: string;
 tipoFuncionario?: string;
 dateFrom?: string;
 dateTo?: string;
+};
+
+export type ListManutencoesParams = {
+search?: string;
+frota?: string;
+tipo?: string;
+categoria?: string;
+oficina?: string;
+dateFrom?: string;
+dateTo?: string;
+limit?: number;
+offset?: number;
 };
 

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useTheme } from "./theme-provider";
-import { Moon, Sun, LayoutDashboard, Truck, Fuel, Wallet, Users, Menu, X, LogOut } from "lucide-react";
+import { Moon, Sun, LayoutDashboard, Truck, Fuel, Wallet, Users, Wrench, Menu, X, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { BackupFolderButton } from "./backup-folder-button";
 import { OneDriveBackupButton } from "./onedrive-backup-button";
@@ -13,6 +13,7 @@ function NavLinks({ currentLocation, onNavigate }: { currentLocation: string; on
   const isDiesel = currentLocation === "/diesel";
   const isDespesas = currentLocation === "/despesas";
   const isFuncionarios = currentLocation === "/funcionarios";
+  const isManutencao = currentLocation === "/manutencao";
   const isDashboard = currentLocation === "/dashboard";
 
   const active = "bg-white/[0.08] text-white font-semibold";
@@ -42,6 +43,12 @@ function NavLinks({ currentLocation, onNavigate }: { currentLocation: string; on
         <div className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors cursor-pointer ${isFuncionarios ? active : inactive}`}>
           <Users className="h-4 w-4 shrink-0" />
           Funcionários
+        </div>
+      </Link>
+      <Link href="/manutencao" onClick={onNavigate}>
+        <div className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors cursor-pointer ${isManutencao ? active : inactive}`}>
+          <Wrench className="h-4 w-4 shrink-0" />
+          Manutenção
         </div>
       </Link>
       <Link href="/dashboard" onClick={onNavigate}>
@@ -91,6 +98,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       ? "Gestão de Despesas"
       : location === "/funcionarios"
       ? "Funcionários"
+      : location === "/manutencao"
+      ? "Manutenção de Frota"
       : "Dashboard Operacional";
 
   return (

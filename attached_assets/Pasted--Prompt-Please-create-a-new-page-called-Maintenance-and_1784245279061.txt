@@ -1,0 +1,286 @@
+**Prompt:**
+
+Please create a new page called **Maintenance** and place it in the application's navigation menu. The page should follow **exactly the same design language, layout, responsiveness, color palette, spacing, and user experience** as the existing pages (Freights, Expenses, Diesel, Employees, and Dashboard).
+
+The page should be fully integrated with the application's database and support search, filtering, sorting, imports, exports, and future Dashboard integration.
+
+---
+
+# Maintenance Page
+
+The purpose of this page is to maintain a complete history of all maintenance performed on the company's fleet.
+
+The layout should follow the same pattern used on the **Freights** and **Expenses** pages:
+
+* Search bar at the top
+* "Add Maintenance" button
+* Responsive table
+* Sticky table header
+* Mobile-friendly layout
+* Pagination/Lazy Loading consistent with the rest of the application
+
+---
+
+# Maintenance Form
+
+Clicking **"Add Maintenance"** should open the maintenance form.
+
+The following fields are **required**:
+
+## General Information
+
+### Maintenance Date
+
+* Date the maintenance was performed.
+* Required.
+
+### Fleet Number
+
+* Vehicle on which the maintenance was performed.
+* Required.
+* Use the existing Fleet list.
+
+### Odometer (KM)
+
+* Vehicle mileage at the time of maintenance.
+* Numeric field.
+* Required.
+
+### Maintenance Type
+
+Dropdown with:
+
+* Preventive
+* Corrective
+* Emergency
+
+Required.
+
+### Procedure Performed
+
+Free text field.
+
+Examples:
+
+* Oil Change
+* Brake Pad Replacement
+* Clutch Replacement
+* Suspension Repair
+* Tire Rotation
+* Engine Overhaul
+
+Required.
+
+### Category
+
+Dropdown with predefined categories:
+
+* Engine
+* Transmission
+* Brakes
+* Tires
+* Electrical
+* Suspension
+* Cooling System
+* Fuel System
+* Lubrication
+* Bodywork
+* Air Conditioning
+* Battery
+* Filters
+* General Maintenance
+* Other
+
+Required.
+
+### Workshop / Supplier
+
+Text field containing:
+
+* Workshop name
+* Supplier
+* Service provider
+
+Required.
+
+### Total Cost
+
+Currency field.
+
+Required.
+
+### Notes
+
+Large multiline text area.
+
+Optional.
+
+Used for:
+
+* Additional observations
+* Replaced parts
+* Warranty information
+* Recommendations
+* Next maintenance notes
+
+---
+
+# Attachment
+
+Add an attachment field.
+
+Allow uploading:
+
+* PDF
+* JPG
+* JPEG
+* PNG
+
+The uploaded file should be stored and linked to the maintenance record.
+
+Users should be able to:
+
+* Upload
+* Preview
+* Download
+* Replace
+* Delete
+
+Attachments must remain available after page refreshes and backups.
+
+---
+
+# Table
+
+Display all maintenance records in a responsive table.
+
+Columns:
+
+* Maintenance Date
+* Fleet
+* Odometer
+* Maintenance Type
+* Procedure
+* Category
+* Workshop
+* Total Cost
+* Attachment Indicator
+* Actions (View, Edit, Delete)
+
+The table should support:
+
+* Sorting
+* Search
+* Filtering
+* Lazy Loading
+* Responsive behavior
+* Sticky header
+
+---
+
+# Search
+
+The search bar should work exactly like the other pages.
+
+Search by:
+
+* Date
+* Fleet
+* Procedure
+* Category
+* Workshop
+* Maintenance Type
+* Odometer
+* Notes
+
+The matching text should be highlighted just like the existing search implementation.
+
+---
+
+# Filters
+
+Add filters for:
+
+* Date Range
+* Fleet
+* Maintenance Type
+* Category
+* Workshop
+
+Filters should work together.
+
+---
+
+# Dashboard Integration
+
+Although no Dashboard widgets need to be created now, structure the database so future Dashboard integration becomes simple.
+
+Maintenance costs should be available for future reports and analytics.
+
+---
+
+# Validation
+
+Required fields:
+
+* Maintenance Date
+* Fleet
+* Odometer
+* Maintenance Type
+* Procedure
+* Category
+* Workshop
+* Total Cost
+
+Display clear validation messages whenever required information is missing.
+
+---
+
+# Responsive Design
+
+The page must be fully responsive.
+
+Optimize for:
+
+* Desktop
+* Laptop
+* Tablet
+* Mobile
+
+Tables, forms, buttons, and inputs should adapt to smaller screens without text clipping or overflow.
+
+---
+
+# Performance
+
+Maintain the same optimization standards used in the rest of the application:
+
+* Lazy loading
+* Efficient database queries
+* Fast search
+* Responsive filters
+* Optimized attachment loading
+
+---
+
+# Future Compatibility
+
+Design the page so it can later support additional features such as:
+
+* Scheduled preventive maintenance
+* Maintenance reminders based on mileage or date
+* Parts replacement history
+* Maintenance cost reports
+* Maintenance KPIs on the Dashboard
+* Vehicle maintenance history timeline
+
+The database structure should be scalable to accommodate these future features without major refactoring.
+
+---
+
+## Important
+
+* **Do not redesign the application.**
+* **Follow the exact visual style and component patterns already used throughout the system.**
+* **Integrate the page with the existing database and application architecture.**
+* **Ensure consistency in responsiveness, validation, search, filtering, and overall user experience.**

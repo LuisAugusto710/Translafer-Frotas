@@ -1046,3 +1046,181 @@ export const DeleteEmployeeAdvanceParams = zod.object({
 export const DeleteEmployeeAdvanceResponse = zod.void()
 
 
+/**
+ * @summary List maintenance records
+ */
+export const listManutencoesQueryLimitDefault = 100;
+export const listManutencoesQueryOffsetDefault = 0;
+
+export const ListManutencoesQueryParams = zod.object({
+  "search": zod.coerce.string().optional(),
+  "frota": zod.coerce.string().optional(),
+  "tipo": zod.coerce.string().optional(),
+  "categoria": zod.coerce.string().optional(),
+  "oficina": zod.coerce.string().optional(),
+  "dateFrom": zod.date().optional(),
+  "dateTo": zod.date().optional(),
+  "limit": zod.coerce.number().default(listManutencoesQueryLimitDefault),
+  "offset": zod.coerce.number().default(listManutencoesQueryOffsetDefault)
+})
+
+export const ListManutencoesResponse = zod.object({
+  "manutencoes": zod.array(zod.object({
+  "id": zod.number(),
+  "dataManutencao": zod.string().nullable(),
+  "frota": zod.string(),
+  "km": zod.number(),
+  "tipo": zod.string(),
+  "procedimento": zod.string(),
+  "categoria": zod.string(),
+  "oficina": zod.string(),
+  "custo": zod.number(),
+  "obs": zod.string().nullish(),
+  "temAnexo": zod.boolean(),
+  "anexoNome": zod.string().nullish(),
+  "anexoTipo": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})),
+  "total": zod.number()
+})
+
+
+export const CreateManutencaoBody = zod.object({
+  "dataManutencao": zod.coerce.date(),
+  "frota": zod.string(),
+  "km": zod.number(),
+  "tipo": zod.enum(['Preventiva', 'Corretiva', 'Emergencial']),
+  "procedimento": zod.string(),
+  "categoria": zod.string(),
+  "oficina": zod.string(),
+  "custo": zod.number(),
+  "obs": zod.string().nullish(),
+  "anexoNome": zod.string().nullish(),
+  "anexoTipo": zod.string().nullish(),
+  "anexoDados": zod.string().nullish().describe('Base64-encoded file content')
+})
+
+export const CreateManutencaoResponse = zod.object({
+  "id": zod.number(),
+  "dataManutencao": zod.string().nullable(),
+  "frota": zod.string(),
+  "km": zod.number(),
+  "tipo": zod.string(),
+  "procedimento": zod.string(),
+  "categoria": zod.string(),
+  "oficina": zod.string(),
+  "custo": zod.number(),
+  "obs": zod.string().nullish(),
+  "temAnexo": zod.boolean(),
+  "anexoNome": zod.string().nullish(),
+  "anexoTipo": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+export const GetManutencaoParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetManutencaoResponse = zod.object({
+  "id": zod.number(),
+  "dataManutencao": zod.string().nullable(),
+  "frota": zod.string(),
+  "km": zod.number(),
+  "tipo": zod.string(),
+  "procedimento": zod.string(),
+  "categoria": zod.string(),
+  "oficina": zod.string(),
+  "custo": zod.number(),
+  "obs": zod.string().nullish(),
+  "temAnexo": zod.boolean(),
+  "anexoNome": zod.string().nullish(),
+  "anexoTipo": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+export const UpdateManutencaoParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateManutencaoBody = zod.object({
+  "dataManutencao": zod.coerce.date().optional(),
+  "frota": zod.string().optional(),
+  "km": zod.number().optional(),
+  "tipo": zod.string().optional(),
+  "procedimento": zod.string().optional(),
+  "categoria": zod.string().optional(),
+  "oficina": zod.string().optional(),
+  "custo": zod.number().optional(),
+  "obs": zod.string().nullish(),
+  "anexoNome": zod.string().nullish(),
+  "anexoTipo": zod.string().nullish(),
+  "anexoDados": zod.string().nullish()
+})
+
+export const UpdateManutencaoResponse = zod.object({
+  "id": zod.number(),
+  "dataManutencao": zod.string().nullable(),
+  "frota": zod.string(),
+  "km": zod.number(),
+  "tipo": zod.string(),
+  "procedimento": zod.string(),
+  "categoria": zod.string(),
+  "oficina": zod.string(),
+  "custo": zod.number(),
+  "obs": zod.string().nullish(),
+  "temAnexo": zod.boolean(),
+  "anexoNome": zod.string().nullish(),
+  "anexoTipo": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+export const DeleteManutencaoParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteManutencaoResponse = zod.void()
+
+
+/**
+ * @summary Download attachment for a maintenance record
+ */
+export const GetManutencaoAnexoParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetManutencaoAnexoResponse = zod.unknown()
+
+
+/**
+ * @summary Remove attachment from a maintenance record
+ */
+export const DeleteManutencaoAnexoParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteManutencaoAnexoResponse = zod.object({
+  "id": zod.number(),
+  "dataManutencao": zod.string().nullable(),
+  "frota": zod.string(),
+  "km": zod.number(),
+  "tipo": zod.string(),
+  "procedimento": zod.string(),
+  "categoria": zod.string(),
+  "oficina": zod.string(),
+  "custo": zod.number(),
+  "obs": zod.string().nullish(),
+  "temAnexo": zod.boolean(),
+  "anexoNome": zod.string().nullish(),
+  "anexoTipo": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+

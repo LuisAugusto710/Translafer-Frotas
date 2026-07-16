@@ -72,6 +72,11 @@ import type {
   ListDespesasParams,
   ListEmployeeAdvancesParams,
   ListFretesParams,
+  ListManutencoesParams,
+  Manutencao,
+  ManutencaoInput,
+  ManutencaoListResponse,
+  ManutencaoUpdate,
   MensalComparativo,
   MotoristaAjudanteItem,
   NextCteResponse,
@@ -3280,5 +3285,500 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getDeleteEmployeeAdvanceMutationOptions(options));
+    }
+
+export const getListManutencoesUrl = (params?: ListManutencoesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/manutencoes?${stringifiedParams}` : `/api/manutencoes`
+}
+
+/**
+ * @summary List maintenance records
+ */
+export const listManutencoes = async (params?: ListManutencoesParams, options?: RequestInit): Promise<ManutencaoListResponse> => {
+
+  return customFetch<ManutencaoListResponse>(getListManutencoesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListManutencoesQueryKey = (params?: ListManutencoesParams,) => {
+    return [
+    `/api/manutencoes`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListManutencoesQueryOptions = <TData = Awaited<ReturnType<typeof listManutencoes>>, TError = ErrorType<unknown>>(params?: ListManutencoesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listManutencoes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListManutencoesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listManutencoes>>> = ({ signal }) => listManutencoes(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listManutencoes>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListManutencoesQueryResult = NonNullable<Awaited<ReturnType<typeof listManutencoes>>>
+export type ListManutencoesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List maintenance records
+ */
+
+export function useListManutencoes<TData = Awaited<ReturnType<typeof listManutencoes>>, TError = ErrorType<unknown>>(
+ params?: ListManutencoesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listManutencoes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListManutencoesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateManutencaoUrl = () => {
+
+
+
+
+  return `/api/manutencoes`
+}
+
+export const createManutencao = async (manutencaoInput: ManutencaoInput, options?: RequestInit): Promise<Manutencao> => {
+
+  return customFetch<Manutencao>(getCreateManutencaoUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(manutencaoInput)
+  }
+);}
+
+
+
+
+export const getCreateManutencaoMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createManutencao>>, TError,{data: BodyType<ManutencaoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createManutencao>>, TError,{data: BodyType<ManutencaoInput>}, TContext> => {
+
+const mutationKey = ['createManutencao'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createManutencao>>, {data: BodyType<ManutencaoInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createManutencao(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateManutencaoMutationResult = NonNullable<Awaited<ReturnType<typeof createManutencao>>>
+    export type CreateManutencaoMutationBody = BodyType<ManutencaoInput>
+    export type CreateManutencaoMutationError = ErrorType<unknown>
+
+    export const useCreateManutencao = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createManutencao>>, TError,{data: BodyType<ManutencaoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createManutencao>>,
+        TError,
+        {data: BodyType<ManutencaoInput>},
+        TContext
+      > => {
+      return useMutation(getCreateManutencaoMutationOptions(options));
+    }
+
+export const getGetManutencaoUrl = (id: number,) => {
+
+
+
+
+  return `/api/manutencoes/${id}`
+}
+
+export const getManutencao = async (id: number, options?: RequestInit): Promise<Manutencao> => {
+
+  return customFetch<Manutencao>(getGetManutencaoUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetManutencaoQueryKey = (id: number,) => {
+    return [
+    `/api/manutencoes/${id}`
+    ] as const;
+    }
+
+
+export const getGetManutencaoQueryOptions = <TData = Awaited<ReturnType<typeof getManutencao>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getManutencao>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetManutencaoQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getManutencao>>> = ({ signal }) => getManutencao(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getManutencao>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetManutencaoQueryResult = NonNullable<Awaited<ReturnType<typeof getManutencao>>>
+export type GetManutencaoQueryError = ErrorType<ErrorResponse>
+
+
+
+export function useGetManutencao<TData = Awaited<ReturnType<typeof getManutencao>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getManutencao>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetManutencaoQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateManutencaoUrl = (id: number,) => {
+
+
+
+
+  return `/api/manutencoes/${id}`
+}
+
+export const updateManutencao = async (id: number,
+    manutencaoUpdate: ManutencaoUpdate, options?: RequestInit): Promise<Manutencao> => {
+
+  return customFetch<Manutencao>(getUpdateManutencaoUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(manutencaoUpdate)
+  }
+);}
+
+
+
+
+export const getUpdateManutencaoMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateManutencao>>, TError,{id: number;data: BodyType<ManutencaoUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateManutencao>>, TError,{id: number;data: BodyType<ManutencaoUpdate>}, TContext> => {
+
+const mutationKey = ['updateManutencao'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateManutencao>>, {id: number;data: BodyType<ManutencaoUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateManutencao(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateManutencaoMutationResult = NonNullable<Awaited<ReturnType<typeof updateManutencao>>>
+    export type UpdateManutencaoMutationBody = BodyType<ManutencaoUpdate>
+    export type UpdateManutencaoMutationError = ErrorType<ErrorResponse>
+
+    export const useUpdateManutencao = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateManutencao>>, TError,{id: number;data: BodyType<ManutencaoUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateManutencao>>,
+        TError,
+        {id: number;data: BodyType<ManutencaoUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateManutencaoMutationOptions(options));
+    }
+
+export const getDeleteManutencaoUrl = (id: number,) => {
+
+
+
+
+  return `/api/manutencoes/${id}`
+}
+
+export const deleteManutencao = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteManutencaoUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteManutencaoMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteManutencao>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteManutencao>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteManutencao'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteManutencao>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteManutencao(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteManutencaoMutationResult = NonNullable<Awaited<ReturnType<typeof deleteManutencao>>>
+
+    export type DeleteManutencaoMutationError = ErrorType<unknown>
+
+    export const useDeleteManutencao = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteManutencao>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteManutencao>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteManutencaoMutationOptions(options));
+    }
+
+export const getGetManutencaoAnexoUrl = (id: number,) => {
+
+
+
+
+  return `/api/manutencoes/${id}/anexo`
+}
+
+/**
+ * @summary Download attachment for a maintenance record
+ */
+export const getManutencaoAnexo = async (id: number, options?: RequestInit): Promise<Blob> => {
+
+  return customFetch<Blob>(getGetManutencaoAnexoUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetManutencaoAnexoQueryKey = (id: number,) => {
+    return [
+    `/api/manutencoes/${id}/anexo`
+    ] as const;
+    }
+
+
+export const getGetManutencaoAnexoQueryOptions = <TData = Awaited<ReturnType<typeof getManutencaoAnexo>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getManutencaoAnexo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetManutencaoAnexoQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getManutencaoAnexo>>> = ({ signal }) => getManutencaoAnexo(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getManutencaoAnexo>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetManutencaoAnexoQueryResult = NonNullable<Awaited<ReturnType<typeof getManutencaoAnexo>>>
+export type GetManutencaoAnexoQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Download attachment for a maintenance record
+ */
+
+export function useGetManutencaoAnexo<TData = Awaited<ReturnType<typeof getManutencaoAnexo>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getManutencaoAnexo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetManutencaoAnexoQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getDeleteManutencaoAnexoUrl = (id: number,) => {
+
+
+
+
+  return `/api/manutencoes/${id}/anexo`
+}
+
+/**
+ * @summary Remove attachment from a maintenance record
+ */
+export const deleteManutencaoAnexo = async (id: number, options?: RequestInit): Promise<Manutencao> => {
+
+  return customFetch<Manutencao>(getDeleteManutencaoAnexoUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteManutencaoAnexoMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteManutencaoAnexo>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteManutencaoAnexo>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteManutencaoAnexo'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteManutencaoAnexo>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteManutencaoAnexo(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteManutencaoAnexoMutationResult = NonNullable<Awaited<ReturnType<typeof deleteManutencaoAnexo>>>
+
+    export type DeleteManutencaoAnexoMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Remove attachment from a maintenance record
+ */
+export const useDeleteManutencaoAnexo = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteManutencaoAnexo>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteManutencaoAnexo>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteManutencaoAnexoMutationOptions(options));
     }
 

@@ -15,6 +15,7 @@ tags:
   - name: dashboard
   - name: fleet-configs
   - name: employees
+  - name: maintenance
 paths:
   /healthz:
     get:
@@ -953,6 +954,169 @@ paths:
         "204":
           description: Deleted
 
+  /manutencoes:
+    get:
+      operationId: listManutencoes
+      tags: [maintenance]
+      summary: List maintenance records
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: frota
+          in: query
+          schema: { type: string }
+        - name: tipo
+          in: query
+          schema: { type: string }
+        - name: categoria
+          in: query
+          schema: { type: string }
+        - name: oficina
+          in: query
+          schema: { type: string }
+        - name: dateFrom
+          in: query
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          schema: { type: string, format: date }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 100 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManutencaoListResponse"
+    post:
+      operationId: createManutencao
+      tags: [maintenance]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManutencaoInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Manutencao"
+
+  /manutencoes/{id}:
+    get:
+      operationId: getManutencao
+      tags: [maintenance]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Manutencao"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateManutencao
+      tags: [maintenance]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManutencaoUpdate"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Manutencao"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteManutencao
+      tags: [maintenance]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+
+  /manutencoes/{id}/anexo:
+    get:
+      operationId: getManutencaoAnexo
+      tags: [maintenance]
+      summary: Download attachment for a maintenance record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Attachment file
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteManutencaoAnexo
+      tags: [maintenance]
+      summary: Remove attachment from a maintenance record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Updated record without attachment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Manutencao"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     NextCteResponse:
@@ -1890,3 +2054,110 @@ components:
           type: number
         tipo:
           type: string
+
+    ManutencaoInput:
+      type: object
+      required: [dataManutencao, frota, km, tipo, procedimento, categoria, oficina, custo]
+      properties:
+        dataManutencao:
+          type: string
+          format: date
+        frota:
+          type: string
+        km:
+          type: number
+        tipo:
+          type: string
+          enum: [Preventiva, Corretiva, Emergencial]
+        procedimento:
+          type: string
+        categoria:
+          type: string
+        oficina:
+          type: string
+        custo:
+          type: number
+        obs:
+          type: ["string", "null"]
+        anexoNome:
+          type: ["string", "null"]
+        anexoTipo:
+          type: ["string", "null"]
+        anexoDados:
+          type: ["string", "null"]
+          description: Base64-encoded file content
+
+    ManutencaoUpdate:
+      type: object
+      properties:
+        dataManutencao:
+          type: string
+          format: date
+        frota:
+          type: string
+        km:
+          type: number
+        tipo:
+          type: string
+        procedimento:
+          type: string
+        categoria:
+          type: string
+        oficina:
+          type: string
+        custo:
+          type: number
+        obs:
+          type: ["string", "null"]
+        anexoNome:
+          type: ["string", "null"]
+        anexoTipo:
+          type: ["string", "null"]
+        anexoDados:
+          type: ["string", "null"]
+
+    Manutencao:
+      type: object
+      required: [id, dataManutencao, frota, km, tipo, procedimento, categoria, oficina, custo, temAnexo, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        dataManutencao:
+          type: ["string", "null"]
+        frota:
+          type: string
+        km:
+          type: number
+        tipo:
+          type: string
+        procedimento:
+          type: string
+        categoria:
+          type: string
+        oficina:
+          type: string
+        custo:
+          type: number
+        obs:
+          type: ["string", "null"]
+        temAnexo:
+          type: boolean
+        anexoNome:
+          type: ["string", "null"]
+        anexoTipo:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    ManutencaoListResponse:
+      type: object
+      required: [manutencoes, total]
+      properties:
+        manutencoes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Manutencao"
+        total:
+          type: integer
