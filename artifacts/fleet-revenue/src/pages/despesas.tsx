@@ -245,28 +245,28 @@ export function Despesas() {
                 <TableHead className="min-w-[90px] whitespace-nowrap">Data</TableHead>
                 <TableHead className="min-w-[64px] whitespace-nowrap">Frota</TableHead>
                 <TableHead className="min-w-[100px] whitespace-nowrap">Cidade</TableHead>
-                <TableHead className="text-right min-w-[88px] whitespace-nowrap">Frete (R$)</TableHead>
-                <TableHead className="text-right min-w-[64px] whitespace-nowrap">KM</TableHead>
-                <TableHead className="text-right min-w-[82px] leading-tight">Diesel (LT)</TableHead>
-                <TableHead className="text-right min-w-[82px] leading-tight">Diesel (R$)</TableHead>
-                <TableHead className="text-right min-w-[64px] whitespace-nowrap">DAS</TableHead>
+ <TableHead className=" min-w-[88px] whitespace-nowrap">Frete (R$)</TableHead>
+ <TableHead className=" min-w-[64px] whitespace-nowrap">KM</TableHead>
+ <TableHead className=" min-w-[82px] leading-tight">Diesel (LT)</TableHead>
+ <TableHead className=" min-w-[82px] leading-tight">Diesel (R$)</TableHead>
+ <TableHead className=" min-w-[64px] whitespace-nowrap">DAS</TableHead>
                 <TableHead className="min-w-[130px] leading-tight">Motorista (Nome)</TableHead>
-                <TableHead className="text-right min-w-[80px] whitespace-nowrap">Motorista</TableHead>
-                <TableHead className="text-right min-w-[72px] whitespace-nowrap">Almoço</TableHead>
+ <TableHead className=" min-w-[80px] whitespace-nowrap">Motorista</TableHead>
+ <TableHead className=" min-w-[72px] whitespace-nowrap">Almoço</TableHead>
                 <TableHead className="min-w-[120px] leading-tight">Ajudante (Nome)</TableHead>
-                <TableHead className="text-right min-w-[80px] whitespace-nowrap">Ajudante</TableHead>
-                <TableHead className="text-right min-w-[72px] whitespace-nowrap">Pedágio</TableHead>
-                <TableHead className="text-right min-w-[72px] whitespace-nowrap">Unimed</TableHead>
-                <TableHead className="text-right min-w-[68px] whitespace-nowrap">Seguro</TableHead>
-                <TableHead className="text-right min-w-[64px] whitespace-nowrap">Gasto</TableHead>
-                <TableHead className="text-right min-w-[88px] whitespace-nowrap">Rastreador</TableHead>
-                <TableHead className="text-right min-w-[60px] whitespace-nowrap">INSS</TableHead>
-                <TableHead className="text-right min-w-[80px] whitespace-nowrap">Escritório</TableHead>
-                <TableHead className="text-right min-w-[60px] whitespace-nowrap">IPVA</TableHead>
-                <TableHead className="text-right min-w-[64px] whitespace-nowrap">Bsoft</TableHead>
+ <TableHead className=" min-w-[80px] whitespace-nowrap">Ajudante</TableHead>
+ <TableHead className=" min-w-[72px] whitespace-nowrap">Pedágio</TableHead>
+ <TableHead className=" min-w-[72px] whitespace-nowrap">Unimed</TableHead>
+ <TableHead className=" min-w-[68px] whitespace-nowrap">Seguro</TableHead>
+ <TableHead className=" min-w-[64px] whitespace-nowrap">Gasto</TableHead>
+ <TableHead className=" min-w-[88px] whitespace-nowrap">Rastreador</TableHead>
+ <TableHead className=" min-w-[60px] whitespace-nowrap">INSS</TableHead>
+ <TableHead className=" min-w-[80px] whitespace-nowrap">Escritório</TableHead>
+ <TableHead className=" min-w-[60px] whitespace-nowrap">IPVA</TableHead>
+ <TableHead className=" min-w-[64px] whitespace-nowrap">Bsoft</TableHead>
                 <TableHead className="min-w-[110px] leading-tight">Parcela Troca Óleo</TableHead>
-                <TableHead className="text-right font-bold text-red-600 min-w-[100px] leading-tight">Total Despesa</TableHead>
-                <TableHead className="text-right font-bold text-[#0a192f] min-w-[80px] leading-tight">Lucro (R$)</TableHead>
+ <TableHead className=" font-bold text-red-600 min-w-[100px] leading-tight">Total Despesa</TableHead>
+ <TableHead className=" font-bold text-[#0a192f] min-w-[80px] leading-tight">Lucro (R$)</TableHead>
                 <TableHead className="min-w-[80px] whitespace-nowrap">Obs</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
@@ -282,7 +282,7 @@ export function Despesas() {
                 ))
               ) : despesas.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={COL_COUNT} className="text-center h-32 text-muted-foreground">
+ <TableCell colSpan={COL_COUNT} className=" h-32 text-muted-foreground">
                     {isSearching ? "Nenhuma despesa encontrada para a busca." : "Nenhuma despesa encontrada."}
                   </TableCell>
                 </TableRow>
@@ -305,32 +305,32 @@ export function Despesas() {
                         <TableCell className="whitespace-nowrap">{hl(formatDate(d.data))}</TableCell>
                         <TableCell className="font-medium text-[#0a192f] whitespace-nowrap">{hl(d.frota)}</TableCell>
                         <TableCell className="truncate max-w-[140px]" title={d.cidade}>{hl(d.cidade)}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.frete))}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatNumber(d.km))}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatNumber(d.dieselLt))}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.dieselRs))}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.das))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatCurrency(d.frete))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatNumber(d.km))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatNumber(d.dieselLt))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatCurrency(d.dieselRs))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatCurrency(d.das))}</TableCell>
                         <TableCell className="truncate max-w-[140px] whitespace-nowrap" title={d.motoristaNome}>{hl(d.motoristaNome || "-")}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.motorista))}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.almoco))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatCurrency(d.motorista))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatCurrency(d.almoco))}</TableCell>
                         <TableCell className="truncate max-w-[140px] whitespace-nowrap" title={d.ajudanteNome}>{hl(d.ajudanteNome || "-")}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.ajudante))}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.pedagio))}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.unimed))}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.seguro))}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.gasto))}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.rastreador))}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.inss))}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.escritorio))}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.ipva))}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(d.bsoft))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatCurrency(d.ajudante))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatCurrency(d.pedagio))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatCurrency(d.unimed))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatCurrency(d.seguro))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatCurrency(d.gasto))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatCurrency(d.rastreador))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatCurrency(d.inss))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatCurrency(d.escritorio))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatCurrency(d.ipva))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatCurrency(d.bsoft))}</TableCell>
                         <TableCell className="whitespace-nowrap" title={d.trocaOleoParcela}>
                           {hl(d.trocaOleoParcela || "-")}
                         </TableCell>
-                        <TableCell className="text-right font-bold text-red-600 bg-red-500/10 whitespace-nowrap">
+ <TableCell className=" font-bold text-red-600 bg-red-500/10 whitespace-nowrap">
                           {hl(formatCurrency(d.totalDespesa))}
                         </TableCell>
-                        <TableCell className={`text-right font-bold whitespace-nowrap ${d.lucro >= 0 ? "text-[#2ecc71] bg-[#2ecc71]/10" : "text-red-600 bg-red-500/10"}`}>
+ <TableCell className={` font-bold whitespace-nowrap ${d.lucro >= 0 ?"text-[#2ecc71] bg-[#2ecc71]/10" :"text-red-600 bg-red-500/10"}`}>
                           {hl(formatCurrency(d.lucro))}
                         </TableCell>
                         <TableCell className="truncate max-w-[100px]" title={d.obs || ""}>

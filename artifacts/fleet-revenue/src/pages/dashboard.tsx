@@ -303,19 +303,19 @@ function FleetComparison({ data }: { data?: FleetPerformance[] }) {
             <thead className="bg-muted/50">
               <tr>
                 <th className="px-4 py-2 text-left text-xs font-semibold text-muted-foreground">Métrica</th>
-                <th className="px-4 py-2 text-center text-xs font-semibold text-chart-1">Frota {frotaA}</th>
-                <th className="px-4 py-2 text-center text-xs font-semibold text-chart-3">Frota {frotaB}</th>
+                <th className="px-4 py-2 text-left text-xs font-semibold text-chart-1">Frota {frotaA}</th>
+                <th className="px-4 py-2 text-left text-xs font-semibold text-chart-3">Frota {frotaB}</th>
               </tr>
             </thead>
             <tbody>
               {metrics.map(m => (
                 <tr key={m.label} className="border-t hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-2 text-xs text-muted-foreground">{m.label}</td>
-                  <td className={`px-4 py-2 text-center font-medium text-sm ${m.higher === "a" ? "text-emerald-600 dark:text-emerald-400 font-bold" : ""}`}>
+                  <td className={`px-4 py-2 font-medium text-sm ${m.higher === "a" ? "text-emerald-600 dark:text-emerald-400 font-bold" : ""}`}>
                     {m.fmt(a)}
                     {m.higher === "a" && <Star className="inline h-3 w-3 ml-1 text-emerald-500" />}
                   </td>
-                  <td className={`px-4 py-2 text-center font-medium text-sm ${m.higher === "b" ? "text-emerald-600 dark:text-emerald-400 font-bold" : ""}`}>
+                  <td className={`px-4 py-2 font-medium text-sm ${m.higher === "b" ? "text-emerald-600 dark:text-emerald-400 font-bold" : ""}`}>
                     {m.fmt(b)}
                     {m.higher === "b" && <Star className="inline h-3 w-3 ml-1 text-emerald-500" />}
                   </td>
@@ -791,10 +791,10 @@ export function Dashboard() {
                 <thead className="bg-muted/50">
                   <tr>
                     <th className="px-3 py-2 text-left text-xs font-semibold text-muted-foreground">Transportadora</th>
-                    <th className="px-3 py-2 text-right text-xs font-semibold text-muted-foreground">Viagens</th>
-                    <th className="px-3 py-2 text-right text-xs font-semibold text-muted-foreground">Receita Total</th>
-                    <th className="px-3 py-2 text-right text-xs font-semibold text-muted-foreground">Total Despesas</th>
-                    <th className="px-3 py-2 text-right text-xs font-semibold text-muted-foreground">% Total</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-muted-foreground">Viagens</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-muted-foreground">Receita Total</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-muted-foreground">Total Despesas</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-muted-foreground">% Total</th>
                     <th className="px-3 py-2 text-left text-xs font-semibold text-muted-foreground w-32">Participação</th>
                   </tr>
                 </thead>
@@ -802,10 +802,10 @@ export function Dashboard() {
                   {transpData.map((t, i) => (
                     <tr key={i} className="border-t hover:bg-muted/20 transition-colors">
                       <td className="px-3 py-2 font-medium">{t.transp}</td>
-                      <td className="px-3 py-2 text-right">{t.viagens}</td>
-                      <td className="px-3 py-2 text-right">{formatCurrency(t.totalGeral)}</td>
-                      <td className="px-3 py-2 text-right text-red-600 dark:text-red-400">{formatCurrency(t.totalDespesas)}</td>
-                      <td className="px-3 py-2 text-right font-semibold">{formatNumber(t.pctTotal, 1)}%</td>
+                      <td className="px-3 py-2">{t.viagens}</td>
+                      <td className="px-3 py-2">{formatCurrency(t.totalGeral)}</td>
+                      <td className="px-3 py-2 text-red-600 dark:text-red-400">{formatCurrency(t.totalDespesas)}</td>
+                      <td className="px-3 py-2 font-semibold">{formatNumber(t.pctTotal, 1)}%</td>
                       <td className="px-3 py-2">
                         <div className="h-2 bg-muted rounded-full overflow-hidden">
                           <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${t.pctTotal}%` }} />
@@ -1031,7 +1031,7 @@ export function Dashboard() {
                         <th className="pb-2 text-left font-semibold text-muted-foreground">Cliente</th>
                         <th className="pb-2 text-left font-semibold text-muted-foreground">Frota</th>
                         <th className="pb-2 text-left font-semibold text-muted-foreground">Destino</th>
-                        <th className="pb-2 text-right font-semibold text-muted-foreground">Frete</th>
+                        <th className="pb-2 text-left font-semibold text-muted-foreground">Frete</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1041,7 +1041,7 @@ export function Dashboard() {
                           <td className="py-1.5 max-w-[100px] truncate" title={f.cliente}>{f.cliente}</td>
                           <td className="py-1.5 font-medium text-[#0a192f] dark:text-white whitespace-nowrap">{f.frota}</td>
                           <td className="py-1.5 max-w-[90px] truncate text-muted-foreground" title={f.cidade}>{f.cidade}</td>
-                          <td className="py-1.5 text-right font-semibold whitespace-nowrap">{formatCurrency(f.totalGeral)}</td>
+                          <td className="py-1.5 font-semibold whitespace-nowrap">{formatCurrency(f.totalGeral)}</td>
                         </tr>
                       ))}
                     </tbody>

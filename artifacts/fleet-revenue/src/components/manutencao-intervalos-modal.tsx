@@ -121,8 +121,8 @@ export function ManutencaoIntervalosModal({ open, onOpenChange }: { open: boolea
               <thead>
                 <tr className="border-b">
                   <th className="pb-2 text-left font-semibold text-muted-foreground">Categoria</th>
-                  <th className="pb-2 text-right font-semibold text-muted-foreground pr-2">Intervalo (km)</th>
-                  <th className="pb-2 text-right font-semibold text-muted-foreground pr-2">Aviso (%)</th>
+ <th className="pb-2 font-semibold text-muted-foreground pr-2">Intervalo (km)</th>
+ <th className="pb-2 font-semibold text-muted-foreground pr-2">Aviso (%)</th>
                   <th className="pb-2 w-20"></th>
                 </tr>
               </thead>
@@ -148,7 +148,7 @@ export function ManutencaoIntervalosModal({ open, onOpenChange }: { open: boolea
                           <Input type="number" min="1" max="100" className="h-8 text-xs text-right" value={editRow.avisoPercentual}
                             onChange={e => setEditRow(p => ({ ...p, avisoPercentual: e.target.value }))} />
                         </td>
-                        <td className="py-1.5 text-right">
+ <td className="py-1.5">
                           <div className="flex gap-1 justify-end">
                             <Button size="icon" variant="ghost" className="h-7 w-7 text-emerald-600"
                               onClick={() => updateMutation.mutate({ id: i.id, row: editRow })}
@@ -164,9 +164,9 @@ export function ManutencaoIntervalosModal({ open, onOpenChange }: { open: boolea
                     ) : (
                       <>
                         <td className="py-2 font-medium">{i.categoria}</td>
-                        <td className="py-2 text-right pr-2 text-muted-foreground">{i.intervaloKm.toLocaleString("pt-BR")} km</td>
-                        <td className="py-2 text-right pr-2 text-muted-foreground">{i.avisoPercentual}%</td>
-                        <td className="py-2 text-right">
+ <td className="py-2 pr-2 text-muted-foreground">{i.intervaloKm.toLocaleString("pt-BR")} km</td>
+ <td className="py-2 pr-2 text-muted-foreground">{i.avisoPercentual}%</td>
+ <td className="py-2">
                           <div className="flex gap-1 justify-end">
                             <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => startEdit(i)}>
                               <Pencil className="h-3.5 w-3.5" />
@@ -202,7 +202,7 @@ export function ManutencaoIntervalosModal({ open, onOpenChange }: { open: boolea
                       <Input type="number" min="1" max="100" className="h-8 text-xs text-right" placeholder="%"
                         value={newRow.avisoPercentual} onChange={e => setNewRow(p => ({ ...p, avisoPercentual: e.target.value }))} />
                     </td>
-                    <td className="py-1.5 text-right">
+ <td className="py-1.5">
                       <div className="flex gap-1 justify-end">
                         <Button size="icon" variant="ghost" className="h-7 w-7 text-emerald-600"
                           onClick={() => { if (newRow.categoria && newRow.intervaloKm) createMutation.mutate(newRow); }}

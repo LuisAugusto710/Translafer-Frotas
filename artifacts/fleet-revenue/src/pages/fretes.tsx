@@ -274,10 +274,10 @@ export function Fretes() {
                 <TableHead className="whitespace-nowrap">Cliente</TableHead>
                 <TableHead className="whitespace-nowrap">Cidade</TableHead>
                 <TableHead className="whitespace-nowrap">CTE/NF</TableHead>
-                <TableHead className="text-right whitespace-nowrap">Peso (kg)</TableHead>
-                <TableHead className="text-right whitespace-nowrap">Frete (R$)</TableHead>
-                <TableHead className="text-right whitespace-nowrap">Pedágio (R$)</TableHead>
-                <TableHead className="text-right font-bold text-[#0a192f] whitespace-nowrap">Total Frete (R$)</TableHead>
+ <TableHead className=" whitespace-nowrap">Peso (kg)</TableHead>
+ <TableHead className=" whitespace-nowrap">Frete (R$)</TableHead>
+ <TableHead className=" whitespace-nowrap">Pedágio (R$)</TableHead>
+ <TableHead className=" font-bold text-[#0a192f] whitespace-nowrap">Total Frete (R$)</TableHead>
                 <TableHead className="whitespace-nowrap">Dta Frete</TableHead>
                 <TableHead className="whitespace-nowrap">Vencimento</TableHead>
                 <TableHead className="whitespace-nowrap">Obs</TableHead>
@@ -295,7 +295,7 @@ export function Fretes() {
                 ))
               ) : fretes.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={16} className="text-center h-32 text-muted-foreground">
+ <TableCell colSpan={16} className=" h-32 text-muted-foreground">
                     {isSearching ? "Nenhum frete encontrado para a busca." : "Nenhum frete encontrado."}
                   </TableCell>
                 </TableRow>
@@ -325,10 +325,10 @@ export function Fretes() {
                         <TableCell className="truncate max-w-[140px]" title={frete.cliente}>{hl(frete.cliente)}</TableCell>
                         <TableCell className="truncate max-w-[110px]" title={frete.cidade}>{hl(frete.cidade)}</TableCell>
                         <TableCell className="whitespace-nowrap">{hl(frete.cteNf)}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatNumber(frete.peso))}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(frete.frete))}</TableCell>
-                        <TableCell className="text-right whitespace-nowrap">{hl(formatCurrency(frete.pedagio))}</TableCell>
-                        <TableCell className="text-right font-bold text-[#2ecc71] bg-[#2ecc71]/10 whitespace-nowrap">
+ <TableCell className=" whitespace-nowrap">{hl(formatNumber(frete.peso))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatCurrency(frete.frete))}</TableCell>
+ <TableCell className=" whitespace-nowrap">{hl(formatCurrency(frete.pedagio))}</TableCell>
+ <TableCell className=" font-bold text-[#2ecc71] bg-[#2ecc71]/10 whitespace-nowrap">
                           {hl(formatCurrency(frete.totalFrete))}
                         </TableCell>
                         <TableCell className="whitespace-nowrap">{hl(formatDate(frete.dtaFrete))}</TableCell>

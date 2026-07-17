@@ -117,13 +117,13 @@ export function Diesel() {
                 <TableHead className="whitespace-nowrap">Posto</TableHead>
                 <TableHead className="whitespace-nowrap">Data</TableHead>
                 <TableHead className="whitespace-nowrap">Frota</TableHead>
-                <TableHead className="text-right whitespace-nowrap">Litros</TableHead>
-                <TableHead className="text-right whitespace-nowrap">R$/L</TableHead>
-                <TableHead className="text-right font-bold text-[#0a192f] whitespace-nowrap">Total (R$)</TableHead>
-                <TableHead className="text-right whitespace-nowrap">KM Início</TableHead>
-                <TableHead className="text-right whitespace-nowrap">KM Final</TableHead>
-                <TableHead className="text-right whitespace-nowrap">KM Perc.</TableHead>
-                <TableHead className="text-center whitespace-nowrap">Média (km/l)</TableHead>
+ <TableHead className=" whitespace-nowrap">Litros</TableHead>
+ <TableHead className=" whitespace-nowrap">R$/L</TableHead>
+ <TableHead className=" font-bold text-[#0a192f] whitespace-nowrap">Total (R$)</TableHead>
+ <TableHead className=" whitespace-nowrap">KM Início</TableHead>
+ <TableHead className=" whitespace-nowrap">KM Final</TableHead>
+ <TableHead className=" whitespace-nowrap">KM Perc.</TableHead>
+ <TableHead className=" whitespace-nowrap">Média (km/l)</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
@@ -138,7 +138,7 @@ export function Diesel() {
                 ))
               ) : abasts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={13} className="text-center h-32 text-muted-foreground">
+ <TableCell colSpan={13} className=" h-32 text-muted-foreground">
                     Nenhum abastecimento encontrado.
                   </TableCell>
                 </TableRow>
@@ -150,13 +150,13 @@ export function Diesel() {
                     <TableCell className="truncate max-w-[110px]">{a.posto || "-"}</TableCell>
                     <TableCell className="whitespace-nowrap">{formatDate(a.data)}</TableCell>
                     <TableCell className="font-medium whitespace-nowrap">{a.placa}</TableCell>
-                    <TableCell className="text-right whitespace-nowrap">{formatNumber(a.litros, 2)} L</TableCell>
-                    <TableCell className="text-right whitespace-nowrap">{formatCurrency(a.precoLitro)}</TableCell>
-                    <TableCell className="text-right font-bold whitespace-nowrap">{formatCurrency(a.totalPago)}</TableCell>
-                    <TableCell className="text-right text-muted-foreground whitespace-nowrap">{formatInteger(a.kmInicio)}</TableCell>
-                    <TableCell className="text-right text-muted-foreground whitespace-nowrap">{formatInteger(a.kmFinal)}</TableCell>
-                    <TableCell className="text-right whitespace-nowrap">{formatInteger(a.kmPercorrido)}</TableCell>
-                    <TableCell className="text-center">
+ <TableCell className=" whitespace-nowrap">{formatNumber(a.litros, 2)} L</TableCell>
+ <TableCell className=" whitespace-nowrap">{formatCurrency(a.precoLitro)}</TableCell>
+ <TableCell className=" font-bold whitespace-nowrap">{formatCurrency(a.totalPago)}</TableCell>
+ <TableCell className=" text-muted-foreground whitespace-nowrap">{formatInteger(a.kmInicio)}</TableCell>
+ <TableCell className=" text-muted-foreground whitespace-nowrap">{formatInteger(a.kmFinal)}</TableCell>
+ <TableCell className=" whitespace-nowrap">{formatInteger(a.kmPercorrido)}</TableCell>
+ <TableCell className="">
                       <div className={`px-2 py-1 rounded inline-block font-bold min-w-[52px] ${getMediaColor(a.media)}`}>
                         {formatNumber(a.media, 1)}
                       </div>

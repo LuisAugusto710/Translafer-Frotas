@@ -280,14 +280,14 @@ export function Manutencao() {
               <TableRow>
                 <TableHead className="whitespace-nowrap">Data</TableHead>
                 <TableHead className="whitespace-nowrap">Frota</TableHead>
-                <TableHead className="whitespace-nowrap text-right">KM</TableHead>
+ <TableHead className="whitespace-nowrap">KM</TableHead>
                 <TableHead className="whitespace-nowrap">Tipo</TableHead>
                 <TableHead className="whitespace-nowrap">Procedimento</TableHead>
                 <TableHead className="whitespace-nowrap">Categoria</TableHead>
                 <TableHead className="whitespace-nowrap">Oficina</TableHead>
-                <TableHead className="whitespace-nowrap text-right">Custo</TableHead>
-                <TableHead className="whitespace-nowrap text-center">Anexo</TableHead>
-                <TableHead className="whitespace-nowrap text-right">Ações</TableHead>
+ <TableHead className="whitespace-nowrap">Custo</TableHead>
+ <TableHead className="whitespace-nowrap">Anexo</TableHead>
+ <TableHead className="whitespace-nowrap">Ações</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -302,7 +302,7 @@ export function Manutencao() {
                 ))
               ) : rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
+ <TableCell colSpan={10} className=" py-12 text-muted-foreground">
                     {isSearching ? "Nenhum resultado encontrado." : "Nenhuma manutenção registrada."}
                   </TableCell>
                 </TableRow>
@@ -321,7 +321,7 @@ export function Manutencao() {
                         <TableCell className="whitespace-nowrap font-medium">
                           {hl(row.frota)}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-right text-sm">
+ <TableCell className="whitespace-nowrap text-sm">
                           {row.km.toLocaleString("pt-BR")}
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
@@ -336,17 +336,17 @@ export function Manutencao() {
                         <TableCell className="whitespace-nowrap text-sm">
                           {hl(row.oficina)}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-right font-semibold text-sm">
+ <TableCell className="whitespace-nowrap font-semibold text-sm">
                           {formatCurrency(row.custo)}
                         </TableCell>
-                        <TableCell className="text-center">
+ <TableCell className="">
                           {row.temAnexo && (
                             <span title={row.anexoNome ?? "Anexo"} className="flex justify-center">
                               <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
                             </span>
                           )}
                         </TableCell>
-                        <TableCell className="text-right">
+ <TableCell className="">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon" className="h-7 w-7">

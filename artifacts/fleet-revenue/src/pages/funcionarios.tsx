@@ -1030,7 +1030,7 @@ export function Funcionarios() {
                       <TableHead className="whitespace-nowrap">Data</TableHead>
                       <TableHead>Tipo</TableHead>
                       <TableHead className="hidden sm:table-cell">Descrição</TableHead>
-                      <TableHead className="text-right whitespace-nowrap">Valor</TableHead>
+                      <TableHead className="whitespace-nowrap">Valor</TableHead>
                       <TableHead className="w-[64px]" />
                     </TableRow>
                   </TableHeader>
@@ -1049,7 +1049,7 @@ export function Funcionarios() {
                           </Badge>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{adv.descricao || "—"}</TableCell>
-                        <TableCell className={`text-right text-sm font-semibold whitespace-nowrap ${isAddType(adv.tipo) ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+                        <TableCell className={`text-sm font-semibold whitespace-nowrap ${isAddType(adv.tipo) ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
                           {isAddType(adv.tipo) ? "+" : "−"}{fmt(Number(adv.valor))}
                         </TableCell>
                         <TableCell className="pr-2">
