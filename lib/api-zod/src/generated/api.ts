@@ -1224,3 +1224,94 @@ export const DeleteManutencaoAnexoResponse = zod.object({
 })
 
 
+/**
+ * @summary List maintenance intervals
+ */
+export const ListManutencaoIntervalosResponseItem = zod.object({
+  "id": zod.number(),
+  "categoria": zod.string(),
+  "descricao": zod.string().nullish(),
+  "intervaloKm": zod.number(),
+  "avisoPercentual": zod.number(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+export const ListManutencaoIntervalosResponse = zod.array(ListManutencaoIntervalosResponseItem)
+
+
+/**
+ * @summary Create or upsert maintenance interval
+ */
+export const CreateManutencaoIntervaloBody = zod.object({
+  "categoria": zod.string(),
+  "descricao": zod.string().nullish(),
+  "intervaloKm": zod.number(),
+  "avisoPercentual": zod.number().optional()
+})
+
+export const CreateManutencaoIntervaloResponse = zod.object({
+  "id": zod.number(),
+  "categoria": zod.string(),
+  "descricao": zod.string().nullish(),
+  "intervaloKm": zod.number(),
+  "avisoPercentual": zod.number(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Update maintenance interval
+ */
+export const UpdateManutencaoIntervaloParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateManutencaoIntervaloBody = zod.object({
+  "categoria": zod.string(),
+  "descricao": zod.string().nullish(),
+  "intervaloKm": zod.number(),
+  "avisoPercentual": zod.number().optional()
+})
+
+export const UpdateManutencaoIntervaloResponse = zod.object({
+  "id": zod.number(),
+  "categoria": zod.string(),
+  "descricao": zod.string().nullish(),
+  "intervaloKm": zod.number(),
+  "avisoPercentual": zod.number(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Delete maintenance interval
+ */
+export const DeleteManutencaoIntervaloParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteManutencaoIntervaloResponse = zod.void()
+
+
+/**
+ * @summary Preventive maintenance status per fleet and category
+ */
+export const GetManutencaoPreventivaResponseItem = zod.object({
+  "frota": zod.string(),
+  "categoria": zod.string(),
+  "intervaloId": zod.number(),
+  "descricao": zod.string().nullish(),
+  "intervaloKm": zod.number(),
+  "avisoPercentual": zod.number(),
+  "ultimaData": zod.string().nullish(),
+  "ultimoKm": zod.number().optional(),
+  "kmAtual": zod.number(),
+  "kmProxima": zod.number(),
+  "kmRestante": zod.number(),
+  "status": zod.enum(['ok', 'aviso', 'vencido'])
+})
+export const GetManutencaoPreventivaResponse = zod.array(GetManutencaoPreventivaResponseItem)
+
+

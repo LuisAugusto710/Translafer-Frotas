@@ -4,7 +4,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { useMutation } from "@tanstack/react-query";
 import { deleteManutencao } from "@workspace/api-client-react";
 import { apiFetch } from "@/lib/api-fetch";
-import { Plus, Download, MoreHorizontal, Pencil, Trash2, Search, Loader2, Paperclip } from "lucide-react";
+import { Plus, Download, MoreHorizontal, Pencil, Trash2, Search, Loader2, Paperclip, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { exportToCsv, exportToExcel } from "@/lib/export";
 import { ManutencaoFormModal } from "@/components/manutencao-form-modal";
+import { ManutencaoIntervalosModal } from "@/components/manutencao-intervalos-modal";
 
 // ── Highlight ─────────────────────────────────────────────────────────────────
 function Highlight({ text, query }: { text: string; query: string }) {
@@ -104,6 +105,7 @@ export function Manutencao() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isIntervalosOpen, setIsIntervalosOpen] = useState(false);
   const [editing, setEditing] = useState<ManutencaoRow | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -239,6 +241,9 @@ export function Manutencao() {
           />
         </div>
         <div className="flex gap-2 shrink-0 ml-auto">
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setIsIntervalosOpen(true)}>
+            <Settings2 className="h-4 w-4" /> Intervalos
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5">
@@ -384,6 +389,11 @@ export function Manutencao() {
         open={isFormOpen}
         onOpenChange={(o) => { setIsFormOpen(o); if (!o) setEditing(null); }}
         manutencao={editing ?? undefined}
+      />
+
+      <ManutencaoIntervalosModal
+        open={isIntervalosOpen}
+        onOpenChange={setIsIntervalosOpen}
       />
     </div>
   );

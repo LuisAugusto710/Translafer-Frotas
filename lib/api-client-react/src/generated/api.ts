@@ -75,7 +75,10 @@ import type {
   ListManutencoesParams,
   Manutencao,
   ManutencaoInput,
+  ManutencaoIntervalo,
+  ManutencaoIntervaloInput,
   ManutencaoListResponse,
+  ManutencaoPreventivaItem,
   ManutencaoUpdate,
   MensalComparativo,
   MotoristaAjudanteItem,
@@ -3781,4 +3784,369 @@ export const useDeleteManutencaoAnexo = <TError = ErrorType<ErrorResponse>,
       > => {
       return useMutation(getDeleteManutencaoAnexoMutationOptions(options));
     }
+
+export const getListManutencaoIntervalosUrl = () => {
+
+
+
+
+  return `/api/manutencao-intervalos`
+}
+
+/**
+ * @summary List maintenance intervals
+ */
+export const listManutencaoIntervalos = async ( options?: RequestInit): Promise<ManutencaoIntervalo[]> => {
+
+  return customFetch<ManutencaoIntervalo[]>(getListManutencaoIntervalosUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListManutencaoIntervalosQueryKey = () => {
+    return [
+    `/api/manutencao-intervalos`
+    ] as const;
+    }
+
+
+export const getListManutencaoIntervalosQueryOptions = <TData = Awaited<ReturnType<typeof listManutencaoIntervalos>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listManutencaoIntervalos>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListManutencaoIntervalosQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listManutencaoIntervalos>>> = ({ signal }) => listManutencaoIntervalos({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listManutencaoIntervalos>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListManutencaoIntervalosQueryResult = NonNullable<Awaited<ReturnType<typeof listManutencaoIntervalos>>>
+export type ListManutencaoIntervalosQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List maintenance intervals
+ */
+
+export function useListManutencaoIntervalos<TData = Awaited<ReturnType<typeof listManutencaoIntervalos>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listManutencaoIntervalos>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListManutencaoIntervalosQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateManutencaoIntervaloUrl = () => {
+
+
+
+
+  return `/api/manutencao-intervalos`
+}
+
+/**
+ * @summary Create or upsert maintenance interval
+ */
+export const createManutencaoIntervalo = async (manutencaoIntervaloInput: ManutencaoIntervaloInput, options?: RequestInit): Promise<ManutencaoIntervalo> => {
+
+  return customFetch<ManutencaoIntervalo>(getCreateManutencaoIntervaloUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(manutencaoIntervaloInput)
+  }
+);}
+
+
+
+
+export const getCreateManutencaoIntervaloMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createManutencaoIntervalo>>, TError,{data: BodyType<ManutencaoIntervaloInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createManutencaoIntervalo>>, TError,{data: BodyType<ManutencaoIntervaloInput>}, TContext> => {
+
+const mutationKey = ['createManutencaoIntervalo'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createManutencaoIntervalo>>, {data: BodyType<ManutencaoIntervaloInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createManutencaoIntervalo(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateManutencaoIntervaloMutationResult = NonNullable<Awaited<ReturnType<typeof createManutencaoIntervalo>>>
+    export type CreateManutencaoIntervaloMutationBody = BodyType<ManutencaoIntervaloInput>
+    export type CreateManutencaoIntervaloMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create or upsert maintenance interval
+ */
+export const useCreateManutencaoIntervalo = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createManutencaoIntervalo>>, TError,{data: BodyType<ManutencaoIntervaloInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createManutencaoIntervalo>>,
+        TError,
+        {data: BodyType<ManutencaoIntervaloInput>},
+        TContext
+      > => {
+      return useMutation(getCreateManutencaoIntervaloMutationOptions(options));
+    }
+
+export const getUpdateManutencaoIntervaloUrl = (id: number,) => {
+
+
+
+
+  return `/api/manutencao-intervalos/${id}`
+}
+
+/**
+ * @summary Update maintenance interval
+ */
+export const updateManutencaoIntervalo = async (id: number,
+    manutencaoIntervaloInput: ManutencaoIntervaloInput, options?: RequestInit): Promise<ManutencaoIntervalo> => {
+
+  return customFetch<ManutencaoIntervalo>(getUpdateManutencaoIntervaloUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(manutencaoIntervaloInput)
+  }
+);}
+
+
+
+
+export const getUpdateManutencaoIntervaloMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateManutencaoIntervalo>>, TError,{id: number;data: BodyType<ManutencaoIntervaloInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateManutencaoIntervalo>>, TError,{id: number;data: BodyType<ManutencaoIntervaloInput>}, TContext> => {
+
+const mutationKey = ['updateManutencaoIntervalo'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateManutencaoIntervalo>>, {id: number;data: BodyType<ManutencaoIntervaloInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateManutencaoIntervalo(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateManutencaoIntervaloMutationResult = NonNullable<Awaited<ReturnType<typeof updateManutencaoIntervalo>>>
+    export type UpdateManutencaoIntervaloMutationBody = BodyType<ManutencaoIntervaloInput>
+    export type UpdateManutencaoIntervaloMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Update maintenance interval
+ */
+export const useUpdateManutencaoIntervalo = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateManutencaoIntervalo>>, TError,{id: number;data: BodyType<ManutencaoIntervaloInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateManutencaoIntervalo>>,
+        TError,
+        {id: number;data: BodyType<ManutencaoIntervaloInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateManutencaoIntervaloMutationOptions(options));
+    }
+
+export const getDeleteManutencaoIntervaloUrl = (id: number,) => {
+
+
+
+
+  return `/api/manutencao-intervalos/${id}`
+}
+
+/**
+ * @summary Delete maintenance interval
+ */
+export const deleteManutencaoIntervalo = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteManutencaoIntervaloUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteManutencaoIntervaloMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteManutencaoIntervalo>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteManutencaoIntervalo>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteManutencaoIntervalo'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteManutencaoIntervalo>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteManutencaoIntervalo(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteManutencaoIntervaloMutationResult = NonNullable<Awaited<ReturnType<typeof deleteManutencaoIntervalo>>>
+
+    export type DeleteManutencaoIntervaloMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete maintenance interval
+ */
+export const useDeleteManutencaoIntervalo = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteManutencaoIntervalo>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteManutencaoIntervalo>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteManutencaoIntervaloMutationOptions(options));
+    }
+
+export const getGetManutencaoPreventivaUrl = () => {
+
+
+
+
+  return `/api/manutencao-intervalos/preventiva`
+}
+
+/**
+ * @summary Preventive maintenance status per fleet and category
+ */
+export const getManutencaoPreventiva = async ( options?: RequestInit): Promise<ManutencaoPreventivaItem[]> => {
+
+  return customFetch<ManutencaoPreventivaItem[]>(getGetManutencaoPreventivaUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetManutencaoPreventivaQueryKey = () => {
+    return [
+    `/api/manutencao-intervalos/preventiva`
+    ] as const;
+    }
+
+
+export const getGetManutencaoPreventivaQueryOptions = <TData = Awaited<ReturnType<typeof getManutencaoPreventiva>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getManutencaoPreventiva>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetManutencaoPreventivaQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getManutencaoPreventiva>>> = ({ signal }) => getManutencaoPreventiva({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getManutencaoPreventiva>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetManutencaoPreventivaQueryResult = NonNullable<Awaited<ReturnType<typeof getManutencaoPreventiva>>>
+export type GetManutencaoPreventivaQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Preventive maintenance status per fleet and category
+ */
+
+export function useGetManutencaoPreventiva<TData = Awaited<ReturnType<typeof getManutencaoPreventiva>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getManutencaoPreventiva>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetManutencaoPreventivaQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 

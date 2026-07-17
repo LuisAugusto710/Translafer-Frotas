@@ -1,0 +1,277 @@
+**Prompt:**
+
+Please implement the following improvements to the **Maintenance** module **without changing the application's design, layout, or visual identity**. The goal is to improve usability, fix existing issues, and introduce a preventive maintenance management system fully integrated with the Dashboard.
+
+---
+
+# 1. Add a Scrollbar to the Category Dropdown
+
+The **Category** dropdown currently displays all options at once, causing the list to extend beyond the visible screen on smaller displays.
+
+## Requirements
+
+* Add a vertical scrollbar to the Category dropdown.
+* Limit the dropdown's maximum height.
+* Keep the current styling consistent with the rest of the application.
+* Ensure it works correctly on both desktop and mobile devices.
+* The user should be able to scroll smoothly through all categories without the dropdown overflowing off-screen.
+
+---
+
+# 2. Investigate the Attachment Upload Issue
+
+There appears to be a problem when attaching files to a maintenance record.
+
+I want you to **investigate the root cause** rather than applying a temporary workaround.
+
+## Verify
+
+* File upload component.
+* Backend upload endpoint.
+* Storage location.
+* File validation.
+* Maximum file size.
+* MIME type validation.
+* Database storage.
+* File permissions.
+* Network requests.
+* Console errors.
+* Server logs.
+* File retrieval after upload.
+
+Supported formats should continue to be:
+
+* PDF
+* JPG
+* JPEG
+* PNG
+
+The user should be able to:
+
+* Upload
+* Preview
+* Download
+* Replace
+* Delete
+
+If an upload fails, display a clear error message explaining the reason instead of a generic failure.
+
+---
+
+# 3. Create a "Maintenance Intervals" Configuration Page
+
+Next to the **Export** button, add a new button called:
+
+**Maintenance Intervals**
+
+Clicking this button should open a new configuration screen where the user can define the preventive maintenance interval for each maintenance category.
+
+## Example
+
+| Category         | Maintenance Interval (KM) |
+| ---------------- | ------------------------: |
+| Engine Oil       |                 10,000 km |
+| Fuel Filter      |                 20,000 km |
+| Air Filter       |                 15,000 km |
+| Brake Pads       |                 30,000 km |
+| Tires            |                 60,000 km |
+| Transmission Oil |                 80,000 km |
+| Battery          |                 50,000 km |
+
+The user must be able to:
+
+* Add new interval rules.
+* Edit existing intervals.
+* Delete intervals.
+* Save changes.
+
+These intervals will be used to calculate preventive maintenance reminders.
+
+---
+
+# 4. Preventive Maintenance Dashboard
+
+Create a new section on the **Dashboard** called:
+
+**Preventive Maintenance**
+
+This section should automatically analyze every fleet and determine when the next preventive maintenance is due based on:
+
+* Last maintenance record.
+* Odometer at the last maintenance.
+* Current vehicle mileage.
+* Configured maintenance interval.
+
+---
+
+# 5. Dynamic Status Indicators
+
+Each maintenance item should display a color-coded status.
+
+### Green
+
+Maintenance is **not yet due**.
+
+Example:
+
+Next Oil Change:
+
+10,000 km
+
+Current KM:
+
+5,800 km
+
+Remaining:
+
+4,200 km
+
+Indicator:
+
+🟢 Green
+
+---
+
+### Yellow
+
+Maintenance is approaching.
+
+Example:
+
+Remaining distance is within approximately **20% of the configured interval**.
+
+Example:
+
+Interval:
+
+10,000 km
+
+Current Remaining:
+
+1,800 km
+
+Indicator:
+
+🟡 Yellow
+
+---
+
+### Red
+
+Maintenance is overdue or due immediately.
+
+Example:
+
+Remaining distance:
+
+0 km or negative
+
+Indicator:
+
+🔴 Red
+
+This maintenance should appear at the top of the Dashboard list.
+
+---
+
+# 6. Dashboard Information
+
+For each pending maintenance, display:
+
+* Fleet Number
+* Maintenance Category
+* Last Maintenance Date
+* Last Recorded Odometer
+* Current Odometer
+* Maintenance Interval
+* Remaining Kilometers
+* Status Indicator (Green, Yellow, Red)
+
+Example:
+
+Fleet 4104
+
+Oil Change
+
+Last Service:
+
+152,000 km
+
+Current KM:
+
+160,350 km
+
+Interval:
+
+10,000 km
+
+Remaining:
+
+1,650 km
+
+🟡 Due Soon
+
+---
+
+# 7. Automatic Updates
+
+Whenever:
+
+* A new maintenance record is added.
+* A maintenance record is edited.
+* A maintenance record is deleted.
+* The vehicle mileage changes through new freight or diesel records.
+* A maintenance interval is modified.
+
+The preventive maintenance indicators must update automatically across the Dashboard.
+
+No manual refresh should be required.
+
+---
+
+# 8. Alert Prioritization
+
+Sort the preventive maintenance list by priority:
+
+1. Overdue (Red)
+2. Due Soon (Yellow)
+3. Normal (Green)
+
+Within each group, sort by the fewest remaining kilometers.
+
+This allows users to immediately identify the most urgent maintenance.
+
+---
+
+# 9. Performance
+
+Optimize calculations by:
+
+* Avoiding unnecessary recalculations.
+* Using indexed database queries.
+* Recalculating only the affected fleet after updates.
+* Maintaining fast Dashboard performance even with large datasets.
+
+---
+
+# 10. Future Compatibility
+
+Structure the feature so it can later support:
+
+* Maintenance reminders by date.
+* Email notifications.
+* WhatsApp notifications.
+* Push notifications.
+* Automatic service scheduling.
+* Maintenance history charts.
+* Maintenance cost analysis.
+* Vehicle lifecycle reports.
+
+---
+
+## Important
+
+* **Do not redesign the application.**
+* **Do not change the existing navigation or visual identity.**
+* Keep the interface consistent with the rest of the system.
+* Focus on fixing the file upload issue, improving the category selector, and implementing a robust preventive maintenance management system with dynamic Dashboard indicators based on configurable maintenance intervals and each fleet's current mileage.

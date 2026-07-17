@@ -6,7 +6,8 @@ import {
 import {
   TrendingUp, TrendingDown, DollarSign, Percent, Package, Truck,
   Fuel, BarChart2, Users, MapPin, Calendar, ChevronUp, ChevronDown,
-  ChevronsUpDown, Star, Activity, Clock, Zap, Award, Route,
+  ChevronsUpDown, Star, Activity, Clock, Zap, Award, Route, Wrench,
+  CheckCircle2, AlertTriangle, XCircle,
 } from "lucide-react";
 import {
   useGetDashboardResumo, getGetDashboardResumoQueryKey,
@@ -23,7 +24,9 @@ import {
   useGetUpcomingReceivables, getGetUpcomingReceivablesQueryKey,
   useGetRecentFretes, getGetRecentFretesQueryKey,
   useListFrotas, getListFrotasQueryKey,
+  useGetManutencaoPreventiva, getGetManutencaoPreventivaQueryKey,
   type FleetPerformance,
+  type ManutencaoPreventivaItem,
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -328,6 +331,117 @@ function FleetComparison({ data }: { data?: FleetPerformance[] }) {
   );
 }
 
+// ── Preventive Maintenance Section ───────────────────────────────────────────
+
+const STATUS_CONFIG = {
+  vencido: { label: "Vencida",    bg: "bg-red-50 dark:bg-red-950/30",    border: "border-red-200 dark:border-red-800",    text: "text-red-700 dark:text-red-300",    badge: "bg-red-100 text-red-700 dark:bg-red-900/60 dark:text-red-300",    Icon: XCircle },
+  aviso:   { label: "Próxima",    bg: "bg-amber-50 dark:bg-amber-950/30", border: "border-amber-200 dark:border-amber-800", text: "text-amber-700 dark:text-amber-300", badge: "bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300", Icon: AlertTriangle },
+  ok:      { label: "Em dia",     bg: "bg-emerald-50 dark:bg-emerald-950/20", border: "border-emerald-200 dark:border-emerald-800", text: "text-emerald-700 dark:text-emerald-300", badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300", Icon: CheckCircle2 },
+} as const;
+
+function PreventivaMaintSection({ items, loading }: { items: ManutencaoPreventivaItem[]; loading: boolean }) {
+  if (loading) {
+    return (
+      <Card className="shadow-sm">
+        <CardContent className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-lg" />)}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <Card className="shadow-sm">
+        <CardContent className="p-6 flex flex-col items-center gap-3 text-muted-foreground">
+          <Wrench className="h-8 w-8 opacity-30" />
+          <p className="text-sm text-center">
+            Nenhum intervalo configurado. Use o botão <strong>Intervalos</strong> na página de Manutenção para configurar.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const vencidos = items.filter(i => i.status === "vencido");
+  const avisos   = items.filter(i => i.status === "aviso");
+  const ok       = items.filter(i => i.status === "ok");
+
+  const summary = [
+    { label: "Vencidas",  count: vencidos.length, cls: "text-red-600 dark:text-red-400" },
+    { label: "Próximas",  count: avisos.length,   cls: "text-amber-600 dark:text-amber-400" },
+    { label: "Em dia",    count: ok.length,        cls: "text-emerald-600 dark:text-emerald-400" },
+  ];
+
+  return (
+    <Card className="shadow-sm">
+      <CardContent className="p-4 sm:p-6">
+        {/* Summary bar */}
+        <div className="flex gap-4 mb-4 pb-3 border-b">
+          {summary.map(s => (
+            <div key={s.label} className="flex items-center gap-1.5">
+              <span className={`text-xl font-bold ${s.cls}`}>{s.count}</span>
+              <span className="text-xs text-muted-foreground">{s.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Cards grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {items.map(item => {
+            const cfg = STATUS_CONFIG[item.status];
+            const { Icon } = cfg;
+            return (
+              <div
+                key={`${item.frota}-${item.categoria}`}
+                className={`rounded-lg border p-3 ${cfg.bg} ${cfg.border}`}
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between gap-1 mb-2">
+                  <div className="min-w-0">
+                    <p className="font-bold text-sm text-foreground leading-tight">Frota {item.frota}</p>
+                    <p className="text-xs text-muted-foreground leading-tight truncate">{item.categoria}</p>
+                  </div>
+                  <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold shrink-0 ${cfg.badge}`}>
+                    <Icon className="h-3 w-3" /> {cfg.label}
+                  </span>
+                </div>
+
+                {/* KM grid */}
+                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs mt-2">
+                  <span className="text-muted-foreground">Último KM</span>
+                  <span className="text-right font-medium">{(item.ultimoKm ?? 0).toLocaleString("pt-BR")} km</span>
+
+                  <span className="text-muted-foreground">KM Atual</span>
+                  <span className="text-right font-medium">{item.kmAtual.toLocaleString("pt-BR")} km</span>
+
+                  <span className="text-muted-foreground">Intervalo</span>
+                  <span className="text-right font-medium">{item.intervaloKm.toLocaleString("pt-BR")} km</span>
+
+                  <span className={`font-semibold ${cfg.text}`}>Restante</span>
+                  <span className={`text-right font-bold ${cfg.text}`}>
+                    {item.kmRestante <= 0
+                      ? `${Math.abs(Math.round(item.kmRestante)).toLocaleString("pt-BR")} km atrás`
+                      : `${Math.round(item.kmRestante).toLocaleString("pt-BR")} km`}
+                  </span>
+                </div>
+
+                {item.ultimaData && (
+                  <p className="text-[10px] text-muted-foreground mt-1.5">
+                    Última: {item.ultimaData.split("-").reverse().join("/")}
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 
 export function Dashboard() {
@@ -359,6 +473,7 @@ export function Dashboard() {
   const { data: receivables,   isLoading: l11} = useGetUpcomingReceivables({ frota: frotaParam as any }, { query: { queryKey: getGetUpcomingReceivablesQueryKey({ frota: frotaParam as any } as any) } });
   const { data: recentFretes,  isLoading: l12} = useGetRecentFretes({ limit: 10, frota: frotaParam as any, dateFrom, dateTo } as any, { query: { queryKey: getGetRecentFretesQueryKey({ limit: 10, frota: frotaParam as any, dateFrom, dateTo } as any) } });
   const { data: frotasList } = useListFrotas({ query: { queryKey: getListFrotasQueryKey() } });
+  const { data: preventiva = [], isLoading: lprev } = useGetManutencaoPreventiva({ query: { queryKey: getGetManutencaoPreventivaQueryKey(), staleTime: 60_000, refetchOnWindowFocus: false } });
 
   // ── Computed KPIs ──────────────────────────────────────────────────────────
   const totalReceita   = resumo ? resumo.totalFrete + resumo.totalPedagio : 0;
@@ -942,6 +1057,13 @@ export function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* ── Preventive Maintenance ─────────────────────────────────────── */}
+      <SectionHeader
+        title="Manutenção Preventiva"
+        subtitle="Status de manutenção por frota e categoria com base nos intervalos configurados"
+      />
+      <PreventivaMaintSection items={preventiva} loading={lprev} />
 
       {/* ── Fleet Comparison ───────────────────────────────────────────── */}
       <SectionHeader title="Comparativo de Frotas" subtitle="Selecione duas frotas para comparar desempenho lado a lado" />

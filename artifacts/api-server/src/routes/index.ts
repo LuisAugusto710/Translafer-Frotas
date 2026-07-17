@@ -10,6 +10,7 @@ import restoreRouter from "./restore";
 import fleetConfigsRouter from "./fleet-configs";
 import employeesRouter from "./employees";
 import manutencoesRouter from "./manutencoes";
+import manutencaoIntervalosRouter from "./manutencao-intervalos";
 import adminRouter from "./admin";
 import { requireAuth } from "../middlewares/auth";
 
@@ -30,6 +31,7 @@ router.use(restoreRouter);
 router.use(fleetConfigsRouter);
 router.use(employeesRouter);
 router.use(manutencoesRouter);
+router.use(manutencaoIntervalosRouter);
 router.use(adminRouter);
 
 export default router;

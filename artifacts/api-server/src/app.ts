@@ -30,8 +30,8 @@ app.use(
     },
   }),
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "25mb" }));
+app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 
 // Session + CSRF must run before the API routes. Frontend and API are
 // same-origin behind the proxy, so no CORS layer is needed.

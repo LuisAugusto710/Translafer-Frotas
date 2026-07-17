@@ -1117,6 +1117,97 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /manutencao-intervalos:
+    get:
+      tags: [maintenance]
+      summary: List maintenance intervals
+      operationId: listManutencaoIntervalos
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ManutencaoIntervalo"
+    post:
+      tags: [maintenance]
+      summary: Create or upsert maintenance interval
+      operationId: createManutencaoIntervalo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManutencaoIntervaloInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManutencaoIntervalo"
+
+  /manutencao-intervalos/{id}:
+    put:
+      tags: [maintenance]
+      summary: Update maintenance interval
+      operationId: updateManutencaoIntervalo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManutencaoIntervaloInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManutencaoIntervalo"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags: [maintenance]
+      summary: Delete maintenance interval
+      operationId: deleteManutencaoIntervalo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /manutencao-intervalos/preventiva:
+    get:
+      tags: [maintenance]
+      summary: Preventive maintenance status per fleet and category
+      operationId: getManutencaoPreventiva
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ManutencaoPreventivaItem"
+
 components:
   schemas:
     NextCteResponse:
@@ -2161,3 +2252,65 @@ components:
             $ref: "#/components/schemas/Manutencao"
         total:
           type: integer
+
+    ManutencaoIntervaloInput:
+      type: object
+      required: [categoria, intervaloKm]
+      properties:
+        categoria:
+          type: string
+        descricao:
+          type: ["string", "null"]
+        intervaloKm:
+          type: number
+        avisoPercentual:
+          type: number
+
+    ManutencaoIntervalo:
+      type: object
+      required: [id, categoria, intervaloKm, avisoPercentual, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        categoria:
+          type: string
+        descricao:
+          type: ["string", "null"]
+        intervaloKm:
+          type: number
+        avisoPercentual:
+          type: number
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    ManutencaoPreventivaItem:
+      type: object
+      required: [frota, categoria, intervaloId, intervaloKm, avisoPercentual, kmAtual, kmProxima, kmRestante, status]
+      properties:
+        frota:
+          type: string
+        categoria:
+          type: string
+        intervaloId:
+          type: integer
+        descricao:
+          type: ["string", "null"]
+        intervaloKm:
+          type: number
+        avisoPercentual:
+          type: number
+        ultimaData:
+          type: ["string", "null"]
+        ultimoKm:
+          type: number
+        kmAtual:
+          type: number
+        kmProxima:
+          type: number
+        kmRestante:
+          type: number
+        status:
+          type: string
+          enum: [ok, aviso, vencido]

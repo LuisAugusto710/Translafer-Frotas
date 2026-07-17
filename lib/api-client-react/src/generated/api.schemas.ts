@@ -551,6 +551,51 @@ export interface ManutencaoListResponse {
   total: number;
 }
 
+export interface ManutencaoIntervaloInput {
+  categoria: string;
+  /** @nullable */
+  descricao?: string | null;
+  intervaloKm: number;
+  avisoPercentual?: number;
+}
+
+export interface ManutencaoIntervalo {
+  id: number;
+  categoria: string;
+  /** @nullable */
+  descricao?: string | null;
+  intervaloKm: number;
+  avisoPercentual: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ManutencaoPreventivaItemStatus = typeof ManutencaoPreventivaItemStatus[keyof typeof ManutencaoPreventivaItemStatus];
+
+
+export const ManutencaoPreventivaItemStatus = {
+  ok: 'ok',
+  aviso: 'aviso',
+  vencido: 'vencido',
+} as const;
+
+export interface ManutencaoPreventivaItem {
+  frota: string;
+  categoria: string;
+  intervaloId: number;
+  /** @nullable */
+  descricao?: string | null;
+  intervaloKm: number;
+  avisoPercentual: number;
+  /** @nullable */
+  ultimaData?: string | null;
+  ultimoKm?: number;
+  kmAtual: number;
+  kmProxima: number;
+  kmRestante: number;
+  status: ManutencaoPreventivaItemStatus;
+}
+
 export type ListFretesParams = {
 frota?: string;
 cliente?: string;

@@ -188,8 +188,9 @@ export function ManutencaoFormModal({
       onOpenChange(false);
     };
 
-    const onError = () => {
-      toast({ title: "Erro", description: "Ocorreu um erro ao salvar.", variant: "destructive" });
+    const onError = (err: unknown) => {
+      const msg = err instanceof Error ? err.message : "Ocorreu um erro ao salvar.";
+      toast({ title: "Erro ao salvar", description: msg, variant: "destructive" });
     };
 
     if (isEditing) {
@@ -275,7 +276,7 @@ export function ManutencaoFormModal({
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a categoria" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-60">
                   {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                 </SelectContent>
               </Select>
