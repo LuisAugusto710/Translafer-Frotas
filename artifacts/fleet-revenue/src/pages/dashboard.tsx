@@ -32,15 +32,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatNumber, formatDate } from "@/lib/utils";
+import { PeriodFilter, defaultYearPeriod, type PeriodValue } from "@/components/period-filter";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-
-const THIS_YEAR = new Date().getFullYear();
-const YEARS = Array.from({ length: THIS_YEAR - 2021 }, (_, i) => 2022 + i);
 
 const PIE_COLORS = [
   "#2563eb", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6",
@@ -506,17 +503,14 @@ function PreventivaMaintSection({ items, loading }: { items: ManutencaoPreventiv
 
 export function Dashboard() {
   const currentYear = new Date().getFullYear();
-  const [ano, setAno] = useState(currentYear);
-  const [customFrom, setCustomFrom] = useState("");
-  const [customTo, setCustomTo] = useState("");
+  const [dashPeriod, setDashPeriod] = useState<PeriodValue>(() => defaultYearPeriod());
   const [frotaFilter, setFrotaFilter] = useState("__all__");
   const [period, setPeriod] = useState<"diario" | "semanal" | "mensal" | "trimestral" | "anual">("mensal");
 
-  const dateFrom: any = customFrom || `${ano}-01-01`;
-  const dateTo:   any = customTo   || `${ano}-12-31`;
+  const dateFrom: any = dashPeriod.dateFrom || `${currentYear}-01-01`;
+  const dateTo:   any = dashPeriod.dateTo   || `${currentYear}-12-31`;
+  const ano = dashPeriod.dateFrom ? parseInt(dashPeriod.dateFrom.slice(0, 4), 10) : currentYear;
   const frotaParam = frotaFilter !== "__all__" ? frotaFilter : undefined;
-
-  function resetDates() { setCustomFrom(""); setCustomTo(""); }
 
   // ── Data hooks ─────────────────────────────────────────────────────────────
   const { data: resumo,        isLoading: l1 } = useGetDashboardResumo({ dateFrom, dateTo, frota: frotaParam as any }, { query: { queryKey: getGetDashboardResumoQueryKey({ dateFrom, dateTo, frota: frotaParam as any }) } });
@@ -595,40 +589,13 @@ export function Dashboard() {
     <div className="space-y-5">
 
       {/* ── Global Filters ──────────────────────────────────────────────── */}
-      <div className="px-4 sm:px-6 py-2.5 bg-white dark:bg-slate-900 border-b border-border -mx-3 sm:-mx-6">
-        <div className="flex flex-wrap items-end gap-2 sm:gap-3">
-          {/* Year */}
-          <div className="flex flex-col gap-1">
-            <Label className="text-xs text-muted-foreground">Ano</Label>
-            <Select value={ano.toString()} onValueChange={v => { setAno(parseInt(v)); resetDates(); }}>
-              <SelectTrigger className="w-[80px] sm:w-[90px] h-8"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {YEARS.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
-              </SelectContent>
-            </Select>
+      <div className="px-4 sm:px-6 py-3 bg-white dark:bg-slate-900 border-b border-border -mx-3 sm:-mx-6">
+        <div className="flex flex-wrap items-start gap-4">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-muted-foreground font-medium mb-1.5">Período</p>
+            <PeriodFilter value={dashPeriod} onChange={setDashPeriod} defaultPreset="year" />
           </div>
-          {/* Custom date from */}
-          <div className="flex flex-col gap-1">
-            <Label className="text-xs text-muted-foreground">De</Label>
-            <Input
-              type="date"
-              className="h-8 w-[120px] sm:w-[140px] text-xs"
-              value={customFrom}
-              onChange={e => setCustomFrom(e.target.value)}
-            />
-          </div>
-          {/* Custom date to */}
-          <div className="flex flex-col gap-1">
-            <Label className="text-xs text-muted-foreground">Até</Label>
-            <Input
-              type="date"
-              className="h-8 w-[120px] sm:w-[140px] text-xs"
-              value={customTo}
-              onChange={e => setCustomTo(e.target.value)}
-            />
-          </div>
-          {/* Frota filter */}
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 shrink-0">
             <Label className="text-xs text-muted-foreground">Frota</Label>
             <Select value={frotaFilter} onValueChange={setFrotaFilter}>
               <SelectTrigger className="w-[95px] sm:w-[110px] h-8"><SelectValue /></SelectTrigger>
@@ -637,17 +604,11 @@ export function Dashboard() {
                 {(frotasList ?? []).map(f => <SelectItem key={f.frota} value={f.frota}>{f.frota}</SelectItem>)}
               </SelectContent>
             </Select>
-          </div>
-          {/* Reset */}
-          {(customFrom || customTo || frotaFilter !== "__all__") && (
-            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { resetDates(); setFrotaFilter("__all__"); }}>
-              Limpar filtros
-            </Button>
-          )}
-          <div className="ml-auto text-xs text-muted-foreground hidden sm:block">
-            {customFrom || customTo
-              ? `${customFrom || "—"} → ${customTo || "—"}`
-              : `Jan–Dez ${ano}`}
+            {frotaFilter !== "__all__" && (
+              <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => setFrotaFilter("__all__")}>
+                Limpar
+              </Button>
+            )}
           </div>
         </div>
       </div>

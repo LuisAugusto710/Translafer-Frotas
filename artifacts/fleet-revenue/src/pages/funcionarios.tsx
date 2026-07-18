@@ -65,7 +65,9 @@ const ADJUSTMENT_TYPES = [
 
 // Types that add to the final payment. Everything else (including legacy
 // "Adiantamento" records) is treated as a deduction.
-const ADD_TYPES = new Set<string>(["Bônus"]);
+const ADD_TYPES      = new Set<string>(["Bônus"]);
+const ADVANCE_TYPES  = new Set<string>(["Adiantamento Salarial", "Adiantamento em Dinheiro", "Adiantamento Combustível", "Outro"]);
+const DISCOUNT_TYPES = new Set<string>(["Desconto"]);
 function isAddType(tipo: string): boolean {
   return ADD_TYPES.has(tipo);
 }
@@ -152,10 +154,11 @@ function buildPrintHtml(opts: {
   diasNaoTrabalhados: number;
   mediaPorDia: number;
   bonusTotal: number;
-  deductionTotal: number;
+  advancesTotal: number;
+  discountsTotal: number;
   finalAmount: number;
 }) {
-  const { nome, tipo, periodo, dateFrom, dateTo, diasMap, totalGanho, diasTrabalhados, diasNaoTrabalhados, mediaPorDia, bonusTotal, deductionTotal, finalAmount } = opts;
+  const { nome, tipo, periodo, dateFrom, dateTo, diasMap, totalGanho, diasTrabalhados, diasNaoTrabalhados, mediaPorDia, bonusTotal, advancesTotal, discountsTotal, finalAmount } = opts;
   const now = new Date().toLocaleString("pt-BR");
   const calendarHtml = buildCalendarHtml(dateFrom, dateTo, diasMap);
   const fmt = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -254,7 +257,8 @@ function buildPrintHtml(opts: {
       <div class="sr"><span class="sl">Valor por dia</span><span class="sv">R$ ${fmt(mediaPorDia)}</span></div>
       <div class="sr"><span class="sl">Total ganho</span><span class="sv">R$ ${fmt(totalGanho)}</span></div>
       <div class="sr"><span class="sl">Bônus</span><span class="sv g">+ R$ ${fmt(bonusTotal)}</span></div>
-      <div class="sr"><span class="sl">Adiantamentos/Desc.</span><span class="sv r">− R$ ${fmt(deductionTotal)}</span></div>
+      <div class="sr"><span class="sl">Adiantamentos</span><span class="sv r">− R$ ${fmt(advancesTotal)}</span></div>
+      <div class="sr"><span class="sl">Descontos</span><span class="sv r">− R$ ${fmt(discountsTotal)}</span></div>
       <div class="sr" style="border-top:1px solid #e2e8f0;margin-top:4px;padding-top:8px">
         <span class="sl" style="font-weight:700">Valor Final</span>
         <span class="sv b">R$ ${fmt(finalAmount)}</span>
@@ -392,13 +396,18 @@ export function Funcionarios() {
   }, [deleteAdvanceMutation, queryClient, advancesQueryKey]);
 
   const bonusTotal = useMemo(() =>
-    (advances ?? []).filter(a => isAddType(a.tipo)).reduce((s, a) => s + Number(a.valor), 0),
+    (advances ?? []).filter(a => ADD_TYPES.has(a.tipo)).reduce((s, a) => s + Number(a.valor), 0),
     [advances]);
 
-  const deductionTotal = useMemo(() =>
-    (advances ?? []).filter(a => !isAddType(a.tipo)).reduce((s, a) => s + Number(a.valor), 0),
+  const advancesTotal = useMemo(() =>
+    (advances ?? []).filter(a => ADVANCE_TYPES.has(a.tipo)).reduce((s, a) => s + Number(a.valor), 0),
     [advances]);
 
+  const discountsTotal = useMemo(() =>
+    (advances ?? []).filter(a => DISCOUNT_TYPES.has(a.tipo)).reduce((s, a) => s + Number(a.valor), 0),
+    [advances]);
+
+  const deductionTotal = advancesTotal + discountsTotal;
   const finalAmount = (calendarData?.totalGanho ?? 0) + bonusTotal - deductionTotal;
 
   const buildShareText = useCallback(() => {
@@ -417,7 +426,8 @@ export function Funcionarios() {
       `💰 *Valor por dia:* ${fmt(calendarData.mediaPorDia)}`,
       `💵 *Total ganho:* ${fmt(calendarData.totalGanho)}`,
       `➕ *Bônus:* ${fmt(bonusTotal)}`,
-      `➖ *Adiantamentos/Descontos:* ${fmt(deductionTotal)}`,
+      `➖ *Adiantamentos:* ${fmt(advancesTotal)}`,
+      `➖ *Descontos:* ${fmt(discountsTotal)}`,
       `🏁 *Valor Final a Receber:* ${fmt(finalAmount)}`,
       ``,
       `Atenciosamente,`,
@@ -482,7 +492,8 @@ export function Funcionarios() {
       diasNaoTrabalhados: calendarData.diasNaoTrabalhados,
       mediaPorDia: calendarData.mediaPorDia,
       bonusTotal,
-      deductionTotal,
+      advancesTotal,
+      discountsTotal,
       finalAmount,
     });
     if (!html) return null;
@@ -594,7 +605,7 @@ export function Funcionarios() {
     } finally {
       document.body.removeChild(container);
     }
-  }, [selectedEmployee, calendarData, period, diasMap, bonusTotal, deductionTotal, finalAmount]);
+  }, [selectedEmployee, calendarData, period, diasMap, bonusTotal, advancesTotal, discountsTotal, finalAmount]);
 
   const handleSavePdf = useCallback(async () => {
     if (!selectedEmployee || !calendarData) return;
@@ -860,8 +871,13 @@ export function Funcionarios() {
                   color: "text-emerald-600 dark:text-emerald-400",
                 },
                 {
-                  label: "Adiantamentos / Descontos",
-                  value: selectedEmployee ? `− ${fmt(deductionTotal)}` : "—",
+                  label: "Adiantamentos",
+                  value: selectedEmployee ? `− ${fmt(advancesTotal)}` : "—",
+                  color: "text-red-600 dark:text-red-400",
+                },
+                {
+                  label: "Descontos",
+                  value: selectedEmployee ? `− ${fmt(discountsTotal)}` : "—",
                   color: "text-red-600 dark:text-red-400",
                 },
               ].map(row => (
@@ -1024,11 +1040,17 @@ export function Funcionarios() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
             <Card className="shadow-none border">
               <CardContent className="py-2.5 px-3 sm:py-3 sm:px-4">
-                <p className="text-xs text-muted-foreground leading-tight">Adiant. / Desc.</p>
-                <p className="text-sm sm:text-lg font-bold text-red-600 dark:text-red-400 mt-0.5">{fmt(deductionTotal)}</p>
+                <p className="text-xs text-muted-foreground leading-tight">Adiantamentos</p>
+                <p className="text-sm sm:text-lg font-bold text-red-600 dark:text-red-400 mt-0.5">{fmt(advancesTotal)}</p>
+              </CardContent>
+            </Card>
+            <Card className="shadow-none border">
+              <CardContent className="py-2.5 px-3 sm:py-3 sm:px-4">
+                <p className="text-xs text-muted-foreground leading-tight">Descontos</p>
+                <p className="text-sm sm:text-lg font-bold text-red-600 dark:text-red-400 mt-0.5">{fmt(discountsTotal)}</p>
               </CardContent>
             </Card>
             <Card className="shadow-none border">
