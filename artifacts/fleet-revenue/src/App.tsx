@@ -8,7 +8,6 @@ import {
 import { Loader2 } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ThemeProvider } from "@/components/theme-provider";
 import { Layout } from "@/components/layout";
 import NotFound from "@/pages/not-found";
 import { Dashboard } from "@/pages/dashboard";
@@ -76,18 +75,16 @@ function Gate() {
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="light" storageKey="fleet-theme">
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <AuthProvider>
-            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-              <Gate />
-            </WouterRouter>
-            <Toaster />
-          </AuthProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <Gate />
+          </WouterRouter>
+          <Toaster />
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }
 

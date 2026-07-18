@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useTheme } from "./theme-provider";
-import { Moon, Sun, LayoutDashboard, Truck, Fuel, Wallet, Users, Wrench, Menu, X, LogOut } from "lucide-react";
+import { LayoutDashboard, Truck, Fuel, Wallet, Users, Wrench, Menu, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { BackupFolderButton } from "./backup-folder-button";
 import { OneDriveBackupButton } from "./onedrive-backup-button";
@@ -85,7 +84,6 @@ function SidebarBrand() {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
-  const { theme, setTheme } = useTheme();
   const { logout, user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -108,16 +106,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <aside className="hidden md:flex w-64 border-r border-sidebar-border bg-sidebar flex-col shrink-0">
         <SidebarBrand />
         <NavLinks currentLocation={location} />
-        <div className="p-4 border-t border-sidebar-border flex justify-between items-center text-xs text-sidebar-foreground shrink-0">
+        <div className="p-4 border-t border-sidebar-border flex items-center text-xs text-sidebar-foreground shrink-0">
           <span className="font-mono">Gestão de Frotas</span>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="h-8 w-8 text-sidebar-foreground hover:text-white hover:bg-white/10"
-          >
-            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </Button>
         </div>
       </aside>
 
@@ -136,16 +126,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
               currentLocation={location}
               onNavigate={() => setMobileOpen(false)}
             />
-            <div className="p-4 border-t border-sidebar-border flex justify-between items-center text-xs text-sidebar-foreground shrink-0">
+            <div className="p-4 border-t border-sidebar-border flex items-center text-xs text-sidebar-foreground shrink-0">
               <span className="font-mono">Gestão de Frotas</span>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="h-8 w-8 text-sidebar-foreground hover:text-white hover:bg-white/10"
-              >
-                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </Button>
             </div>
           </aside>
         </div>

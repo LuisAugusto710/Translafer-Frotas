@@ -493,14 +493,17 @@ export function Funcionarios() {
     const parsed = parser.parseFromString(html, "text/html");
 
     const container = document.createElement("div");
+    // Use position:absolute (not fixed) so mobile browsers don't clip it.
+    // Moving it far left keeps it invisible without affecting layout.
     container.style.cssText = [
-      "position:fixed",
-      "top:-9999px",
+      "position:absolute",
+      "top:0",
       "left:-9999px",
       "width:794px",
       "background:#fff",
       "overflow:visible",
-      "z-index:-9999",
+      "visibility:hidden",
+      "pointer-events:none",
     ].join(";");
 
     // Copy <style> so the layout renders correctly
@@ -533,12 +536,19 @@ export function Funcionarios() {
         import("jspdf"),
       ]);
 
+      // Allow the off-screen container to lay out before capturing.
+      await new Promise<void>(resolve => setTimeout(resolve, 150));
+
+      // Cap scale at 2× to avoid OOM on low-memory mobile devices.
+      const scale = Math.min(Math.max(window.devicePixelRatio || 1, 1), 2);
+
       const canvas = await html2canvas(container, {
-        scale: 2,
+        scale,
         useCORS: true,
         allowTaint: false,
         backgroundColor: "#ffffff",
         logging: false,
+        windowWidth: 794,
       });
 
       const MARGIN = 20; // mm — 20 mm on all sides
@@ -577,13 +587,16 @@ export function Funcionarios() {
       const a = document.createElement("a");
       a.href = url;
       a.download = result.filename;
+      a.rel = "noopener";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
       toast({ title: "PDF salvo!", description: "O arquivo foi baixado no seu dispositivo." });
-    } catch {
-      toast({ title: "Erro", description: "Não foi possível gerar o PDF.", variant: "destructive" });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro desconhecido.";
+      console.error("[PDF] Erro ao salvar PDF:", err);
+      toast({ title: "Erro ao gerar PDF", description: msg, variant: "destructive" });
     }
   }, [selectedEmployee, calendarData, capturePageAsPdf, toast]);
 
@@ -612,7 +625,9 @@ export function Funcionarios() {
       }
     } catch (err) {
       if ((err as Error)?.name !== "AbortError") {
-        toast({ title: "Erro", description: "Não foi possível gerar o PDF.", variant: "destructive" });
+        const msg = err instanceof Error ? err.message : "Erro desconhecido.";
+        console.error("[PDF] Erro ao compartilhar PDF:", err);
+        toast({ title: "Erro ao gerar PDF", description: msg, variant: "destructive" });
       }
     }
   }, [selectedEmployee, calendarData, capturePageAsPdf, period, toast]);

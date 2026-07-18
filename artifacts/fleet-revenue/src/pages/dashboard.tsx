@@ -473,7 +473,7 @@ export function Dashboard() {
   const { data: receivables,   isLoading: l11} = useGetUpcomingReceivables({ frota: frotaParam as any }, { query: { queryKey: getGetUpcomingReceivablesQueryKey({ frota: frotaParam as any } as any) } });
   const { data: recentFretes,  isLoading: l12} = useGetRecentFretes({ limit: 10, frota: frotaParam as any, dateFrom, dateTo } as any, { query: { queryKey: getGetRecentFretesQueryKey({ limit: 10, frota: frotaParam as any, dateFrom, dateTo } as any) } });
   const { data: frotasList } = useListFrotas({ query: { queryKey: getListFrotasQueryKey() } });
-  const { data: preventiva = [], isLoading: lprev } = useGetManutencaoPreventiva({ query: { queryKey: getGetManutencaoPreventivaQueryKey(), staleTime: 60_000, refetchOnWindowFocus: false } });
+  const { data: preventiva = [], isLoading: lprev } = useGetManutencaoPreventiva({ query: { queryKey: getGetManutencaoPreventivaQueryKey(), staleTime: 0, refetchOnWindowFocus: true } });
 
   // ── Computed KPIs ──────────────────────────────────────────────────────────
   const totalReceita   = resumo ? resumo.totalFrete + resumo.totalPedagio : 0;

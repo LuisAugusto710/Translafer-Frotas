@@ -71,6 +71,7 @@ export function ManutencaoFormModal({
   const [removeAnexo, setRemoveAnexo] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [kmLoading, setKmLoading] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -185,6 +186,7 @@ export function ManutencaoFormModal({
     const onSuccess = () => {
       toast({ title: "Sucesso", description: `Manutenção ${isEditing ? "atualizada" : "criada"} com sucesso.` });
       queryClient.invalidateQueries({ queryKey: ["/api/manutencoes"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/manutencao-intervalos/preventiva"] });
       onOpenChange(false);
     };
 
@@ -197,6 +199,26 @@ export function ManutencaoFormModal({
       updateMutation.mutate({ id: manutencao.id, data: payload as any }, { onSuccess, onError });
     } else {
       createMutation.mutate(payload as any, { onSuccess, onError });
+    }
+  };
+
+  // Auto-fill KM from diesel/maintenance records when frota is entered (new records only)
+  const handleFrotaBlur = async () => {
+    const frota = formData.frota.trim();
+    if (!frota || manutencao || formData.km !== "") return;
+    setKmLoading(true);
+    try {
+      const res = await apiFetch(`/api/frotas/km-atual?frota=${encodeURIComponent(frota)}`);
+      if (res.ok) {
+        const data = await res.json() as { kmAtual: number | null };
+        if (data.kmAtual != null) {
+          setFormData(p => ({ ...p, km: String(Math.round(data.kmAtual!)) }));
+        }
+      }
+    } catch {
+      // Silently ignore — km stays empty for manual entry
+    } finally {
+      setKmLoading(false);
     }
   };
 
@@ -231,18 +253,23 @@ export function ManutencaoFormModal({
               <Input
                 id="frota" value={formData.frota}
                 onChange={e => setFormData(p => ({ ...p, frota: e.target.value }))}
+                onBlur={handleFrotaBlur}
                 placeholder="Ex: 1118" required
               />
             </div>
 
             {/* KM */}
             <div className="space-y-2">
-              <Label htmlFor="km">Odômetro (KM) <span className="text-red-500">*</span></Label>
+              <Label htmlFor="km">
+                Odômetro (KM) <span className="text-red-500">*</span>
+                {kmLoading && <span className="ml-2 text-xs text-muted-foreground animate-pulse">buscando…</span>}
+              </Label>
               <Input
                 id="km" type="number" step="0.01" min="0"
                 value={formData.km}
                 onChange={e => setFormData(p => ({ ...p, km: e.target.value }))}
                 placeholder="Ex: 125000" required
+                disabled={kmLoading}
               />
             </div>
 

@@ -1,0 +1,207 @@
+Prompt:
+
+Please implement the following improvements and fixes across the application without changing the overall layout, navigation, or business logic, except where explicitly requested.
+
+⸻
+
+1. Automatically Update Vehicle Mileage in the Maintenance Module
+
+The Maintenance page should always use the most up-to-date mileage available for each fleet.
+
+Currently, the application already stores mileage information in multiple modules, such as:
+
+* Diesel (Refueling records)
+* Expenses
+* Freights
+
+These modules already contain enough information to determine the current mileage of each truck.
+
+Mileage Calculation
+
+The system should automatically determine the current mileage of each fleet by considering:
+
+1. The latest recorded odometer from the Diesel module.
+2. Any additional kilometers traveled since that refueling, calculated from subsequent Freight and Expense records (according to the application’s existing business rules).
+3. The result should represent the most accurate current mileage for each truck.
+
+The Maintenance module should always use this calculated mileage instead of relying on manually entered values whenever possible.
+
+⸻
+
+2. Preventive Maintenance Synchronization
+
+The Preventive Maintenance system must use the automatically calculated current mileage.
+
+Whenever:
+
+* A new Freight is added.
+* A new Refueling is added.
+* A new Expense affects mileage.
+* A maintenance record is created or edited.
+
+The preventive maintenance indicators must be recalculated automatically.
+
+No manual refresh should ever be required.
+
+⸻
+
+3. Dashboard Integration
+
+The Preventive Maintenance section on the Dashboard should automatically display:
+
+* Fleet Number
+* Current Mileage
+* Last Maintenance Mileage
+* Next Maintenance Mileage
+* Remaining Kilometers
+* Status Indicator (Green / Yellow / Red)
+
+The remaining kilometers should always be based on the most recent calculated mileage.
+
+⸻
+
+4. Remove Dark Mode Completely
+
+I no longer want to support Dark Mode.
+
+Please completely remove every feature related to Dark Mode from the application.
+
+This includes:
+
+* Theme switcher
+* Theme toggle button
+* Dark theme CSS
+* Dark color variables
+* Dark theme classes
+* Dark theme JavaScript
+* Dark theme persistence in Local Storage or Database
+* Theme detection logic
+* Any unused assets related to Dark Mode
+
+After removing it, the application should always use the Light Theme.
+
+Also remove any unused code that becomes obsolete after the Dark Mode removal.
+
+⸻
+
+5. Improve the Responsiveness of the Maintenance Page
+
+The Maintenance page still needs better responsiveness.
+
+Please review the entire page and ensure it works perfectly on:
+
+* Desktop
+* Laptop
+* Tablet
+* Mobile phones
+
+Pay special attention to:
+
+* Table layout
+* Form fields
+* Dropdown menus
+* Buttons
+* Search bar
+* Filters
+* Attachment controls
+* Sticky header
+* Long procedure names
+* Category dropdown
+
+Prevent:
+
+* Horizontal scrolling whenever possible.
+* Text clipping.
+* Overflowing buttons.
+* Broken layouts.
+* Misaligned columns.
+
+The page should follow the same responsive quality as the rest of the application.
+
+⸻
+
+6. Investigate PDF Generation on Mobile
+
+There is still an issue when generating the Employee PDF from a mobile device.
+
+Desktop works correctly, but on mobile the PDF generation fails.
+
+I want you to identify the root cause and fix it permanently.
+
+Investigate
+
+Please verify:
+
+* Browser compatibility.
+* Mobile-specific rendering.
+* Canvas rendering.
+* HTML-to-PDF conversion.
+* Memory limitations.
+* Page scaling.
+* File permissions.
+* Native Share API interaction.
+* Mobile download behavior.
+* Blob generation.
+* Font loading.
+* CSS compatibility.
+* Async timing issues.
+* JavaScript errors.
+* Console logs.
+* Server logs.
+
+⸻
+
+Mobile Compatibility
+
+The PDF generation must work correctly on:
+
+* Android Chrome
+* Samsung Internet
+* Firefox Mobile
+* Safari on iPhone
+* iPadOS Safari
+
+⸻
+
+PDF Requirements
+
+The generated PDF should continue to:
+
+* Match the Employees page.
+* Preserve colors.
+* Preserve margins.
+* Fit on a single A4 page.
+* Be suitable for printing.
+* Be suitable for WhatsApp sharing.
+* Generate consistently on both desktop and mobile devices.
+
+⸻
+
+Error Handling
+
+If PDF generation fails:
+
+* Display a clear message explaining the reason.
+* Log the complete technical error.
+* Prevent the application from crashing.
+* Allow the user to retry without refreshing the page.
+
+⸻
+
+Performance
+
+* Optimize mileage calculations so only affected fleets are recalculated.
+* Remove all unused Dark Mode code.
+* Keep the Maintenance page fast even with large datasets.
+* Ensure PDF generation remains efficient on devices with limited memory.
+
+⸻
+
+Important
+
+* Do not redesign the application.
+* Do not change the existing navigation or overall user experience.
+* Completely remove Dark Mode from the project.
+* Ensure the Maintenance module always uses the latest calculated mileage available from the application’s data.
+* Make the Maintenance page fully responsive.
+* Identify and permanently fix the PDF generation issue on mobile devices instead of applying temporary workarounds.

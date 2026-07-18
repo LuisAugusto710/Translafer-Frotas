@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is([data-dark] *));
 
 @theme inline {
   --color-background: hsl(var(--background));
@@ -133,59 +133,6 @@
   --destructive-border: hsl(var(--destructive));
 }
 
-/* DARK MODE — layered deep slate surfaces */
-.dark {
-  --button-outline: rgba(255,255,255, .10);
-  --badge-outline: rgba(255,255,255, .05);
-  --opaque-button-border-intensity: 9;
-  --elevate-1: rgba(255,255,255, .04);
-  --elevate-2: rgba(255,255,255, .09);
-
-  --background: 213 50% 12%;       /* #0f1e2f — deep blue-black */
-  --foreground: 214 45% 91%;       /* #e2eaf4 — soft blue-white text */
-  --border: 210 42% 20%;           /* #1e3248 — subtle dark border */
-
-  --card: 211 48% 15%;             /* #162434 — elevated surface */
-  --card-foreground: 214 45% 91%;
-  --card-border: 210 42% 20%;
-
-  --sidebar: 214 57% 10%;          /* #0b1929 — darkest surface, clear hierarchy */
-  --sidebar-foreground: 210 30% 50%; /* #5a7a98 — readable muted nav text */
-  --sidebar-border: 210 42% 20%;
-  --sidebar-primary: 213 93% 68%;  /* #60a5fa — bright sapphire active */
-  --sidebar-primary-foreground: 214 57% 10%;
-  --sidebar-accent: 210 42% 20%;   /* subtle hover */
-  --sidebar-accent-foreground: 214 45% 91%;
-  --sidebar-ring: 217 91% 60%;
-
-  --popover: 211 48% 15%;
-  --popover-foreground: 214 45% 91%;
-  --popover-border: 210 42% 20%;
-
-  --primary: 217 91% 60%;          /* #3b82f6 — brighter blue for dark bg */
-  --primary-foreground: 0 0% 100%;
-
-  --secondary: 210 42% 20%;        /* #1e3248 */
-  --secondary-foreground: 214 45% 91%;
-
-  --muted: 210 42% 20%;
-  --muted-foreground: 210 25% 52%; /* slightly lighter for readability */
-
-  --accent: 210 42% 20%;
-  --accent-foreground: 214 45% 91%;
-
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 100%;
-
-  --input: 210 42% 20%;
-  --ring: 217 91% 60%;
-
-  --chart-1: 213 93% 68%;          /* #60a5fa — light sapphire */
-  --chart-2: 258 92% 76%;          /* #a78bfa — light violet */
-  --chart-3: 160 84% 52%;          /* #34d399 — light emerald */
-  --chart-4: 43 96% 56%;           /* #fbbf24 — light amber */
-  --chart-5: 189 95% 53%;          /* #22d3ee — light cyan */
-}
 
 @layer base {
   * {

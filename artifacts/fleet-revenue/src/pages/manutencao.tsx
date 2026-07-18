@@ -240,14 +240,16 @@ export function Manutencao() {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex gap-2 shrink-0 ml-auto">
+        <div className="flex gap-2 shrink-0 flex-wrap justify-end">
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setIsIntervalosOpen(true)}>
-            <Settings2 className="h-4 w-4" /> Intervalos
+            <Settings2 className="h-4 w-4" />
+            <span className="hidden min-[420px]:inline">Intervalos</span>
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5">
-                <Download className="h-4 w-4" /> Exportar
+                <Download className="h-4 w-4" />
+                <span className="hidden min-[420px]:inline">Exportar</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -259,7 +261,9 @@ export function Manutencao() {
             size="sm" className="gap-1.5 bg-[#0a192f] text-white hover:bg-[#0a192f]/90"
             onClick={() => { setEditing(null); setIsFormOpen(true); }}
           >
-            <Plus className="h-4 w-4" /> Nova Manutenção
+            <Plus className="h-4 w-4" />
+            <span className="hidden min-[420px]:inline">Nova Manutenção</span>
+            <span className="min-[420px]:hidden">Nova</span>
           </Button>
         </div>
       </div>

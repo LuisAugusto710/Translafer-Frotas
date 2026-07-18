@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db, manutencaoIntervalosTable, manutencoesTable } from "@workspace/db";
+import { db, manutencaoIntervalosTable, manutencoesTable, abastecimentosTable } from "@workspace/db";
 import { eq, desc, sql, and } from "drizzle-orm";
 
 const router = Router();
@@ -96,8 +96,15 @@ router.get("/manutencao-intervalos/preventiva", async (_req, res) => {
         FROM manutencoes
       ),
       current_km AS (
-        SELECT frota, MAX(km::FLOAT8) AS km_atual
-        FROM manutencoes
+        -- Best available odometer per fleet, pulling from both maintenance
+        -- records and fuel fill-up records (km_final = odometer at fill-up).
+        -- Assumes abastecimentos.placa uses the same identifier as frota.
+        SELECT frota, MAX(km_ref)::FLOAT8 AS km_atual
+        FROM (
+          SELECT frota, km::FLOAT8 AS km_ref FROM manutencoes WHERE km IS NOT NULL
+          UNION ALL
+          SELECT placa AS frota, km_final::FLOAT8 AS km_ref FROM abastecimentos WHERE km_final IS NOT NULL
+        ) km_sources
         GROUP BY frota
       )
     SELECT
@@ -153,6 +160,33 @@ router.get("/manutencao-intervalos/preventiva", async (_req, res) => {
   });
 
   res.json(items);
+});
+
+// GET /api/frotas/km-atual?frota=1118
+// Returns the best available current odometer for a given fleet,
+// considering both maintenance records and diesel fill-up records.
+router.get("/frotas/km-atual", async (req, res) => {
+  const { frota } = req.query as { frota?: string };
+  if (!frota?.trim()) {
+    res.status(400).json({ error: "frota é obrigatório" });
+    return;
+  }
+
+  const rows = await db.execute(sql`
+    SELECT MAX(km_ref)::FLOAT8 AS km_atual
+    FROM (
+      SELECT km::FLOAT8 AS km_ref
+      FROM manutencoes
+      WHERE frota = ${frota} AND km IS NOT NULL
+      UNION ALL
+      SELECT km_final::FLOAT8 AS km_ref
+      FROM abastecimentos
+      WHERE placa = ${frota} AND km_final IS NOT NULL
+    ) km_sources
+  `);
+
+  const km = (rows.rows[0] as any)?.km_atual;
+  res.json({ frota, kmAtual: km != null ? Number(km) : null });
 });
 
 export default router;
