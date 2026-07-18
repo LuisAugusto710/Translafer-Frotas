@@ -1,0 +1,108 @@
+Prompt:
+
+Please create sample maintenance data for testing the Preventive Maintenance system. Do not change the application logic or layout. This data is for demonstration purposes only and should be easy to remove later.
+
+Objective
+
+Use the existing trucks/fleets already registered in the database and create maintenance records that generate different preventive maintenance statuses.
+
+I want to visualize how the Dashboard behaves with realistic maintenance scenarios.
+
+⸻
+
+Test Data
+
+For each registered truck/fleet, create 6 maintenance records, distributed as follows:
+
+1. Safe Status (Green)
+
+Create 2 maintenance records where the vehicle is still far from the next scheduled maintenance.
+
+Example:
+
+* Remaining distance: 60–100% of the maintenance interval.
+* Status indicator: Green.
+
+⸻
+
+2. Warning Status (Yellow)
+
+Create 2 maintenance records where the vehicle is approaching the maintenance interval.
+
+Example:
+
+* Remaining distance: approximately 10–20% of the interval.
+* Status indicator: Yellow.
+
+⸻
+
+3. Critical Status (Red)
+
+Create 2 maintenance records where the vehicle has already reached or exceeded the maintenance interval.
+
+Example:
+
+* Remaining distance: 0 km or negative.
+* Status indicator: Red.
+
+⸻
+
+Categories
+
+Use a variety of maintenance categories, such as:
+
+* Engine Oil
+* Fuel Filter
+* Air Filter
+* Brake Pads
+* Tires
+* Suspension
+* Battery
+* Transmission Oil
+
+Distribute them naturally across the fleets.
+
+⸻
+
+Dates
+
+Use realistic maintenance dates spread over the last few months so the data appears authentic.
+
+⸻
+
+Costs
+
+Assign realistic maintenance costs appropriate to each maintenance type and category.
+
+⸻
+
+Dashboard Validation
+
+After inserting the sample data, verify that the Preventive Maintenance section of the Dashboard correctly displays:
+
+* 🟢 Green indicators
+* 🟡 Yellow indicators
+* 🔴 Red indicators
+
+The Dashboard should clearly show examples of all three statuses for every registered truck.
+
+⸻
+
+Purpose
+
+This data is only for testing and visual validation, allowing me to evaluate:
+
+* Status colors.
+* Remaining kilometer calculations.
+* Dashboard layout.
+* Sorting by priority.
+* Overall user experience.
+
+⸻
+
+Important
+
+* Use only the trucks that are already registered in the database.
+* Do not create new fleets or vehicles.
+* Do not modify existing production data other than adding these test maintenance records.
+* Ensure each truck has examples of safe (green), warning (yellow), and critical (red) preventive maintenance so I can fully test and validate the feature.
