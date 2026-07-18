@@ -66,7 +66,7 @@ const ADJUSTMENT_TYPES = [
 // Types that add to the final payment. Everything else (including legacy
 // "Adiantamento" records) is treated as a deduction.
 const ADD_TYPES      = new Set<string>(["Bônus"]);
-const ADVANCE_TYPES  = new Set<string>(["Adiantamento Salarial", "Adiantamento em Dinheiro", "Adiantamento Combustível", "Outro"]);
+const ADVANCE_TYPES  = new Set<string>(["Adiantamento", "Adiantamento Salarial", "Adiantamento em Dinheiro", "Adiantamento Combustível", "Outro"]);
 const DISCOUNT_TYPES = new Set<string>(["Desconto"]);
 function isAddType(tipo: string): boolean {
   return ADD_TYPES.has(tipo);
