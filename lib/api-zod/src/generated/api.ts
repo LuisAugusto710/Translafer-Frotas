@@ -1307,6 +1307,7 @@ export const GetManutencaoPreventivaResponseItem = zod.object({
   "avisoPercentual": zod.number(),
   "ultimaData": zod.string().nullish(),
   "ultimoKm": zod.number().optional(),
+  "ultimoTipo": zod.string().nullish().describe('Type of the last maintenance record (Preventiva\/Corretiva\/Emergencial)'),
   "kmAtual": zod.number(),
   "kmProxima": zod.number(),
   "kmRestante": zod.number(),

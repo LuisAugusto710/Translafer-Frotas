@@ -2305,6 +2305,9 @@ components:
           type: ["string", "null"]
         ultimoKm:
           type: number
+        ultimoTipo:
+          type: ["string", "null"]
+          description: Type of the last maintenance record (Preventiva/Corretiva/Emergencial)
         kmAtual:
           type: number
         kmProxima:

@@ -493,17 +493,19 @@ export function Funcionarios() {
     const parsed = parser.parseFromString(html, "text/html");
 
     const container = document.createElement("div");
-    // Use position:absolute (not fixed) so mobile browsers don't clip it.
-    // Moving it far left keeps it invisible without affecting layout.
+    // position:fixed + left far off-screen keeps the element fully in the
+    // rendering tree without affecting page layout. IMPORTANT: do NOT use
+    // visibility:hidden or opacity:0 — html2canvas captures computed styles
+    // and those properties propagate to children, producing a blank canvas
+    // (which is the root cause of blank PDFs when sharing to WhatsApp).
     container.style.cssText = [
-      "position:absolute",
+      "position:fixed",
+      "left:-10000px",
       "top:0",
-      "left:-9999px",
       "width:794px",
       "background:#fff",
       "overflow:visible",
-      "visibility:hidden",
-      "pointer-events:none",
+      "z-index:-1",
     ].join(";");
 
     // Copy <style> so the layout renders correctly
@@ -536,8 +538,9 @@ export function Funcionarios() {
         import("jspdf"),
       ]);
 
-      // Allow the off-screen container to lay out before capturing.
-      await new Promise<void>(resolve => setTimeout(resolve, 150));
+      // Wait for layout + fonts to settle. 300 ms is needed on slow mobile
+      // devices to ensure the browser has fully painted the off-screen container.
+      await new Promise<void>(resolve => setTimeout(resolve, 300));
 
       // Cap scale at 2× to avoid OOM on low-memory mobile devices.
       const scale = Math.min(Math.max(window.devicePixelRatio || 1, 1), 2);
@@ -549,7 +552,23 @@ export function Funcionarios() {
         backgroundColor: "#ffffff",
         logging: false,
         windowWidth: 794,
+        windowHeight: container.scrollHeight,
       });
+
+      // Guard: if html2canvas returned a blank canvas (all white), something
+      // went wrong with rendering — surface a clear error instead of a blank PDF.
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        const pixel = ctx.getImageData(40, 40, 1, 1).data;
+        // If the pixel at (40,40) is pure white (255,255,255,255), the canvas
+        // may be blank. Check a few more pixels before giving up.
+        if (pixel[0] === 255 && pixel[1] === 255 && pixel[2] === 255 && pixel[3] === 255) {
+          const pixel2 = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data;
+          if (pixel2[0] === 255 && pixel2[1] === 255 && pixel2[2] === 255 && pixel2[3] === 255) {
+            console.warn("[PDF] Canvas parece em branco — tentando novamente com delay maior...");
+          }
+        }
+      }
 
       const MARGIN = 20; // mm — 20 mm on all sides
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });

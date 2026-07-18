@@ -333,20 +333,39 @@ function FleetComparison({ data }: { data?: FleetPerformance[] }) {
 
 // ── Preventive Maintenance Section ───────────────────────────────────────────
 
-const STATUS_CONFIG = {
-  vencido: { label: "Vencida",    bg: "bg-red-50 dark:bg-red-950/30",    border: "border-red-200 dark:border-red-800",    text: "text-red-700 dark:text-red-300",    badge: "bg-red-100 text-red-700 dark:bg-red-900/60 dark:text-red-300",    Icon: XCircle },
-  aviso:   { label: "Próxima",    bg: "bg-amber-50 dark:bg-amber-950/30", border: "border-amber-200 dark:border-amber-800", text: "text-amber-700 dark:text-amber-300", badge: "bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300", Icon: AlertTriangle },
-  ok:      { label: "Em dia",     bg: "bg-emerald-50 dark:bg-emerald-950/20", border: "border-emerald-200 dark:border-emerald-800", text: "text-emerald-700 dark:text-emerald-300", badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300", Icon: CheckCircle2 },
+const STATUS_CFG = {
+  vencido: {
+    label: "Vencida",
+    rowCls: "bg-red-50 hover:bg-red-100/70",
+    textCls: "text-red-700 font-bold",
+    badgeCls: "bg-red-100 text-red-700 border border-red-200",
+    dotCls: "bg-red-500",
+    Icon: XCircle,
+  },
+  aviso: {
+    label: "Próxima",
+    rowCls: "bg-amber-50 hover:bg-amber-100/70",
+    textCls: "text-amber-700 font-bold",
+    badgeCls: "bg-amber-100 text-amber-700 border border-amber-200",
+    dotCls: "bg-amber-400",
+    Icon: AlertTriangle,
+  },
+  ok: {
+    label: "Em dia",
+    rowCls: "hover:bg-muted/30",
+    textCls: "text-emerald-700 font-semibold",
+    badgeCls: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    dotCls: "bg-emerald-500",
+    Icon: CheckCircle2,
+  },
 } as const;
 
 function PreventivaMaintSection({ items, loading }: { items: ManutencaoPreventivaItem[]; loading: boolean }) {
   if (loading) {
     return (
       <Card className="shadow-sm">
-        <CardContent className="p-4 sm:p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-lg" />)}
-          </div>
+        <CardContent className="p-4 sm:p-6 space-y-2">
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-8 rounded" />)}
         </CardContent>
       </Card>
     );
@@ -369,73 +388,114 @@ function PreventivaMaintSection({ items, loading }: { items: ManutencaoPreventiv
   const avisos   = items.filter(i => i.status === "aviso");
   const ok       = items.filter(i => i.status === "ok");
 
-  const summary = [
-    { label: "Vencidas",  count: vencidos.length, cls: "text-red-600 dark:text-red-400" },
-    { label: "Próximas",  count: avisos.length,   cls: "text-amber-600 dark:text-amber-400" },
-    { label: "Em dia",    count: ok.length,        cls: "text-emerald-600 dark:text-emerald-400" },
-  ];
-
   return (
     <Card className="shadow-sm">
-      <CardContent className="p-4 sm:p-6">
-        {/* Summary bar */}
-        <div className="flex gap-4 mb-4 pb-3 border-b">
-          {summary.map(s => (
-            <div key={s.label} className="flex items-center gap-1.5">
-              <span className={`text-xl font-bold ${s.cls}`}>{s.count}</span>
+      <CardContent className="p-0">
+        {/* ── Summary strip ── */}
+        <div className="flex gap-5 px-4 sm:px-6 py-3 border-b bg-muted/20">
+          {[
+            { label: "Vencidas",  count: vencidos.length, cls: "text-red-600" },
+            { label: "Próximas",  count: avisos.length,   cls: "text-amber-600" },
+            { label: "Em dia",    count: ok.length,        cls: "text-emerald-600" },
+            { label: "Total",     count: items.length,     cls: "text-muted-foreground" },
+          ].map(s => (
+            <div key={s.label} className="flex items-baseline gap-1">
+              <span className={`text-lg font-bold ${s.cls}`}>{s.count}</span>
               <span className="text-xs text-muted-foreground">{s.label}</span>
             </div>
           ))}
         </div>
 
-        {/* Cards grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {items.map(item => {
-            const cfg = STATUS_CONFIG[item.status];
-            const { Icon } = cfg;
-            return (
-              <div
-                key={`${item.frota}-${item.categoria}`}
-                className={`rounded-lg border p-3 ${cfg.bg} ${cfg.border}`}
-              >
-                {/* Header */}
-                <div className="flex items-start justify-between gap-1 mb-2">
-                  <div className="min-w-0">
-                    <p className="font-bold text-sm text-foreground leading-tight">Frota {item.frota}</p>
-                    <p className="text-xs text-muted-foreground leading-tight truncate">{item.categoria}</p>
-                  </div>
-                  <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold shrink-0 ${cfg.badge}`}>
-                    <Icon className="h-3 w-3" /> {cfg.label}
-                  </span>
-                </div>
+        {/* ── Table (sorted server-side: Red → Yellow → Green) ── */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs border-collapse">
+            <thead>
+              <tr className="border-b bg-muted/30 text-muted-foreground text-left">
+                <th className="px-3 py-2 font-semibold whitespace-nowrap">Status</th>
+                <th className="px-3 py-2 font-semibold whitespace-nowrap">Frota</th>
+                <th className="px-3 py-2 font-semibold whitespace-nowrap">Categoria</th>
+                <th className="px-3 py-2 font-semibold whitespace-nowrap">Tipo</th>
+                <th className="px-3 py-2 font-semibold whitespace-nowrap">Última Manut.</th>
+                <th className="px-3 py-2 font-semibold whitespace-nowrap text-right">Último KM</th>
+                <th className="px-3 py-2 font-semibold whitespace-nowrap text-right">Intervalo</th>
+                <th className="px-3 py-2 font-semibold whitespace-nowrap text-right">Próx. KM</th>
+                <th className="px-3 py-2 font-semibold whitespace-nowrap text-right">KM Atual</th>
+                <th className="px-3 py-2 font-semibold whitespace-nowrap text-right">Restante</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map(item => {
+                const cfg = STATUS_CFG[item.status];
+                const { Icon } = cfg;
+                const restanteLabel =
+                  item.kmRestante <= 0
+                    ? `−${Math.abs(Math.round(item.kmRestante)).toLocaleString("pt-BR")} km`
+                    : `+${Math.round(item.kmRestante).toLocaleString("pt-BR")} km`;
 
-                {/* KM grid */}
-                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs mt-2">
-                  <span className="text-muted-foreground">Último KM</span>
-                  <span className="text-right font-medium">{(item.ultimoKm ?? 0).toLocaleString("pt-BR")} km</span>
+                return (
+                  <tr
+                    key={`${item.frota}-${item.categoria}`}
+                    className={`border-b last:border-0 transition-colors ${cfg.rowCls}`}
+                  >
+                    {/* Status badge */}
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${cfg.badgeCls}`}>
+                        <Icon className="h-3 w-3 shrink-0" />
+                        {cfg.label}
+                      </span>
+                    </td>
 
-                  <span className="text-muted-foreground">KM Atual</span>
-                  <span className="text-right font-medium">{item.kmAtual.toLocaleString("pt-BR")} km</span>
+                    {/* Frota */}
+                    <td className="px-3 py-2 font-bold text-foreground whitespace-nowrap">
+                      {item.frota}
+                    </td>
 
-                  <span className="text-muted-foreground">Intervalo</span>
-                  <span className="text-right font-medium">{item.intervaloKm.toLocaleString("pt-BR")} km</span>
+                    {/* Categoria */}
+                    <td className="px-3 py-2 text-foreground whitespace-nowrap max-w-[160px] truncate">
+                      {item.categoria}
+                    </td>
 
-                  <span className={`font-semibold ${cfg.text}`}>Restante</span>
-                  <span className={`text-right font-bold ${cfg.text}`}>
-                    {item.kmRestante <= 0
-                      ? `${Math.abs(Math.round(item.kmRestante)).toLocaleString("pt-BR")} km atrás`
-                      : `${Math.round(item.kmRestante).toLocaleString("pt-BR")} km`}
-                  </span>
-                </div>
+                    {/* Tipo da última manutenção */}
+                    <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">
+                      {item.ultimoTipo ?? "—"}
+                    </td>
 
-                {item.ultimaData && (
-                  <p className="text-[10px] text-muted-foreground mt-1.5">
-                    Última: {item.ultimaData.split("-").reverse().join("/")}
-                  </p>
-                )}
-              </div>
-            );
-          })}
+                    {/* Última data */}
+                    <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">
+                      {item.ultimaData
+                        ? item.ultimaData.split("-").reverse().join("/")
+                        : "—"}
+                    </td>
+
+                    {/* Último KM */}
+                    <td className="px-3 py-2 text-right font-medium whitespace-nowrap">
+                      {(item.ultimoKm ?? 0).toLocaleString("pt-BR")} km
+                    </td>
+
+                    {/* Intervalo */}
+                    <td className="px-3 py-2 text-right text-muted-foreground whitespace-nowrap">
+                      {item.intervaloKm.toLocaleString("pt-BR")} km
+                    </td>
+
+                    {/* Próx. KM */}
+                    <td className="px-3 py-2 text-right font-medium whitespace-nowrap">
+                      {Math.round(item.kmProxima).toLocaleString("pt-BR")} km
+                    </td>
+
+                    {/* KM Atual */}
+                    <td className="px-3 py-2 text-right font-medium whitespace-nowrap">
+                      {item.kmAtual.toLocaleString("pt-BR")} km
+                    </td>
+
+                    {/* Restante */}
+                    <td className={`px-3 py-2 text-right whitespace-nowrap ${cfg.textCls}`}>
+                      {restanteLabel}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </CardContent>
     </Card>

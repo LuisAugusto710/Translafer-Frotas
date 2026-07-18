@@ -590,6 +590,11 @@ export interface ManutencaoPreventivaItem {
   /** @nullable */
   ultimaData?: string | null;
   ultimoKm?: number;
+  /**
+     * Type of the last maintenance record (Preventiva/Corretiva/Emergencial)
+     * @nullable
+     */
+  ultimoTipo?: string | null;
   kmAtual: number;
   kmProxima: number;
   kmRestante: number;

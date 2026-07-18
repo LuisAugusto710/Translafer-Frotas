@@ -1,0 +1,277 @@
+Prompt:
+
+Please review and redesign the Preventive Maintenance logic because the current implementation does not reflect how preventive maintenance works in a real fleet management system.
+
+The goal is to make the feature intelligent, automatic, and based on the vehicle’s mileage rather than requiring the user to manually create preventive maintenance records.
+
+⸻
+
+1. Redesign the Preventive Maintenance Logic
+
+The current logic only displays preventive maintenance alerts if the user creates a maintenance record with the type “Preventive”.
+
+This is not the desired behavior.
+
+Instead, every maintenance record, regardless of its type, should automatically reset the preventive maintenance cycle for that specific maintenance category.
+
+For example:
+
+* Corrective
+* Emergency
+* Preventive
+
+All of them should be considered as a completed maintenance event for that component.
+
+⸻
+
+2. Automatic Preventive Maintenance Schedule
+
+Whenever a maintenance record is created, the system should automatically create (or update) the next preventive maintenance schedule.
+
+Example:
+
+Maintenance Record:
+
+* Fleet: 4104
+* Category: Engine Oil
+* Type: Corrective
+* Odometer: 150,000 km
+
+Configured interval:
+
+10,000 km
+
+The system should automatically determine:
+
+* Last maintenance: 150,000 km
+* Next preventive maintenance: 160,000 km
+
+There is no need for the user to manually create another preventive maintenance record.
+
+The application should calculate this automatically.
+
+⸻
+
+3. Dashboard Indicators
+
+The Dashboard should always compare:
+
+Current Vehicle Mileage
+
+vs.
+
+Next Scheduled Maintenance Mileage
+
+Example:
+
+Current Mileage:
+
+158,500 km
+
+Next Oil Change:
+
+160,000 km
+
+Remaining:
+
+1,500 km
+
+Status:
+
+🟡 Yellow
+
+⸻
+
+Another example:
+
+Current Mileage:
+
+161,200 km
+
+Next Oil Change:
+
+160,000 km
+
+Remaining:
+
+-1,200 km
+
+Status:
+
+🔴 Red
+
+⸻
+
+4. One Preventive Cycle per Category
+
+Each maintenance category should maintain its own schedule.
+
+Example:
+
+Engine Oil
+
+Last maintenance:
+
+150,000 km
+
+Interval:
+
+10,000 km
+
+Next:
+
+160,000 km
+
+⸻
+
+Brake Pads
+
+Last maintenance:
+
+120,000 km
+
+Interval:
+
+40,000 km
+
+Next:
+
+160,000 km
+
+⸻
+
+Fuel Filter
+
+Last maintenance:
+
+145,000 km
+
+Interval:
+
+20,000 km
+
+Next:
+
+165,000 km
+
+Each category must be tracked independently.
+
+⸻
+
+5. Automatic Updates
+
+Whenever:
+
+* A maintenance record is added.
+* A maintenance record is edited.
+* A maintenance record is deleted.
+* The maintenance interval is modified.
+* The vehicle mileage changes.
+
+The preventive maintenance schedule should update automatically.
+
+No manual synchronization should ever be required.
+
+⸻
+
+6. Historical Records
+
+The maintenance history must remain unchanged.
+
+The preventive schedule should be calculated from the maintenance history, not stored as duplicate maintenance records.
+
+In other words:
+
+* Keep the maintenance history exactly as entered by the user.
+* Generate preventive maintenance reminders dynamically based on the latest maintenance record for each category and its configured interval.
+
+This avoids unnecessary duplicate records and keeps the database clean.
+
+⸻
+
+7. Dashboard
+
+The Preventive Maintenance widget should display:
+
+* Fleet
+* Maintenance Category
+* Last Maintenance Date
+* Last Maintenance Odometer
+* Configured Interval
+* Next Scheduled Mileage
+* Current Mileage
+* Remaining Kilometers
+* Status Indicator (Green / Yellow / Red)
+
+Sort the list by priority:
+
+1. Overdue (Red)
+2. Due Soon (Yellow)
+3. Normal (Green)
+
+⸻
+
+8. Fix the PDF Sharing Issue (High Priority)
+
+There is still a critical problem with PDF generation and sharing.
+
+Currently:
+
+* The PDF is generated.
+* When I choose Share and send it through WhatsApp, the recipient receives a completely blank (white) PDF.
+
+This indicates that the PDF is either being generated incorrectly or the wrong file is being shared.
+
+I do not want a workaround—I want the root cause identified and fixed.
+
+⸻
+
+Investigate
+
+Please verify:
+
+* PDF generation process.
+* HTML-to-PDF rendering.
+* Canvas rendering completion before export.
+* Blob creation.
+* File writing process.
+* Temporary file creation.
+* MIME type (application/pdf).
+* File encoding.
+* Native Share API implementation.
+* WhatsApp sharing flow.
+* Mobile browser compatibility.
+* File size.
+* Rendering timing (ensure the PDF is fully generated before invoking the Share API).
+* Whether the application is sharing the generated PDF or an empty placeholder file.
+* Console and server logs.
+
+⸻
+
+Validation
+
+After fixing the issue, verify that:
+
+* The PDF opens correctly before sharing.
+* The same PDF is shared through WhatsApp.
+* The recipient receives the fully rendered PDF (not a blank page).
+* The issue is resolved on both Android and iOS.
+* The problem does not occur with large or small reports.
+
+⸻
+
+Performance
+
+* Keep preventive maintenance calculations efficient.
+* Avoid duplicate maintenance records.
+* Recalculate only the affected fleet and category when changes occur.
+* Ensure PDF generation and sharing remain fast and reliable on both desktop and mobile devices.
+
+⸻
+
+Important
+
+* Do not redesign the application.
+* Do not change the existing user workflow.
+* Implement a preventive maintenance system that is automatically calculated from the latest maintenance history and configured intervals, rather than requiring manual preventive records.
+* Permanently fix the blank PDF issue when sharing through WhatsApp by identifying and resolving the root cause instead of applying temporary fixes.

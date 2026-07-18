@@ -84,9 +84,11 @@ router.get("/manutencao-intervalos/preventiva", async (_req, res) => {
   const rows = await db.execute(sql`
     WITH
       last_manut AS (
+        -- All maintenance types (Preventiva, Corretiva, Emergencial) reset the cycle.
         SELECT
           frota,
           categoria,
+          tipo,
           km::FLOAT8               AS ultimo_km,
           data_manutencao          AS ultima_data,
           ROW_NUMBER() OVER (
@@ -110,14 +112,15 @@ router.get("/manutencao-intervalos/preventiva", async (_req, res) => {
     SELECT
       lm.frota,
       lm.categoria,
-      i.id                         AS intervalo_id,
+      lm.tipo                                            AS ultimo_tipo,
+      i.id                                               AS intervalo_id,
       i.descricao,
-      i.intervalo_km::FLOAT8       AS intervalo_km,
-      i.aviso_percentual::FLOAT8   AS aviso_percentual,
+      i.intervalo_km::FLOAT8                             AS intervalo_km,
+      i.aviso_percentual::FLOAT8                         AS aviso_percentual,
       lm.ultima_data,
       lm.ultimo_km,
       ck.km_atual,
-      (lm.ultimo_km + i.intervalo_km::FLOAT8)           AS km_proxima,
+      (lm.ultimo_km + i.intervalo_km::FLOAT8)            AS km_proxima,
       (lm.ultimo_km + i.intervalo_km::FLOAT8 - ck.km_atual) AS km_restante
     FROM last_manut lm
     JOIN manutencao_intervalos i ON i.categoria = lm.categoria
@@ -138,6 +141,7 @@ router.get("/manutencao-intervalos/preventiva", async (_req, res) => {
     return {
       frota: r.frota,
       categoria: r.categoria,
+      ultimoTipo: r.ultimo_tipo ? String(r.ultimo_tipo) : null,
       intervaloId: Number(r.intervalo_id),
       descricao: r.descricao ?? null,
       intervaloKm,
