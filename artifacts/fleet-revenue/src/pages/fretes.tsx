@@ -277,7 +277,7 @@ export function Fretes() {
  <TableHead className=" whitespace-nowrap">Peso (kg)</TableHead>
  <TableHead className=" whitespace-nowrap">Frete (R$)</TableHead>
  <TableHead className=" whitespace-nowrap">Pedágio (R$)</TableHead>
- <TableHead className=" font-bold text-[#0a192f] whitespace-nowrap">Total Frete (R$)</TableHead>
+ <TableHead className="font-semibold text-foreground whitespace-nowrap">Total Frete (R$)</TableHead>
                 <TableHead className="whitespace-nowrap">Dta Frete</TableHead>
                 <TableHead className="whitespace-nowrap">Vencimento</TableHead>
                 <TableHead className="whitespace-nowrap">Obs</TableHead>
@@ -320,7 +320,7 @@ export function Fretes() {
                         <TableCell className="whitespace-nowrap">{hl(formatDate(frete.dataCte))}</TableCell>
                         <TableCell className="truncate max-w-[120px]" title={frete.origem}>{hl(frete.origem)}</TableCell>
                         <TableCell className="whitespace-nowrap">{hl(frete.transporte)}</TableCell>
-                        <TableCell className="font-medium text-[#0a192f] whitespace-nowrap">{hl(frete.frota)}</TableCell>
+                        <TableCell className="font-medium text-foreground whitespace-nowrap">{hl(frete.frota)}</TableCell>
                         <TableCell className="whitespace-nowrap">{hl(frete.transp)}</TableCell>
                         <TableCell className="truncate max-w-[140px]" title={frete.cliente}>{hl(frete.cliente)}</TableCell>
                         <TableCell className="truncate max-w-[110px]" title={frete.cidade}>{hl(frete.cidade)}</TableCell>
@@ -328,7 +328,7 @@ export function Fretes() {
  <TableCell className=" whitespace-nowrap">{hl(formatNumber(frete.peso))}</TableCell>
  <TableCell className=" whitespace-nowrap">{hl(formatCurrency(frete.frete))}</TableCell>
  <TableCell className=" whitespace-nowrap">{hl(formatCurrency(frete.pedagio))}</TableCell>
- <TableCell className=" font-bold text-[#2ecc71] bg-[#2ecc71]/10 whitespace-nowrap">
+ <TableCell className="font-bold text-emerald-600 bg-emerald-500/10 whitespace-nowrap">
                           {hl(formatCurrency(frete.totalFrete))}
                         </TableCell>
                         <TableCell className="whitespace-nowrap">{hl(formatDate(frete.dtaFrete))}</TableCell>

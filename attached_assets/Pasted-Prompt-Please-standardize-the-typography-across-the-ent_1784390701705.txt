@@ -1,0 +1,214 @@
+Prompt:
+
+Please standardize the typography across the entire application to create a consistent, modern, and professional visual hierarchy. Do not change the application’s layout, colors, or functionality. The objective is to establish a single typography system that adapts automatically to different screen sizes while maintaining excellent readability.
+
+⸻
+
+Typography System
+
+Review every page of the application and ensure that all text follows a consistent typography scale.
+
+This includes, but is not limited to:
+
+* Page titles
+* Section titles
+* Card titles
+* Dashboard KPI values
+* Card subtitles
+* Table headers
+* Table content
+* Form labels
+* Input placeholders
+* Buttons
+* Dropdown menus
+* Modal windows
+* Alerts
+* Notifications
+* Tooltips
+* Charts
+* Legends
+* Footer
+* Navigation menu
+* Search bars
+* Filters
+* PDF preview (when applicable)
+
+No text should appear noticeably larger or smaller than similar elements elsewhere in the application.
+
+⸻
+
+Visual Hierarchy
+
+Create a clear typography hierarchy.
+
+For example:
+
+Level 1 – Page Titles
+
+Largest and most prominent text.
+
+Examples:
+
+* Dashboard
+* Freights
+* Expenses
+* Diesel
+* Maintenance
+* Employees
+
+⸻
+
+Level 2 – Section Titles
+
+Slightly smaller than page titles.
+
+Examples:
+
+* Preventive Maintenance
+* Financial Summary
+* Fleet Statistics
+* Employee Information
+
+⸻
+
+Level 3 – Card Titles
+
+Used inside dashboard cards and information panels.
+
+⸻
+
+Level 4 – Table Headers
+
+All table headers should have the same font size and weight across the application.
+
+⸻
+
+Level 5 – Table Content
+
+Every table should use the same font size for data cells.
+
+Examples:
+
+* Dates
+* Fleet Numbers
+* Driver Names
+* Currency Values
+* Procedures
+* Categories
+
+⸻
+
+Level 6 – Secondary Information
+
+Use a slightly smaller font for:
+
+* Helper text
+* Captions
+* Placeholder text
+* Notes
+* Metadata
+
+⸻
+
+Responsive Typography
+
+The typography must automatically adapt to different screen sizes.
+
+Support:
+
+* Desktop
+* Laptop
+* Tablet
+* Mobile phones
+
+Use fluid typography (such as clamp() or an equivalent responsive technique) so text scales naturally without abrupt size changes.
+
+The application should remain readable on both small and large displays.
+
+⸻
+
+Prevent Text Wrapping
+
+Review every page to ensure:
+
+* Numbers do not wrap unexpectedly.
+* Currency values remain on a single line whenever possible.
+* Titles do not overflow their containers.
+* Buttons do not break into multiple lines.
+* Table headers remain readable.
+* Long labels truncate gracefully or adapt without breaking the layout.
+
+⸻
+
+Consistent Spacing
+
+Typography should maintain consistent spacing.
+
+Review:
+
+* Line height
+* Letter spacing
+* Paragraph spacing
+* Margin between titles and content
+* Padding inside cards
+* Padding inside buttons
+* Table cell spacing
+
+The interface should feel balanced and visually consistent.
+
+⸻
+
+Font Weight
+
+Standardize font weights throughout the application.
+
+For example:
+
+* Bold → Main titles
+* Semi-bold → Section titles
+* Medium → Card titles
+* Regular → Body text
+* Light → Secondary information
+
+Avoid unnecessary variations in font weight.
+
+⸻
+
+Mobile Optimization
+
+On mobile devices:
+
+* Slightly reduce font sizes while preserving readability.
+* Ensure text never overlaps other elements.
+* Prevent buttons from expanding because of oversized text.
+* Keep dashboard cards visually balanced.
+* Ensure tables remain easy to read.
+* Maintain touch-friendly spacing.
+
+⸻
+
+Accessibility
+
+Improve readability by ensuring:
+
+* Adequate contrast between text and background.
+* Comfortable line spacing.
+* Clear distinction between headings and body text.
+* Consistent typography across all pages.
+
+⸻
+
+Performance
+
+* Reuse global typography classes or design tokens instead of defining font sizes individually.
+* Remove duplicate or conflicting typography styles.
+* Keep CSS organized and maintainable.
+
+⸻
+
+Important
+
+* Do not redesign the application.
+* Do not modify any business logic.
+* Do not change colors or component layouts.
+* Create a unified, responsive typography system that provides a clean, professional, and consistent appearance across the entire application, automatically adapting to different devices while preserving readability and visual harmony.

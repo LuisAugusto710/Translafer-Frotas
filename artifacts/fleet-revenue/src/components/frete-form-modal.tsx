@@ -541,7 +541,7 @@ export function FreteFormModal({
               <Input
                 value={`R$ ${totalFrete}`}
                 readOnly
-                className="bg-muted font-bold text-[#2ecc71]"
+                className="bg-muted font-bold text-emerald-600"
               />
             </div>
 

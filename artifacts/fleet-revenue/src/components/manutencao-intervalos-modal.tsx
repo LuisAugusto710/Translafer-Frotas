@@ -105,7 +105,7 @@ export function ManutencaoIntervalosModal({ open, onOpenChange }: { open: boolea
       <DialogContent className="sm:max-w-[680px] max-h-[85vh] flex flex-col gap-0 p-0">
         <DialogHeader className="px-6 pt-5 pb-3 border-b shrink-0">
           <DialogTitle className="flex items-center gap-2">
-            <Settings2 className="h-5 w-5 text-[#0a192f]" />
+            <Settings2 className="h-5 w-5 text-foreground/70" />
             Intervalos de Manutenção Preventiva
           </DialogTitle>
           <p className="text-sm text-muted-foreground mt-1">

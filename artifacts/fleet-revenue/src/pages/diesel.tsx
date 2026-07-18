@@ -119,7 +119,7 @@ export function Diesel() {
                 <TableHead className="whitespace-nowrap">Frota</TableHead>
  <TableHead className=" whitespace-nowrap">Litros</TableHead>
  <TableHead className=" whitespace-nowrap">R$/L</TableHead>
- <TableHead className=" font-bold text-[#0a192f] whitespace-nowrap">Total (R$)</TableHead>
+ <TableHead className="font-semibold text-foreground whitespace-nowrap">Total (R$)</TableHead>
  <TableHead className=" whitespace-nowrap">KM Início</TableHead>
  <TableHead className=" whitespace-nowrap">KM Final</TableHead>
  <TableHead className=" whitespace-nowrap">KM Perc.</TableHead>

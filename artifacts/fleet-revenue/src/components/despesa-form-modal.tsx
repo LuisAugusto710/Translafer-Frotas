@@ -466,7 +466,7 @@ export function DespesaFormModal({
               <Input
                 value={formatCurrency(lucro)}
                 readOnly
-                className={`bg-muted font-bold ${lucro >= 0 ? "text-[#2ecc71]" : "text-red-500"}`}
+                className={`bg-muted font-bold ${lucro >= 0 ? "text-emerald-600" : "text-red-500"}`}
               />
             </div>
           </div>

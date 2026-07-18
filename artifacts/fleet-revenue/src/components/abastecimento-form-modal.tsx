@@ -285,7 +285,7 @@ export function AbastecimentoFormModal({
                 value={formData.totalPago}
                 onChange={handleChange}
                 required
-                className="font-bold text-[#0a192f] border-[#0a192f]"
+                className="font-bold text-foreground border-border"
               />
             </div>
 

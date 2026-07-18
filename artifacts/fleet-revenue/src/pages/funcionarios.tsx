@@ -772,7 +772,7 @@ export function Funcionarios() {
                             <span className={`text-xs sm:text-sm font-bold leading-none ${worked ? "text-green-800 dark:text-green-300" : "text-red-700 dark:text-red-400"}`}>
                               {cell.dayNum}
                             </span>
-                            <span className={`text-[8px] sm:text-[10px] font-semibold leading-tight ${worked ? "text-green-700 dark:text-green-400" : "text-red-600 dark:text-red-500"}`}>
+                            <span className={`text-[9px] sm:text-xs font-semibold leading-tight ${worked ? "text-green-700 dark:text-green-400" : "text-red-600 dark:text-red-500"}`}>
                               {worked ? "Trab." : "Não"}
                             </span>
                             {worked && cell.valor > 0 && (
@@ -820,7 +820,7 @@ export function Funcionarios() {
               {calendarLoading && selectedEmployee ? (
                 <Skeleton className="h-9 w-40" />
               ) : (
-                <p className="text-3xl font-extrabold text-blue-700 dark:text-blue-400">
+                <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">
                   {selectedEmployee ? fmt(finalAmount) : "—"}
                 </p>
               )}
@@ -891,7 +891,7 @@ export function Funcionarios() {
               {selectedEmployee && !calendarLoading && (
                 <div className="mt-2 rounded-md bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 p-2 flex gap-2">
                   <Info className="h-3.5 w-3.5 text-blue-500 shrink-0 mt-0.5" />
-                  <p className="text-[10px] text-blue-700 dark:text-blue-400 leading-snug">
+                  <p className="text-xs text-blue-700 dark:text-blue-400 leading-snug">
                     Valor Final = Total ganho + Bônus − Adiantamentos/Descontos, recalculado automaticamente conforme os ajustes de pagamento.
                   </p>
                 </div>
@@ -911,7 +911,7 @@ export function Funcionarios() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold">Salvar PDF</p>
-                  <p className="text-[10px] text-muted-foreground leading-tight">
+                  <p className="text-xs text-muted-foreground leading-tight">
                     Gera um PDF com os dias trabalhados no período selecionado.
                   </p>
                 </div>
@@ -932,7 +932,7 @@ export function Funcionarios() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold">Compartilhar PDF</p>
-                  <p className="text-[10px] text-muted-foreground leading-tight">
+                  <p className="text-xs text-muted-foreground leading-tight">
                     Compartilhe o resumo com o funcionário via WhatsApp ou outros canais.
                   </p>
                 </div>
@@ -956,7 +956,7 @@ export function Funcionarios() {
                       <MessageCircle className="h-4 w-4 text-green-500" />
                       <div>
                         <p className="text-xs font-semibold">WhatsApp (texto)</p>
-                        <p className="text-[10px] text-muted-foreground leading-tight">
+                        <p className="text-xs text-muted-foreground leading-tight">
                           Envia o resumo como mensagem de texto
                         </p>
                       </div>
@@ -968,7 +968,7 @@ export function Funcionarios() {
                       <Share2 className="h-4 w-4 text-blue-500" />
                       <div>
                         <p className="text-xs font-semibold">Compartilhar…</p>
-                        <p className="text-[10px] text-muted-foreground leading-tight">
+                        <p className="text-xs text-muted-foreground leading-tight">
                           WhatsApp, Email, Teams, Telegram…
                         </p>
                       </div>
@@ -981,7 +981,7 @@ export function Funcionarios() {
                       <Clipboard className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-xs font-semibold">Copiar resumo</p>
-                        <p className="text-[10px] text-muted-foreground leading-tight">
+                        <p className="text-xs text-muted-foreground leading-tight">
                           Copia texto para área de transferência
                         </p>
                       </div>
@@ -993,7 +993,7 @@ export function Funcionarios() {
                       <FileDown className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-xs font-semibold">Enviar PDF</p>
-                        <p className="text-[10px] text-muted-foreground leading-tight">
+                        <p className="text-xs text-muted-foreground leading-tight">
                           Gera e compartilha o PDF do período
                         </p>
                       </div>
@@ -1027,19 +1027,19 @@ export function Funcionarios() {
           <div className="grid grid-cols-3 gap-2 sm:gap-3">
             <Card className="shadow-none border">
               <CardContent className="py-2.5 px-3 sm:py-3 sm:px-4">
-                <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">Adiant. / Desc.</p>
+                <p className="text-xs text-muted-foreground leading-tight">Adiant. / Desc.</p>
                 <p className="text-sm sm:text-lg font-bold text-red-600 dark:text-red-400 mt-0.5">{fmt(deductionTotal)}</p>
               </CardContent>
             </Card>
             <Card className="shadow-none border">
               <CardContent className="py-2.5 px-3 sm:py-3 sm:px-4">
-                <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">Bônus</p>
+                <p className="text-xs text-muted-foreground leading-tight">Bônus</p>
                 <p className="text-sm sm:text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">{fmt(bonusTotal)}</p>
               </CardContent>
             </Card>
             <Card className="shadow-none border bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/30 dark:to-card">
               <CardContent className="py-2.5 px-3 sm:py-3 sm:px-4">
-                <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">Final a Receber</p>
+                <p className="text-xs text-muted-foreground leading-tight">Final a Receber</p>
                 <p className="text-sm sm:text-lg font-bold text-blue-700 dark:text-blue-400 mt-0.5">{fmt(finalAmount)}</p>
               </CardContent>
             </Card>

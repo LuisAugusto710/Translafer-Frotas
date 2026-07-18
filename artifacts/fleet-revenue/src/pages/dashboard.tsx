@@ -120,7 +120,7 @@ function KpiCard({ title, value, sub, icon, valueColor = "text-foreground", load
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider leading-tight">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider leading-tight">
               {title}
             </p>
             {loading ? (
@@ -439,7 +439,7 @@ function PreventivaMaintSection({ items, loading }: { items: ManutencaoPreventiv
                   >
                     {/* Status badge */}
                     <td className="px-3 py-2 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${cfg.badgeCls}`}>
+                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold ${cfg.badgeCls}`}>
                         <Icon className="h-3 w-3 shrink-0" />
                         {cfg.label}
                       </span>
@@ -1024,7 +1024,7 @@ export function Dashboard() {
                 <CardContent className="p-4 flex items-start gap-3">
                   <div className={`mt-0.5 shrink-0 ${ins.color}`}>{ins.icon}</div>
                   <div className="min-w-0">
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">{ins.label}</p>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{ins.label}</p>
                     <p className="text-sm font-semibold text-foreground mt-0.5 break-words">{ins.value}</p>
                   </div>
                 </CardContent>
@@ -1039,7 +1039,7 @@ export function Dashboard() {
         <Card className="shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-[#0a192f]" /> Próximos Vencimentos
+              <Calendar className="h-4 w-4 text-muted-foreground" /> Próximos Vencimentos
             </CardTitle>
             <CardDescription>Recebíveis nos próximos 30 dias</CardDescription>
           </CardHeader>
@@ -1051,12 +1051,12 @@ export function Dashboard() {
                     <div key={r.id} className="flex items-center justify-between gap-3 px-3 py-2 rounded-md border hover:bg-muted/30 transition-colors">
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-semibold truncate">{r.cliente}</p>
-                        <p className="text-[10px] text-muted-foreground">{r.frota} · {r.cidade}</p>
+                        <p className="text-xs text-muted-foreground">{r.frota} · {r.cidade}</p>
                       </div>
                       <div className="text-right shrink-0">
                         <p className={`text-xs font-bold ${urgencyColor(r.diasFaltando)}`}>{formatCurrency(r.totalGeral)}</p>
                         <div className="flex items-center justify-end gap-1 mt-0.5">
-                          <span className="text-[10px] text-muted-foreground">{r.vencimento ? formatDate(r.vencimento) : "—"}</span>
+                          <span className="text-xs text-muted-foreground">{r.vencimento ? formatDate(r.vencimento) : "—"}</span>
                           {urgencyBadge(r.diasFaltando)}
                         </div>
                       </div>
@@ -1076,7 +1076,7 @@ export function Dashboard() {
         <Card className="shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-              <Clock className="h-4 w-4 text-[#0a192f]" /> Atividade Recente
+              <Clock className="h-4 w-4 text-muted-foreground" /> Atividade Recente
             </CardTitle>
             <CardDescription>Últimas 10 entradas de frete</CardDescription>
           </CardHeader>
@@ -1099,7 +1099,7 @@ export function Dashboard() {
                         <tr key={f.id} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
                           <td className="py-1.5 text-muted-foreground whitespace-nowrap">{formatDate(f.dataCte)}</td>
                           <td className="py-1.5 max-w-[100px] truncate" title={f.cliente}>{f.cliente}</td>
-                          <td className="py-1.5 font-medium text-[#0a192f] dark:text-white whitespace-nowrap">{f.frota}</td>
+                          <td className="py-1.5 font-medium text-foreground whitespace-nowrap">{f.frota}</td>
                           <td className="py-1.5 max-w-[90px] truncate text-muted-foreground" title={f.cidade}>{f.cidade}</td>
                           <td className="py-1.5 font-semibold whitespace-nowrap">{formatCurrency(f.totalGeral)}</td>
                         </tr>
