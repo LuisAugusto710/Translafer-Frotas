@@ -935,6 +935,21 @@ export const UpsertFleetConfigResponse = zod.object({
 
 
 /**
+ * @summary List employees who have records within the given date range
+ */
+export const ListActiveEmployeesQueryParams = zod.object({
+  "dateFrom": zod.date(),
+  "dateTo": zod.date()
+})
+
+export const ListActiveEmployeesResponseItem = zod.object({
+  "nome": zod.string(),
+  "tipo": zod.string()
+})
+export const ListActiveEmployeesResponse = zod.array(ListActiveEmployeesResponseItem)
+
+
+/**
  * @summary List all distinct employees from despesas
  */
 export const ListEmployeesResponseItem = zod.object({

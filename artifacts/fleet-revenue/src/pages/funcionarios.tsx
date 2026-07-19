@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
-  useListEmployees,
+  useListActiveEmployees,
   useGetEmployeeCalendar,
   getGetEmployeeCalendarQueryKey,
   useListEmployeeAdvances,
@@ -285,9 +285,29 @@ export function Funcionarios() {
 
   const queryClient = useQueryClient();
 
-  const { data: employees, isLoading: employeesLoading } = useListEmployees();
-
   const periodValid = !!period.dateFrom && !!period.dateTo && period.dateFrom <= period.dateTo;
+
+  const activeParams = { dateFrom: period.dateFrom, dateTo: period.dateTo };
+  const { data: employees, isLoading: employeesLoading } = useListActiveEmployees(
+    activeParams,
+    { query: { enabled: periodValid, queryKey: ["listActiveEmployees", period.dateFrom, period.dateTo] } },
+  );
+
+  // Auto-clear or auto-select when the employee list changes due to period change
+  useEffect(() => {
+    if (!periodValid || employeesLoading) return;
+    const list = employees ?? [];
+    if (selectedEmployee) {
+      const stillPresent = list.some(
+        e => e.nome === selectedEmployee.nome && e.tipo === selectedEmployee.tipo,
+      );
+      if (!stillPresent) setSelectedEmployee(null);
+    } else {
+      if (list.length === 1) {
+        setSelectedEmployee({ nome: list[0].nome, tipo: list[0].tipo });
+      }
+    }
+  }, [employees, employeesLoading, periodValid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const calendarEnabled = !!selectedEmployee && periodValid;
   const calendarParams = selectedEmployee
@@ -703,10 +723,12 @@ export function Funcionarios() {
                         </div>
                       </SelectItem>
                     ))}
-                    {!employees?.length && (
+                    {!employeesLoading && !employees?.length && (
                       <div className="px-3 py-4 text-sm text-muted-foreground text-center">
-                        Nenhum funcionário encontrado.<br />
-                        <span className="text-xs">Cadastre despesas com nome de motorista ou ajudante.</span>
+                        {periodValid
+                          ? <>Nenhum funcionário com registros no período selecionado.<br /><span className="text-xs">Tente outro período ou adicione despesas.</span></>
+                          : <>Preencha o período para ver os funcionários disponíveis.</>
+                        }
                       </div>
                     )}
                   </SelectContent>

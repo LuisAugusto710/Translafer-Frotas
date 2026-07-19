@@ -22,6 +22,37 @@ router.get("/employees", async (_req, res) => {
   res.json(employees);
 });
 
+router.get("/employees/active", async (req, res) => {
+  const { dateFrom, dateTo } = req.query as Record<string, string>;
+
+  if (!dateFrom || !dateTo) {
+    return res.status(400).json({ error: "dateFrom and dateTo are required" });
+  }
+
+  const dateFilter = (nameCol: typeof despesasTable.motoristaNome) =>
+    and(
+      sql`coalesce(trim(${nameCol}), '') <> ''`,
+      gte(despesasTable.data, dateFrom),
+      lte(despesasTable.data, dateTo),
+    );
+
+  const [motoristas, ajudantes] = await Promise.all([
+    db.selectDistinct({ nome: despesasTable.motoristaNome })
+      .from(despesasTable)
+      .where(dateFilter(despesasTable.motoristaNome)),
+    db.selectDistinct({ nome: despesasTable.ajudanteNome })
+      .from(despesasTable)
+      .where(dateFilter(despesasTable.ajudanteNome)),
+  ]);
+
+  const employees = [
+    ...motoristas.map(r => ({ nome: r.nome, tipo: "Motorista" as const })),
+    ...ajudantes.map(r => ({ nome: r.nome, tipo: "Ajudante" as const })),
+  ].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+
+  res.json(employees);
+});
+
 router.get("/employees/calendar", async (req, res) => {
   const { nome, tipo, dateFrom, dateTo } = req.query as Record<string, string>;
 

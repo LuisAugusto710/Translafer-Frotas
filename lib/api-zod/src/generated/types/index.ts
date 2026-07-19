@@ -58,6 +58,7 @@ export * from './getTopClientesParams';
 export * from './getUpcomingReceivablesParams';
 export * from './healthStatus';
 export * from './listAbastecimentosParams';
+export * from './listActiveEmployeesParams';
 export * from './listDespesasParams';
 export * from './listEmployeeAdvancesParams';
 export * from './listFretesParams';

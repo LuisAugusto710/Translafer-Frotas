@@ -69,6 +69,7 @@ import type {
   GetUpcomingReceivablesParams,
   HealthStatus,
   ListAbastecimentosParams,
+  ListActiveEmployeesParams,
   ListDespesasParams,
   ListEmployeeAdvancesParams,
   ListFretesParams,
@@ -2851,6 +2852,90 @@ export const useUpsertFleetConfig = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getUpsertFleetConfigMutationOptions(options));
     }
+
+export const getListActiveEmployeesUrl = (params: ListActiveEmployeesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/employees/active?${stringifiedParams}` : `/api/employees/active`
+}
+
+/**
+ * @summary List employees who have records within the given date range
+ */
+export const listActiveEmployees = async (params: ListActiveEmployeesParams, options?: RequestInit): Promise<EmployeeItem[]> => {
+
+  return customFetch<EmployeeItem[]>(getListActiveEmployeesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListActiveEmployeesQueryKey = (params?: ListActiveEmployeesParams,) => {
+    return [
+    `/api/employees/active`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListActiveEmployeesQueryOptions = <TData = Awaited<ReturnType<typeof listActiveEmployees>>, TError = ErrorType<unknown>>(params: ListActiveEmployeesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listActiveEmployees>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListActiveEmployeesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listActiveEmployees>>> = ({ signal }) => listActiveEmployees(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listActiveEmployees>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListActiveEmployeesQueryResult = NonNullable<Awaited<ReturnType<typeof listActiveEmployees>>>
+export type ListActiveEmployeesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List employees who have records within the given date range
+ */
+
+export function useListActiveEmployees<TData = Awaited<ReturnType<typeof listActiveEmployees>>, TError = ErrorType<unknown>>(
+ params: ListActiveEmployeesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listActiveEmployees>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListActiveEmployeesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getListEmployeesUrl = () => {
 

@@ -736,6 +736,11 @@ dateFrom?: string;
 dateTo?: string;
 };
 
+export type ListActiveEmployeesParams = {
+dateFrom: string;
+dateTo: string;
+};
+
 export type GetEmployeeCalendarParams = {
 nome: string;
 tipo: string;

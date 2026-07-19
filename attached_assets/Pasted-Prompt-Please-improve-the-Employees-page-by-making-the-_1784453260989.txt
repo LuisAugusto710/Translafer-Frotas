@@ -1,0 +1,106 @@
+Prompt:
+
+Please improve the Employees page by making the employee selection dropdown dynamic based on the selected date range. Do not change the application’s design, layout, or existing functionality.
+
+Dynamic Employee Filtering
+
+Currently, the employee dropdown displays all employees, even if they have no records for the selected period.
+
+I want the dropdown to show only employees who have at least one record within the selected date range.
+
+⸻
+
+Required Behavior
+
+Whenever the user changes the Start Date or End Date:
+
+1. Filter the database using the selected date range.
+2. Search for all employees (Drivers and Assistants) who have records during that period.
+3. Populate the employee dropdown only with those employees.
+4. Automatically remove employees who have no records within the selected period.
+
+The list should update immediately whenever the date filter changes, without requiring a page refresh.
+
+⸻
+
+Example
+
+Records in January 2026
+
+* João Silva
+* Carlos Souza
+* Pedro Lima
+
+Employee dropdown should display only:
+
+* João Silva
+* Carlos Souza
+* Pedro Lima
+
+⸻
+
+Records in February 2026
+
+* Carlos Souza
+* Marcos Oliveira
+
+Employee dropdown should display only:
+
+* Carlos Souza
+* Marcos Oliveira
+
+João Silva should no longer appear because he has no records during the selected period.
+
+⸻
+
+No Empty Employees
+
+Employees with zero worked days or no records in the selected period should not appear in the dropdown.
+
+This is important because employees who are no longer working for the company should not continue appearing when viewing more recent periods.
+
+⸻
+
+Automatic Selection
+
+If the currently selected employee disappears after changing the date range:
+
+* Clear the current selection automatically.
+* If there is only one employee available, select that employee automatically.
+* If multiple employees are available, leave the dropdown empty and prompt the user to select one.
+
+⸻
+
+Performance
+
+* Filter employees directly through the database instead of loading all employees into memory.
+* Return only unique employee names.
+* Ignore empty or null names.
+* Keep the filtering fast, even with a large number of expense records.
+
+⸻
+
+Validation
+
+Ensure the dropdown correctly handles the following scenarios:
+
+* No employees found for the selected period.
+* Only one employee found.
+* Multiple employees found.
+* Employees with multiple records in the same period (display the name only once).
+* Changes to the selected period.
+* Newly added expense records.
+
+If no employees are found, display a friendly message such as:
+
+“No employees have records for the selected period.”
+
+instead of showing an empty dropdown.
+
+⸻
+
+Important
+
+* Do not redesign the application.
+* Do not modify any business logic related to payroll calculations.
+* Only make the employee dropdown dynamic so that it displays only employees who have records within the selected date range, keeping the list clean, relevant, and automatically updated whenever the date filter changes.

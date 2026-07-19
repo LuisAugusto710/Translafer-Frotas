@@ -831,6 +831,30 @@ paths:
               schema:
                 $ref: "#/components/schemas/FleetConfig"
 
+  /employees/active:
+    get:
+      operationId: listActiveEmployees
+      tags: [employees]
+      summary: List employees who have records within the given date range
+      parameters:
+        - name: dateFrom
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: dateTo
+          in: query
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EmployeeItem"
+
   /employees:
     get:
       operationId: listEmployees
