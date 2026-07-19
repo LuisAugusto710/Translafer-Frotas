@@ -1,0 +1,201 @@
+Prompt:
+
+Please implement the following fixes and improvements without changing the application’s design, layout, or existing workflow.
+
+⸻
+
+1. Fix the Maintenance Record Deletion
+
+Currently, I am unable to delete maintenance records from the Maintenance page.
+
+I want you to investigate the root cause and permanently fix the issue.
+
+Investigation
+
+Please verify:
+
+* Delete API endpoint.
+* Database delete query.
+* Record ID mapping.
+* Foreign key constraints.
+* Cascade delete rules.
+* Frontend delete request.
+* Confirmation dialog.
+* State synchronization after deletion.
+* Cache invalidation.
+* Console errors.
+* Server logs.
+* Permission validation.
+
+The goal is to identify the real cause instead of applying a temporary workaround.
+
+⸻
+
+Expected Behavior
+
+When the user clicks Delete:
+
+1. Display a confirmation dialog.
+2. If confirmed:
+    * Delete the record from the database.
+    * Remove it immediately from the table.
+    * Update all related Dashboard data automatically.
+3. Display a success message in Portuguese.
+
+Example:
+
+“Manutenção excluída com sucesso.”
+
+If the deletion fails, display a detailed error message in Portuguese explaining the reason.
+
+⸻
+
+2. Improve PDF Saving Experience
+
+On the Employees page, when the user generates a PDF, I do not want the file to be silently downloaded to an unknown location.
+
+Instead, I want the user to clearly know where the file is being saved.
+
+Desktop
+
+On desktop browsers:
+
+* Trigger the browser’s native “Save As” dialog whenever possible.
+* Allow the user to choose the destination folder and file name before saving.
+
+⸻
+
+Mobile Devices
+
+On Android and iPhone:
+
+* Use the native file picker or share/save dialog provided by the operating system whenever supported.
+* Allow the user to choose where to save the PDF (Files app, Downloads, iCloud Drive, Google Drive, OneDrive, etc.).
+* If the operating system does not allow choosing a save location programmatically, open the native share sheet so the user can select where to save the PDF.
+
+The user should always know where the PDF is being stored.
+
+⸻
+
+3. Fix PDF Sharing on iPhone
+
+The PDF sharing feature still fails on iPhone.
+
+I want you to investigate the root cause and permanently fix it.
+
+Do not apply a workaround.
+
+⸻
+
+Investigate
+
+Please verify:
+
+* Native Share API implementation.
+* iOS Safari compatibility.
+* Blob creation.
+* File creation.
+* File permissions.
+* MIME type (application/pdf).
+* Temporary file generation.
+* Canvas rendering completion.
+* HTML-to-PDF conversion.
+* Timing issues before invoking the Share API.
+* File size limitations.
+* Memory limitations.
+* iOS-specific restrictions.
+* WhatsApp compatibility.
+* File URI generation.
+* Asynchronous operations.
+* Console logs.
+* Server logs.
+
+Confirm that the application is actually sharing the generated PDF and not an empty or invalid file.
+
+⸻
+
+4. Error Messages in Portuguese
+
+If PDF generation or sharing fails for any reason, I want the application to display a clear and user-friendly error message in Portuguese.
+
+Avoid generic messages like:
+
+* “Something went wrong”
+* “Unknown error”
+
+Instead, provide a meaningful explanation whenever possible.
+
+Examples:
+
+* “Não foi possível gerar o PDF. Tente novamente.”
+* “Falha ao compartilhar o PDF. O arquivo não foi gerado corretamente.”
+* “O dispositivo não permite compartilhar este arquivo neste momento.”
+* “Não foi possível acessar o armazenamento do dispositivo.”
+* “O PDF excede o tamanho permitido para compartilhamento.”
+* “O arquivo PDF ainda não foi concluído. Aguarde alguns segundos e tente novamente.”
+
+If the application detects the specific cause, display the corresponding message.
+
+⸻
+
+5. Error Logging
+
+Whenever an error occurs during PDF generation or sharing:
+
+* Log the complete technical error for debugging.
+* Preserve the user’s data.
+* Prevent the application from crashing.
+* Allow the user to try again without refreshing the page.
+
+⸻
+
+6. Validation
+
+After implementing the fixes, verify the following scenarios:
+
+Maintenance
+
+* Delete one maintenance record.
+* Delete multiple maintenance records.
+* Delete the first record.
+* Delete the last record.
+* Delete a record with an attached file.
+* Verify the Dashboard updates automatically.
+
+PDF
+
+Test on:
+
+* Windows
+* macOS
+* Android
+* iPhone (Safari)
+* iPad
+
+Verify:
+
+* PDF generation.
+* Save dialog.
+* File location selection.
+* WhatsApp sharing.
+* AirDrop sharing.
+* Email sharing.
+* Native Share Sheet.
+* PDF integrity after sharing.
+
+⸻
+
+Performance
+
+* Keep deletion operations fast.
+* Generate PDFs efficiently.
+* Avoid duplicate PDF generation.
+* Ensure sharing only starts after the PDF has been fully generated.
+
+⸻
+
+Important
+
+* Do not redesign the application.
+* Do not modify unrelated business logic.
+* Permanently fix the Maintenance deletion issue, improve the PDF saving experience so users always know where the file is being saved, investigate and resolve the PDF sharing problem on iPhone, and ensure all user-facing error messages are displayed in clear Portuguese with enough detail to help the user understand what went wrong.

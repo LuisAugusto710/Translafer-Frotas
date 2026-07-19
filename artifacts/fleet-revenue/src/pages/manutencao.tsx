@@ -13,11 +13,16 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { exportToCsv, exportToExcel } from "@/lib/export";
 import { ManutencaoFormModal } from "@/components/manutencao-form-modal";
 import { ManutencaoIntervalosModal } from "@/components/manutencao-intervalos-modal";
+import { useToast } from "@/hooks/use-toast";
 
 // ── Highlight ─────────────────────────────────────────────────────────────────
 function Highlight({ text, query }: { text: string; query: string }) {
@@ -102,11 +107,13 @@ function tipoBadge(tipo: string) {
 // ── Component ─────────────────────────────────────────────────────────────────
 export function Manutencao() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isIntervalosOpen, setIsIntervalosOpen] = useState(false);
   const [editing, setEditing] = useState<ManutencaoRow | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -171,12 +178,28 @@ export function Manutencao() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteManutencao(id),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      toast({ title: "Manutenção excluída com sucesso." });
+    },
+    onError: (err) => {
+      console.error("[Manutencao] Erro ao excluir:", err);
+      toast({
+        title: "Erro ao excluir",
+        description: "Não foi possível excluir esta manutenção. Tente novamente.",
+        variant: "destructive",
+      });
+    },
   });
 
   const handleDelete = (id: number) => {
-    if (!confirm("Tem certeza que deseja excluir esta manutenção?")) return;
-    deleteMutation.mutate(id);
+    setPendingDeleteId(id);
+  };
+
+  const confirmDelete = () => {
+    if (pendingDeleteId == null) return;
+    deleteMutation.mutate(pendingDeleteId);
+    setPendingDeleteId(null);
   };
 
   // ── Export ──
@@ -399,6 +422,27 @@ export function Manutencao() {
         open={isIntervalosOpen}
         onOpenChange={setIsIntervalosOpen}
       />
+
+      <AlertDialog open={pendingDeleteId != null} onOpenChange={(open) => { if (!open) setPendingDeleteId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir manutenção?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. O registro de manutenção será removido permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+              onClick={confirmDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Excluindo…" : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

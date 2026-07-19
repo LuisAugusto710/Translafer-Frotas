@@ -630,56 +630,108 @@ export function Funcionarios() {
   const handleSavePdf = useCallback(async () => {
     if (!selectedEmployee || !calendarData) return;
     toast({ title: "Gerando PDF…", description: "Por favor aguarde." });
+    let result: { blob: Blob; filename: string } | null = null;
     try {
-      const result = await capturePageAsPdf();
-      if (!result) return;
-      const url = URL.createObjectURL(result.blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = result.filename;
-      a.rel = "noopener";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      toast({ title: "PDF salvo!", description: "O arquivo foi baixado no seu dispositivo." });
+      result = await capturePageAsPdf();
+      if (!result) {
+        toast({ title: "Erro ao gerar PDF", description: "Não foi possível gerar o PDF. Tente novamente.", variant: "destructive" });
+        return;
+      }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Erro desconhecido.";
-      console.error("[PDF] Erro ao salvar PDF:", err);
-      toast({ title: "Erro ao gerar PDF", description: msg, variant: "destructive" });
+      console.error("[PDF] Erro ao gerar PDF:", err);
+      const detail = err instanceof Error ? err.message : String(err);
+      toast({ title: "Erro ao gerar PDF", description: `Não foi possível gerar o PDF. ${detail}`, variant: "destructive" });
+      return;
     }
+
+    // Desktop: try File System Access API for a native "Save As" dialog
+    if ("showSaveFilePicker" in window) {
+      try {
+        const fileHandle = await (window as { showSaveFilePicker: (o: unknown) => Promise<{ createWritable: () => Promise<{ write: (b: Blob) => Promise<void>; close: () => Promise<void> }> }> }).showSaveFilePicker({
+          suggestedName: result.filename,
+          types: [{ description: "Documento PDF", accept: { "application/pdf": [".pdf"] } }],
+        });
+        const writable = await fileHandle.createWritable();
+        await writable.write(result.blob);
+        await writable.close();
+        toast({ title: "PDF salvo!", description: "O arquivo foi salvo com sucesso." });
+        return;
+      } catch (err) {
+        if ((err as Error)?.name === "AbortError") return; // user cancelled the dialog
+        // Fall through to regular download if API fails unexpectedly
+        console.warn("[PDF] showSaveFilePicker falhou, usando download padrão:", err);
+      }
+    }
+
+    // Mobile / Firefox / Safari: regular download (triggers browser download manager)
+    const url = URL.createObjectURL(result.blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = result.filename;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    toast({ title: "PDF baixado!", description: "O arquivo foi salvo na pasta de downloads do seu dispositivo." });
   }, [selectedEmployee, calendarData, capturePageAsPdf, toast]);
 
   const handleSharePdf = useCallback(async () => {
     if (!selectedEmployee || !calendarData) return;
     toast({ title: "Gerando PDF…", description: "Por favor aguarde." });
+    let result: { blob: Blob; filename: string } | null = null;
     try {
-      const result = await capturePageAsPdf();
-      if (!result) return;
-      const pdfFile = new File([result.blob], result.filename, { type: "application/pdf" });
-      if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-        await navigator.share({
-          title: `Relatório — ${selectedEmployee.nome} — ${periodLabel(period)}`,
-          files: [pdfFile],
-        });
-      } else {
-        const url = URL.createObjectURL(result.blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = result.filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        toast({ title: "PDF baixado!", description: "O arquivo foi salvo no seu dispositivo." });
+      result = await capturePageAsPdf();
+      if (!result) {
+        toast({ title: "Falha ao gerar PDF", description: "O arquivo PDF não foi gerado corretamente. Tente novamente.", variant: "destructive" });
+        return;
       }
     } catch (err) {
-      if ((err as Error)?.name !== "AbortError") {
-        const msg = err instanceof Error ? err.message : "Erro desconhecido.";
-        console.error("[PDF] Erro ao compartilhar PDF:", err);
-        toast({ title: "Erro ao gerar PDF", description: msg, variant: "destructive" });
+      console.error("[PDF] Erro ao gerar PDF para compartilhamento:", err);
+      const detail = err instanceof Error ? err.message : String(err);
+      toast({ title: "Falha ao gerar PDF", description: `Não foi possível gerar o PDF. ${detail}`, variant: "destructive" });
+      return;
+    }
+
+    const title = `Relatório — ${selectedEmployee.nome} — ${periodLabel(period)}`;
+    const pdfFile = new File([result.blob], result.filename, { type: "application/pdf" });
+
+    // 1. Try native file share (iOS 15+, Android, Chrome on desktop)
+    if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+      try {
+        await navigator.share({ title, files: [pdfFile] });
+        return;
+      } catch (err) {
+        const name = (err as Error)?.name;
+        if (name === "AbortError") return; // user cancelled — not an error
+        // iOS may reject with NotAllowedError or other — fall through to blob URL strategy
+        console.warn("[PDF] navigator.share com arquivo falhou, tentando alternativa:", err);
       }
     }
+
+    // 2. iOS Safari fallback: open PDF in a new tab so the user can use Safari's native Share button
+    //    (the share icon in the bottom toolbar gives access to AirDrop, WhatsApp, Mail, Files, etc.)
+    const blobUrl = URL.createObjectURL(result.blob);
+    const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    if (isIOS || "share" in navigator) {
+      // On iOS: open in new tab — user taps the native Share button in Safari toolbar
+      const newTab = window.open(blobUrl, "_blank");
+      if (newTab) {
+        toast({ title: "PDF aberto", description: "Use o botão Compartilhar do Safari (⬆) para enviar por WhatsApp, AirDrop ou salvar nos Arquivos." });
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+        return;
+      }
+    }
+
+    // 3. Desktop fallback: download
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = result.filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+    toast({ title: "PDF baixado!", description: "O arquivo foi salvo na pasta de downloads." });
   }, [selectedEmployee, calendarData, capturePageAsPdf, period, toast]);
 
   const isLoading = employeesLoading;
