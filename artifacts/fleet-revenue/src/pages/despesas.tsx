@@ -265,8 +265,8 @@ export function Despesas() {
  <TableHead className=" min-w-[60px] whitespace-nowrap">IPVA</TableHead>
  <TableHead className=" min-w-[64px] whitespace-nowrap">Bsoft</TableHead>
                 <TableHead className="min-w-[110px] leading-tight">Parcela Troca Óleo</TableHead>
- <TableHead className="font-semibold text-red-600 min-w-[100px] leading-tight">Total Despesa</TableHead>
- <TableHead className="font-semibold text-foreground min-w-[80px] leading-tight">Lucro (R$)</TableHead>
+ <TableHead className="font-bold text-red-600 min-w-[100px] leading-tight">Total Despesa</TableHead>
+ <TableHead className="font-bold text-foreground min-w-[80px] leading-tight">Lucro (R$)</TableHead>
                 <TableHead className="min-w-[80px] whitespace-nowrap">Obs</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>

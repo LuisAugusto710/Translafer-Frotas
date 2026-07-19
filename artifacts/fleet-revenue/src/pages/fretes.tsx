@@ -277,7 +277,7 @@ export function Fretes() {
  <TableHead className=" whitespace-nowrap">Peso (kg)</TableHead>
  <TableHead className=" whitespace-nowrap">Frete (R$)</TableHead>
  <TableHead className=" whitespace-nowrap">Pedágio (R$)</TableHead>
- <TableHead className="font-semibold text-foreground whitespace-nowrap">Total Frete (R$)</TableHead>
+ <TableHead className="font-bold text-foreground whitespace-nowrap">Total Frete (R$)</TableHead>
                 <TableHead className="whitespace-nowrap">Dta Frete</TableHead>
                 <TableHead className="whitespace-nowrap">Vencimento</TableHead>
                 <TableHead className="whitespace-nowrap">Obs</TableHead>

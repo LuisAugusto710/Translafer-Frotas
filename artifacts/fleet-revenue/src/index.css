@@ -174,8 +174,8 @@
      Tailwind utility classes applied directly on <th>/<td> override these.
      They act as consistent defaults for all tables in the app.             */
   th {
-    font-size: var(--fluid-text-xs);
-    font-weight: 600;
+    font-size: var(--fluid-text-sm);
+    font-weight: 700;
     letter-spacing: 0.02em;
     white-space: nowrap;
   }
