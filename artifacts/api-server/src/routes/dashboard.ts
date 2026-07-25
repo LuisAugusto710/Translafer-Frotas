@@ -1,94 +1,53 @@
 import { Router } from "express";
 import { db, fretesTable, abastecimentosTable, despesasTable } from "@workspace/db";
-import { gte, lte, and, eq, sql, isNotNull } from "drizzle-orm";
-import type { AnyPgColumn } from "drizzle-orm/pg-core";
+import { and, eq, isNotNull, sql } from "drizzle-orm";
+import {
+  toDateStr,
+  freteWhere,
+  despWhere,
+  abastWhere,
+  despesaCustosSql,
+  trocaOleoParsed,
+  DESPESA_CATEGORIAS,
+  getDieselAbastPerFrota,
+  getTotalDieselAbast,
+} from "../lib/financial";
 
 const router = Router();
-
-// Cost columns that make up "total despesa" (KM and Diesel LT are metrics, not costs).
-// SQL fragment to parse trocaOleoParcela (text column) as numeric
-const trocaOleoParsed = sql<number>`COALESCE(NULLIF(REPLACE(REPLACE(trim(${despesasTable.trocaOleoParcela}::text), ',', '.'), ' ', ''), '')::numeric, 0)`;
-
-const DESPESA_CATEGORIAS: Array<{ label: string; col: AnyPgColumn }> = [
-  { label: "Diesel",     col: despesasTable.dieselRs },
-  { label: "DAS",        col: despesasTable.das },
-  { label: "Motorista",  col: despesasTable.motorista },
-  { label: "Almoço",    col: despesasTable.almoco },
-  { label: "Ajudante",   col: despesasTable.ajudante },
-  { label: "Pedágio",   col: despesasTable.pedagio },
-  { label: "Unimed",     col: despesasTable.unimed },
-  { label: "Seguro",     col: despesasTable.seguro },
-  { label: "Gasto",      col: despesasTable.gasto },
-  { label: "Rastreador", col: despesasTable.rastreador },
-  { label: "INSS",       col: despesasTable.inss },
-  { label: "Escritório", col: despesasTable.escritorio },
-  { label: "IPVA",       col: despesasTable.ipva },
-  { label: "Bsoft",      col: despesasTable.bsoft },
-];
-
-const despesaCustosSql = sql<number>`coalesce(${despesasTable.dieselRs},0)+coalesce(${despesasTable.das},0)+coalesce(${despesasTable.motorista},0)+coalesce(${despesasTable.almoco},0)+coalesce(${despesasTable.ajudante},0)+coalesce(${despesasTable.pedagio},0)+coalesce(${despesasTable.unimed},0)+coalesce(${despesasTable.seguro},0)+coalesce(${despesasTable.gasto},0)+coalesce(${despesasTable.rastreador},0)+coalesce(${despesasTable.inss},0)+coalesce(${despesasTable.escritorio},0)+coalesce(${despesasTable.ipva},0)+coalesce(${despesasTable.bsoft},0)+${trocaOleoParsed}`;
-
-function toDateStr(v: unknown): string | undefined {
-  if (!v) return undefined;
-  if (v instanceof Date) return v.toISOString().slice(0, 10);
-  return String(v);
-}
-
-function fullWhere(
-  table: typeof fretesTable,
-  dateFrom?: string,
-  dateTo?: string,
-  frota?: string,
-) {
-  const c = [];
-  if (dateFrom) c.push(gte(table.dataCte, dateFrom));
-  if (dateTo)   c.push(lte(table.dataCte, dateTo));
-  if (frota)    c.push(eq(table.frota, frota));
-  return c.length ? and(...c) : undefined;
-}
-
-function despWhere(dateFrom?: string, dateTo?: string, frota?: string) {
-  const c = [];
-  if (dateFrom) c.push(gte(despesasTable.data, dateFrom));
-  if (dateTo)   c.push(lte(despesasTable.data, dateTo));
-  if (frota)    c.push(eq(despesasTable.frota, frota));
-  return c.length ? and(...c) : undefined;
-}
 
 // ── Summary KPIs ──────────────────────────────────────────────────────────────
 router.get("/dashboard/resumo", async (req, res) => {
   const dateFrom = toDateStr(req.query.dateFrom);
   const dateTo   = toDateStr(req.query.dateTo);
   const frota    = req.query.frota ? String(req.query.frota) : undefined;
-  const where    = fullWhere(fretesTable, dateFrom, dateTo, frota);
+  const where    = freteWhere(dateFrom, dateTo, frota);
 
-  const [freightSummary] = await db.select({
-    totalFrete:   sql<number>`coalesce(sum(${fretesTable.frete}), 0)`,
-    totalPedagio: sql<number>`coalesce(sum(${fretesTable.pedagio}), 0)`,
-    totalViagens: sql<number>`count(*)`,
-    totalPeso:    sql<number>`coalesce(sum(${fretesTable.peso}), 0)`,
-  }).from(fretesTable).where(where);
+  const [[freightSummary], [dieselSummary], bestFrota] = await Promise.all([
+    db.select({
+      totalFrete:   sql<number>`coalesce(sum(${fretesTable.frete}), 0)`,
+      totalPedagio: sql<number>`coalesce(sum(${fretesTable.pedagio}), 0)`,
+      totalViagens: sql<number>`count(*)`,
+      totalPeso:    sql<number>`coalesce(sum(${fretesTable.peso}), 0)`,
+    }).from(fretesTable).where(where),
 
-  const dieselC = [];
-  if (dateFrom) dieselC.push(gte(abastecimentosTable.data, dateFrom));
-  if (dateTo)   dieselC.push(lte(abastecimentosTable.data, dateTo));
-  if (frota)    dieselC.push(eq(abastecimentosTable.placa, frota));
-  const dieselW = dieselC.length ? and(...dieselC) : undefined;
+    db.select({
+      totalDiesel: sql<number>`coalesce(sum(${abastecimentosTable.totalPago}), 0)`,
+      totalLitros: sql<number>`coalesce(sum(${abastecimentosTable.litros}), 0)`,
+    }).from(abastecimentosTable).where(abastWhere(dateFrom, dateTo, frota)),
 
-  const [dieselSummary] = await db.select({
-    totalDiesel: sql<number>`coalesce(sum(${abastecimentosTable.totalPago}), 0)`,
-    totalLitros: sql<number>`coalesce(sum(${abastecimentosTable.litros}), 0)`,
-  }).from(abastecimentosTable).where(dieselW);
+    db.select({
+      frota: fretesTable.frota,
+      total: sql<number>`sum(${fretesTable.frete})`,
+    }).from(fretesTable).where(where)
+      .groupBy(fretesTable.frota)
+      .orderBy(sql`sum(${fretesTable.frete}) desc`)
+      .limit(1),
+  ]);
 
   const totalFrete   = Number(freightSummary.totalFrete);
   const totalPedagio = Number(freightSummary.totalPedagio);
   const totalGeral   = totalFrete + totalPedagio;
   const totalViagens = Number(freightSummary.totalViagens);
-
-  const bestFrota = await db.select({
-    frota: fretesTable.frota,
-    total: sql<number>`sum(${fretesTable.frete})`,
-  }).from(fretesTable).where(where).groupBy(fretesTable.frota).orderBy(sql`sum(${fretesTable.frete}) desc`).limit(1);
 
   res.json({
     totalFrete,
@@ -108,7 +67,7 @@ router.get("/dashboard/por-frota", async (req, res) => {
   const dateFrom = toDateStr(req.query.dateFrom);
   const dateTo   = toDateStr(req.query.dateTo);
   const frota    = req.query.frota ? String(req.query.frota) : undefined;
-  const where    = fullWhere(fretesTable, dateFrom, dateTo, frota);
+  const where    = freteWhere(dateFrom, dateTo, frota);
 
   const result = await db.select({
     frota:        fretesTable.frota,
@@ -140,7 +99,7 @@ router.get("/dashboard/por-periodo", async (req, res) => {
   const trunc = allowed[period ?? ""];
   if (!trunc) { res.status(400).json({ error: "period inválido" }); return; }
 
-  const where = fullWhere(fretesTable, dateFrom, dateTo, frota);
+  const where = freteWhere(dateFrom, dateTo, frota);
 
   const result = await db.select({
     periodo:      sql<string>`to_char(date_trunc('${sql.raw(trunc)}', ${fretesTable.dataCte}::date), 'YYYY-MM-DD')`,
@@ -169,11 +128,11 @@ router.get("/dashboard/diesel-por-placa", async (req, res) => {
 
   const c = [];
   if (dateFrom) {
-    c.push(gte(abastecimentosTable.data, dateFrom));
+    c.push(sql`${abastecimentosTable.data} >= ${dateFrom}`);
   } else if (ano) {
     c.push(sql`EXTRACT(YEAR FROM ${abastecimentosTable.data}) = ${ano}`);
   }
-  if (dateTo) c.push(lte(abastecimentosTable.data, dateTo));
+  if (dateTo) c.push(sql`${abastecimentosTable.data} <= ${dateTo}`);
   if (frota)  c.push(eq(abastecimentosTable.placa, frota));
   const where = c.length ? and(...c) : undefined;
 
@@ -202,14 +161,7 @@ router.get("/dashboard/mensal", async (req, res) => {
   const frota  = req.query.frota ? String(req.query.frota) : undefined;
   const df     = `${ano}-01-01`;
   const dt     = `${ano}-12-31`;
-  const freteW = fullWhere(fretesTable, df, dt, frota);
-
-  const dieselC = [
-    gte(abastecimentosTable.data, df),
-    lte(abastecimentosTable.data, dt),
-  ];
-  if (frota) dieselC.push(eq(abastecimentosTable.placa, frota));
-  const dieselWhere = and(...dieselC);
+  const freteW = freteWhere(df, dt, frota);
 
   const [fretesMensal, dieselMensal] = await Promise.all([
     db.select({
@@ -222,9 +174,9 @@ router.get("/dashboard/mensal", async (req, res) => {
       .orderBy(sql`date_trunc('month', ${fretesTable.dataCte}::date)`),
 
     db.select({
-      mes:        sql<string>`to_char(date_trunc('month', ${abastecimentosTable.data}::date), 'YYYY-MM')`,
+      mes:         sql<string>`to_char(date_trunc('month', ${abastecimentosTable.data}::date), 'YYYY-MM')`,
       totalDiesel: sql<number>`sum(${abastecimentosTable.totalPago})`,
-    }).from(abastecimentosTable).where(dieselWhere)
+    }).from(abastecimentosTable).where(abastWhere(df, dt, frota))
       .groupBy(sql`date_trunc('month', ${abastecimentosTable.data}::date)`)
       .orderBy(sql`date_trunc('month', ${abastecimentosTable.data}::date)`),
   ]);
@@ -251,6 +203,7 @@ router.get("/dashboard/mensal", async (req, res) => {
 });
 
 // ── Despesas KPI summary ───────────────────────────────────────────────────────
+// Canonical expense formula: despesaCustosSql + abastecimentos.totalPago
 router.get("/dashboard/despesas-resumo", async (req, res) => {
   const ano      = req.query.ano ? Number(req.query.ano) : new Date().getFullYear();
   const frota    = req.query.frota ? String(req.query.frota) : undefined;
@@ -258,34 +211,30 @@ router.get("/dashboard/despesas-resumo", async (req, res) => {
   const dateTo   = toDateStr(req.query.dateTo)   || `${ano}-12-31`;
   const where    = despWhere(dateFrom, dateTo, frota);
 
-  const [summary] = await db.select({
-    totalFrete:    sql<number>`coalesce(sum(${despesasTable.frete}), 0)`,
-    totalCustos:   sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
-    totalLucro:    sql<number>`coalesce(sum(${despesasTable.lucro}), 0)`,
-    totalRegistros:sql<number>`count(*)`,
-  }).from(despesasTable).where(where);
-
   const catSelect: Record<string, ReturnType<typeof sql<number>>> = {};
   DESPESA_CATEGORIAS.forEach((c, i) => {
     catSelect[`c${i}`] = sql<number>`coalesce(sum(${c.col}), 0)`;
   });
   catSelect["cTrocaOleo"] = sql<number>`coalesce(sum(${trocaOleoParsed}), 0)`;
-  const [catRow] = await db.select(catSelect).from(despesasTable).where(where);
 
-  const abastcC = [];
-  if (dateFrom) abastcC.push(gte(abastecimentosTable.data, dateFrom));
-  if (dateTo)   abastcC.push(lte(abastecimentosTable.data, dateTo));
-  if (frota)    abastcC.push(eq(abastecimentosTable.placa, frota));
-  const abastcWhere = abastcC.length ? and(...abastcC) : undefined;
+  const [[summary], [catRow], totalDieselAbast] = await Promise.all([
+    db.select({
+      totalFrete:     sql<number>`coalesce(sum(${despesasTable.frete}), 0)`,
+      totalCustos:    sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
+      totalLucro:     sql<number>`coalesce(sum(${despesasTable.lucro}), 0)`,
+      totalRegistros: sql<number>`count(*)`,
+    }).from(despesasTable).where(where),
 
-  const [dieselAbast] = await db.select({
-    totalDiesel: sql<number>`coalesce(sum(${abastecimentosTable.totalPago}), 0)`,
-  }).from(abastecimentosTable).where(abastcWhere);
+    db.select(catSelect).from(despesasTable).where(where),
 
-  const totalDieselAbast = Number(dieselAbast.totalDiesel);
-  const totalCustos      = Number(summary.totalCustos) + totalDieselAbast;
-  const totalLucro       = Number(summary.totalFrete) - totalCustos;
+    getTotalDieselAbast(dateFrom, dateTo, frota),
+  ]);
 
+  // Canonical total: despesasTable costs + abastecimentos diesel
+  const totalCustos = Number(summary.totalCustos) + totalDieselAbast;
+  const totalLucro  = Number(summary.totalFrete) - totalCustos;
+
+  // Build category breakdown, merging abastecimentos diesel into Diesel category
   const categorias = [
     ...DESPESA_CATEGORIAS.map((c, i) => ({ categoria: c.label, valor: Number(catRow[`c${i}`] ?? 0) })),
     { categoria: "Troca de Óleo", valor: Number(catRow["cTrocaOleo"] ?? 0) },
@@ -299,27 +248,22 @@ router.get("/dashboard/despesas-resumo", async (req, res) => {
   const sortedCategorias = categorias.filter(c => c.valor > 0).sort((a, b) => b.valor - a.valor);
 
   res.json({
-    totalFrete:    Number(summary.totalFrete),
+    totalFrete:     Number(summary.totalFrete),
     totalCustos,
     totalLucro,
-    totalRegistros:Number(summary.totalRegistros),
+    totalRegistros: Number(summary.totalRegistros),
     categorias: sortedCategorias,
   });
 });
 
 // ── Despesas monthly ───────────────────────────────────────────────────────────
+// Canonical expense formula applied per month: despesaCustosSql + abastecimentos.totalPago
 router.get("/dashboard/despesas-mensal", async (req, res) => {
   const ano      = req.query.ano ? Number(req.query.ano) : new Date().getFullYear();
   const frota    = req.query.frota ? String(req.query.frota) : undefined;
   const dateFrom = toDateStr(req.query.dateFrom) || `${ano}-01-01`;
   const dateTo   = toDateStr(req.query.dateTo)   || `${ano}-12-31`;
   const where    = despWhere(dateFrom, dateTo, frota);
-
-  const abastcMC = [];
-  if (dateFrom) abastcMC.push(gte(abastecimentosTable.data, dateFrom));
-  if (dateTo)   abastcMC.push(lte(abastecimentosTable.data, dateTo));
-  if (frota)    abastcMC.push(eq(abastecimentosTable.placa, frota));
-  const abastcMWhere = abastcMC.length ? and(...abastcMC) : undefined;
 
   const [result, dieselMensalRows] = await Promise.all([
     db.select({
@@ -331,10 +275,11 @@ router.get("/dashboard/despesas-mensal", async (req, res) => {
     }).from(despesasTable).where(where)
       .groupBy(sql`date_trunc('month', ${despesasTable.data}::date)`)
       .orderBy(sql`date_trunc('month', ${despesasTable.data}::date)`),
+
     db.select({
       mes:         sql<string>`to_char(date_trunc('month', ${abastecimentosTable.data}::date), 'YYYY-MM')`,
       totalDiesel: sql<number>`coalesce(sum(${abastecimentosTable.totalPago}), 0)`,
-    }).from(abastecimentosTable).where(abastcMWhere)
+    }).from(abastecimentosTable).where(abastWhere(dateFrom, dateTo, frota))
       .groupBy(sql`date_trunc('month', ${abastecimentosTable.data}::date)`),
   ]);
 
@@ -346,6 +291,7 @@ router.get("/dashboard/despesas-mensal", async (req, res) => {
   res.json(result.map(r => {
     const monthIdx = parseInt(r.mes.split("-")[1]) - 1;
     const diesel   = dieselMenMap[r.mes] ?? 0;
+    // Canonical: despesas costs + abastecimentos diesel
     const custos   = Number(r.custos ?? 0) + diesel;
     return {
       mes:      MONTHS[monthIdx] ?? r.mes,
@@ -359,9 +305,9 @@ router.get("/dashboard/despesas-mensal", async (req, res) => {
 
 // ── Driver & assistant costs ───────────────────────────────────────────────────
 router.get("/dashboard/motorista-ajudante", async (req, res) => {
-  const dateFrom = toDateStr(req.query.dateFrom);
-  const dateTo   = toDateStr(req.query.dateTo);
-  const frota    = req.query.frota ? String(req.query.frota) : undefined;
+  const dateFrom  = toDateStr(req.query.dateFrom);
+  const dateTo    = toDateStr(req.query.dateTo);
+  const frota     = req.query.frota ? String(req.query.frota) : undefined;
   const baseWhere = despWhere(dateFrom, dateTo, frota);
 
   const [motoristas, ajudantes] = await Promise.all([
@@ -391,8 +337,8 @@ router.get("/dashboard/motorista-ajudante", async (req, res) => {
 // ── Average diesel price ───────────────────────────────────────────────────────
 router.get("/dashboard/diesel-avg-price", async (_req, res) => {
   const [row] = await db.select({
-    avgPreco:    sql<number>`avg(${abastecimentosTable.precoLitro})`,
-    totalRecords:sql<number>`count(*)`,
+    avgPreco:     sql<number>`avg(${abastecimentosTable.precoLitro})`,
+    totalRecords: sql<number>`count(*)`,
   }).from(abastecimentosTable);
 
   res.json({
@@ -401,14 +347,12 @@ router.get("/dashboard/diesel-avg-price", async (_req, res) => {
   });
 });
 
-// ── helpers shared by new routes ───────────────────────────────────────────────
-
 // ── Top customers ──────────────────────────────────────────────────────────────
 router.get("/dashboard/top-clientes", async (req, res) => {
   const dateFrom = toDateStr(req.query.dateFrom);
   const dateTo   = toDateStr(req.query.dateTo);
   const frota    = req.query.frota ? String(req.query.frota) : undefined;
-  const where    = fullWhere(fretesTable, dateFrom, dateTo, frota);
+  const where    = freteWhere(dateFrom, dateTo, frota);
 
   const rows = await db.select({
     cliente:      fretesTable.cliente,
@@ -440,7 +384,7 @@ router.get("/dashboard/top-cidades", async (req, res) => {
   const dateFrom = toDateStr(req.query.dateFrom);
   const dateTo   = toDateStr(req.query.dateTo);
   const frota    = req.query.frota ? String(req.query.frota) : undefined;
-  const where    = fullWhere(fretesTable, dateFrom, dateTo, frota);
+  const where    = freteWhere(dateFrom, dateTo, frota);
 
   const rows = await db.select({
     cidade:       fretesTable.cidade,
@@ -462,14 +406,16 @@ router.get("/dashboard/top-cidades", async (req, res) => {
 });
 
 // ── Transport company stats ────────────────────────────────────────────────────
+// FIX: Now uses canonical expense formula (despesaCustosSql + abastecimentos diesel per frota)
+// Previously only used despesaCustosSql, missing abastecimentos diesel → lower expenses than summary cards.
 router.get("/dashboard/por-transportadora", async (req, res) => {
   const dateFrom = toDateStr(req.query.dateFrom);
   const dateTo   = toDateStr(req.query.dateTo);
   const frota    = req.query.frota ? String(req.query.frota) : undefined;
-  const freteW   = fullWhere(fretesTable, dateFrom, dateTo, frota);
+  const freteW   = freteWhere(dateFrom, dateTo, frota);
   const despW    = despWhere(dateFrom, dateTo, frota);
 
-  const [rows, frotaTranspPairs, despPerFrota] = await Promise.all([
+  const [rows, frotaTranspPairs, despPerFrota, dieselAbastMap] = await Promise.all([
     db.select({
       transp:       fretesTable.transp,
       viagens:      sql<number>`count(*)`,
@@ -488,11 +434,25 @@ router.get("/dashboard/por-transportadora", async (req, res) => {
       frota:       despesasTable.frota,
       totalCustos: sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
     }).from(despesasTable).where(despW).groupBy(despesasTable.frota),
+
+    // FIX: fetch abastecimentos diesel per frota to add to expenses
+    getDieselAbastPerFrota(dateFrom, dateTo, frota),
   ]);
 
+  // Build per-frota cost map using canonical formula:
+  // frota custos = despesaCustosSql + abastecimentos diesel for that frota
   const despMap: Record<string, number> = {};
   for (const d of despPerFrota) {
-    despMap[d.frota ?? ""] = Number(d.totalCustos ?? 0);
+    const frotaKey = d.frota ?? "";
+    const despCosts    = Number(d.totalCustos ?? 0);
+    const dieselCosts  = dieselAbastMap[frotaKey] ?? 0;
+    despMap[frotaKey] = despCosts + dieselCosts;
+  }
+  // Also account for frotas that have abastecimentos but no despesas records
+  for (const [frotaKey, diesel] of Object.entries(dieselAbastMap)) {
+    if (!(frotaKey in despMap)) {
+      despMap[frotaKey] = diesel;
+    }
   }
 
   const transpFrotas: Record<string, Set<string>> = {};
@@ -507,10 +467,10 @@ router.get("/dashboard/por-transportadora", async (req, res) => {
   );
 
   res.json(rows.map(r => {
-    const totalFrete   = Number(r.totalFrete   ?? 0);
-    const totalPedagio = Number(r.totalPedagio ?? 0);
-    const tGeral       = totalFrete + totalPedagio;
-    const key          = r.transp ?? "Sem Transportadora";
+    const totalFrete    = Number(r.totalFrete   ?? 0);
+    const totalPedagio  = Number(r.totalPedagio ?? 0);
+    const tGeral        = totalFrete + totalPedagio;
+    const key           = r.transp ?? "Sem Transportadora";
     const totalDespesas = [...(transpFrotas[key] ?? [])].reduce(
       (s, f) => s + (despMap[f] ?? 0), 0,
     );
@@ -527,14 +487,17 @@ router.get("/dashboard/por-transportadora", async (req, res) => {
 });
 
 // ── Fleet performance (fretes revenue + despesas costs per frota) ──────────────
+// FIX: Now uses canonical expense formula (despesaCustosSql + abastecimentos diesel per frota)
+// Previously only used despesaCustosSql from despesasTable, excluding abastecimentos diesel.
+// This caused the Fleet Ranking to show R$2,144.44 less in expenses than the Summary Cards.
 router.get("/dashboard/fleet-performance", async (req, res) => {
   const dateFrom = toDateStr(req.query.dateFrom);
   const dateTo   = toDateStr(req.query.dateTo);
   const frota    = req.query.frota ? String(req.query.frota) : undefined;
-  const freteW   = fullWhere(fretesTable, dateFrom, dateTo, frota);
+  const freteW   = freteWhere(dateFrom, dateTo, frota);
   const despW    = despWhere(dateFrom, dateTo, frota);
 
-  const [fretesPerFrota, despesasPerFrota] = await Promise.all([
+  const [fretesPerFrota, despesasPerFrota, dieselAbastMap] = await Promise.all([
     db.select({
       frota:        fretesTable.frota,
       totalFrete:   sql<number>`sum(${fretesTable.frete})`,
@@ -548,11 +511,28 @@ router.get("/dashboard/fleet-performance", async (req, res) => {
       totalCustos: sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
       totalKm:     sql<number>`coalesce(sum(${despesasTable.km}), 0)`,
     }).from(despesasTable).where(despW).groupBy(despesasTable.frota),
+
+    // FIX: fetch abastecimentos diesel per frota to add to expenses
+    getDieselAbastPerFrota(dateFrom, dateTo, frota),
   ]);
 
+  // Build per-frota cost map using canonical formula:
+  // frota custos = despesaCustosSql + abastecimentos diesel for that frota
   const despMap: Record<string, { custos: number; km: number }> = {};
   for (const d of despesasPerFrota) {
-    despMap[d.frota ?? ""] = { custos: Number(d.totalCustos ?? 0), km: Number(d.totalKm ?? 0) };
+    const frotaKey   = d.frota ?? "";
+    const despCosts  = Number(d.totalCustos ?? 0);
+    const dieselCosts = dieselAbastMap[frotaKey] ?? 0;
+    despMap[frotaKey] = {
+      custos: despCosts + dieselCosts,
+      km:     Number(d.totalKm ?? 0),
+    };
+  }
+  // Also handle frotas that have abastecimentos but no despesas records
+  for (const [frotaKey, diesel] of Object.entries(dieselAbastMap)) {
+    if (!(frotaKey in despMap)) {
+      despMap[frotaKey] = { custos: diesel, km: 0 };
+    }
   }
 
   const result = fretesPerFrota.map(f => {
@@ -585,8 +565,8 @@ router.get("/dashboard/upcoming-receivables", async (req, res) => {
 
   const conditions = [
     isNotNull(fretesTable.vencimento),
-    gte(fretesTable.vencimento, today),
-    lte(fretesTable.vencimento, in30days),
+    sql`${fretesTable.vencimento} >= ${today}`,
+    sql`${fretesTable.vencimento} <= ${in30days}`,
   ];
   if (frota) conditions.push(eq(fretesTable.frota, frota));
 
@@ -624,7 +604,7 @@ router.get("/dashboard/recent-fretes", async (req, res) => {
   const frota    = req.query.frota ? String(req.query.frota) : undefined;
   const dateFrom = toDateStr(req.query.dateFrom);
   const dateTo   = toDateStr(req.query.dateTo);
-  const where    = fullWhere(fretesTable, dateFrom, dateTo, frota);
+  const where    = freteWhere(dateFrom, dateTo, frota);
 
   const rows = await db.select({
     id:      fretesTable.id,

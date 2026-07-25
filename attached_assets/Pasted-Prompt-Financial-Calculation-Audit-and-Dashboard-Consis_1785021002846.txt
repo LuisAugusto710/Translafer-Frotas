@@ -1,0 +1,302 @@
+Prompt:
+
+Financial Calculation Audit and Dashboard Consistency
+
+I have identified a critical inconsistency in the financial calculations across the application. Before modifying any calculation, I want you to perform a complete audit of every function, service, hook, utility, query, and component responsible for calculating financial data.
+
+The Excel spreadsheet is the single source of truth, and every value displayed by the application must match it exactly.
+
+Do not apply quick fixes. First identify the root cause, then refactor the project so that all financial calculations come from a single centralized source.
+
+⸻
+
+Current Problem
+
+For the same fleet and the same date range, different sections of the Dashboard display different financial values.
+
+Example:
+
+Dashboard Summary Cards
+
+* Revenue: R$15,366.86
+* Expenses: R$10,638.61
+* Net Profit: R$4,731.20
+
+Fleet Ranking
+
+* Revenue: R$15,366.86
+* Expenses: R$8,494.17
+* Profit: R$6,872.69
+
+The difference between the expense values is:
+
+R$2,144.44
+
+This amount is exactly equal to the Diesel Cost displayed elsewhere on the Dashboard.
+
+This strongly suggests that:
+
+* One calculation includes Diesel within Total Expenses.
+* Another excludes Diesel.
+* Or Diesel is being counted twice in some calculations.
+
+This inconsistency is unacceptable.
+
+For the same fleet and the same period, every page and every widget must display identical financial values.
+
+⸻
+
+Complete Project Audit
+
+Before making any modifications, search the entire codebase for every place where financial calculations occur.
+
+Identify all code responsible for calculating:
+
+* Total Revenue
+* Total Expenses
+* Diesel Cost
+* Fuel Consumption
+* Fuel Cost
+* Net Profit
+* Gross Profit
+* Profit Margin
+* Fleet Ranking
+* Transport Company Summary
+* Customer Ranking
+* Dashboard KPIs
+* Dashboard Cards
+* Charts
+* Reports
+* PDF exports
+* Employee summaries (if financial values are involved)
+
+Document every location where these calculations are performed.
+
+⸻
+
+Identify Duplicate Calculations
+
+Find every place where:
+
+* Revenue is summed manually.
+* Expenses are summed manually.
+* Diesel is calculated separately.
+* Profit is calculated independently.
+* Margins are calculated independently.
+* Dashboard values are recalculated instead of reused.
+
+List every duplicated implementation before refactoring.
+
+⸻
+
+Excel Is the Single Source of Truth
+
+The Excel spreadsheet defines the correct business rules.
+
+The application must reproduce those calculations exactly.
+
+Do not:
+
+* Invent new formulas.
+* Estimate expenses.
+* Apply different calculations to different pages.
+* Use separate business rules depending on the screen.
+
+If Excel calculates:
+
+* Revenue
+* Expenses
+* Profit
+
+then every page must display exactly those same values.
+
+⸻
+
+Create a Centralized Financial Engine
+
+Replace all duplicated calculations with a single centralized financial calculation service.
+
+For example:
+
+calculateFinancialSummary()
+
+This function (or service) should become the only source of financial calculations.
+
+It should return a standardized object containing at least:
+
+* Total Revenue
+* Total Expenses
+* Diesel Cost
+* Total Fuel Liters
+* Total Fuel Expense
+* Net Profit
+* Gross Profit
+* Profit Margin
+* Total Trips
+* Revenue per Trip
+* Expense per Trip
+* Revenue by Fleet
+* Expenses by Fleet
+* Profit by Fleet
+* Revenue by Transport Company
+* Expenses by Transport Company
+* Profit by Transport Company
+
+Every page in the application must consume this centralized function.
+
+No page should perform its own financial calculations.
+
+⸻
+
+Remove Duplicate Logic
+
+Search the project for duplicated implementations.
+
+Replace every independent calculation with calls to the centralized financial service.
+
+There must be only one financial calculation engine in the entire application.
+
+⸻
+
+Diesel Handling Audit
+
+Investigate Diesel calculations thoroughly.
+
+Verify:
+
+* Whether Diesel is already included in Total Expenses.
+* Whether Diesel is added twice.
+* Whether Diesel is excluded from some calculations.
+* Whether Diesel appears separately while also being included in expenses.
+* Whether Diesel affects Net Profit inconsistently.
+* Whether Dashboard cards and rankings treat Diesel differently.
+
+After the audit, Diesel must follow exactly the same rule everywhere.
+
+⸻
+
+Expense Categories
+
+Review every expense category to ensure all are handled consistently.
+
+This includes:
+
+* Driver
+* Assistant
+* Diesel
+* Toll
+* DAS
+* INSS
+* Insurance
+* Unimed
+* Office Expenses
+* Tracker
+* Bsoft
+* IPVA
+* Oil Change Installments
+* Maintenance
+* Tires
+* Repairs
+* Any future expense category
+
+Every category must be included using the exact same business rules throughout the application.
+
+⸻
+
+Dashboard Consistency
+
+After centralizing the calculations, verify that every Dashboard section displays identical values.
+
+This includes:
+
+* Dashboard Summary Cards
+* Fleet Ranking
+* Transport Company Summary
+* Customer Statistics
+* Revenue Charts
+* Expense Charts
+* Profit Charts
+* Margin Charts
+* Maintenance Reports
+* Employee Reports
+* PDF Exports
+
+If two sections display different values for the same fleet and period, the implementation is still incorrect.
+
+⸻
+
+Consistency Rules
+
+The following values must always be identical across the entire application:
+
+* Revenue
+* Expenses
+* Diesel Cost
+* Net Profit
+* Gross Profit
+* Profit Margin
+* Fleet Totals
+* Transport Company Totals
+
+Changing pages must never change the calculation methodology.
+
+⸻
+
+Validation Against Excel
+
+After implementing the centralized calculation engine:
+
+Compare every financial result against the Excel spreadsheet.
+
+Validate:
+
+* Revenue
+* Expenses
+* Diesel
+* Profit
+* Margins
+* Fleet totals
+* Transport company totals
+* Dashboard totals
+* Reports
+* PDF exports
+
+The displayed values must match the Excel spreadsheet exactly.
+
+⸻
+
+Code Quality
+
+During the refactor:
+
+* Remove obsolete financial calculation functions.
+* Eliminate duplicated business logic.
+* Consolidate reusable utilities.
+* Improve maintainability.
+* Keep calculations modular and easy to test.
+* Ensure future expense categories automatically integrate with the centralized calculation service.
+
+⸻
+
+Final Report
+
+After completing the implementation, provide a detailed report explaining:
+
+1. Where duplicated calculations were found.
+2. Which files were modified.
+3. Which calculations were incorrect.
+4. Why the inconsistencies occurred.
+5. How the new centralized financial calculation engine works.
+6. How Diesel is now handled.
+7. Which duplicated functions were removed.
+8. How every page now consumes the centralized calculation.
+9. Confirmation that every financial value in the application matches the Excel spreadsheet exactly.
+
+⸻
+
+Important
+
+* Do not redesign the application.
+* Do not change the user interface unless absolutely necessary.
+* Do not implement temporary fixes or workarounds.
+* Perform a complete audit, centralize all financial calculations into a single reusable service, eliminate duplicated logic, and ensure that every financial value displayed anywhere in the application is generated from the same source and matches the Excel spreadsheet exactly.

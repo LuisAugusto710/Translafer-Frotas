@@ -1,1 +1,2 @@
 - [Drizzle column-array typing & XLSX buffer read](drizzle-column-arrays.md) — annotate column arrays as AnyPgColumn; read .xlsx via XLSX.read(buffer) not readFile.
+- [Centralized Financial Engine](financial-engine.md) — canonical expense formula = despesaCustosSql + abastecimentos.totalPago; never use one without the other.
