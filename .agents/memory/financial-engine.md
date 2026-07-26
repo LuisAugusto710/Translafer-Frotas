@@ -1,49 +1,41 @@
 ---
 name: Centralized Financial Engine
-description: Canonical financial calculation rules per business owner's explicit definition. dieselRs is informational — NEVER in expense totals.
+description: Documents the canonical financial calculation rules and where they live, including the root cause of the previous dashboard inconsistency.
 ---
 
 # Canonical Financial Calculation Rules
 
 ## Single Source of Truth
-`artifacts/api-server/src/lib/financial.ts`
+All financial calculations come from `artifacts/api-server/src/lib/financial.ts`.
 
 ## Canonical Formulas
-- **Gross Revenue** = `sum(despesasTable.frete)` — daily operational frete
-- **Total Expenses** = `sum(abastecimentosTable.totalPago)` + `sum(outrasDespesasSql)`
-- **Net Profit**    = Gross Revenue − Total Expenses
-- **Margin (%)**    = (Net Profit / Gross Revenue) × 100
+- **Revenue** = `fretesTable.frete + fretesTable.pedagio`
+- **Expenses** = `sum(despesaCustosSql)` + `sum(abastecimentosTable.totalPago)`
+  - `despesaCustosSql` covers 14 cost columns from despesasTable (including `dieselRs`)
+  - `abastecimentosTable.totalPago` is the fuel refueling cost (separate table)
+  - **Both must always be included together** — never one without the other
+- **Net Profit** = Revenue - Expenses
 
-## Critical Diesel Rule
-| Field | What it is | Used in financials? |
-|-------|-----------|---------------------|
-| `despesasTable.dieselRs` | Estimated fuel consumed per trip (km × rate) | **NO — informational only** |
-| `abastecimentosTable.totalPago` | Actual fuel purchase from pump (Diesel page) | **YES — always included** |
+## Diesel — Two Sources, Both Count
+- `despesasTable.dieselRs` — manually entered diesel cost per daily record
+- `abastecimentosTable.totalPago` — detailed per-refueling fuel cost
+- Both are legitimate costs; the sum is total diesel expense
 
-Including `dieselRs` in expenses = double-counting diesel. NEVER do it.
+## Why the Inconsistency Existed
+`/dashboard/fleet-performance` and `/dashboard/por-transportadora` only used `despesaCustosSql` from despesasTable, missing `abastecimentosTable.totalPago`. The difference was exactly equal to diesel from abastecimentos.
 
-## outrasDespesasSql (exported from financial.ts)
-Sum of all expense columns from despesasTable **EXCEPT dieselRs**:
-DAS, Motorista, Almoço, Ajudante, Pedágio, Unimed, Seguro, Gasto, Rastreador, INSS, Escritório, IPVA, Bsoft, trocaOleoParcela
+## What to Never Do
+- Never compute total expenses using only `despesaCustosSql` — always add `abastecimentosTable.totalPago`
+- Never add abastecimentos diesel at the summary level without also adding it at the per-frota level
 
-## Revenue Source Distinction
-- `despesasTable.frete` = daily operational revenue (P&L, matches LUCRO spreadsheet)
-- `fretesTable.frete`   = formal CTE/invoice records (trip count, receivables, rankings — separate system)
+## Helper exports from financial.ts
+- `despesaCustosSql` — SQL fragment for 14-column cost sum
+- `trocaOleoParsed` — parses trocaOleoParcela text column to numeric
+- `DESPESA_CATEGORIAS` — canonical ordered list of all expense categories
+- `freteWhere(dateFrom, dateTo, frota)` — where clause for fretesTable
+- `despWhere(dateFrom, dateTo, frota)` — where clause for despesasTable  
+- `abastWhere(dateFrom, dateTo, frota)` — where clause for abastecimentosTable
+- `getDieselAbastPerFrota(dateFrom, dateTo, frota)` — returns `Record<frota, diesel_cost>`
+- `getTotalDieselAbast(dateFrom, dateTo, frota)` — returns total diesel from abastecimentos
 
-## Every Expense Endpoint Must
-1. Query `sum(outrasDespesasSql)` from despesasTable with `despWhere`
-2. Query `sum(abastecimentosTable.totalPago)` from abastecimentosTable with `abastWhere`
-3. `totalExpenses = totalAbast + totalOutrasCustos`
-4. `lucro = revenue - totalExpenses`
-
-## Exports from financial.ts
-- `outrasDespesasSql` — SQL sum of expense columns excluding dieselRs
-- `OUTRAS_DESPESAS_CATEGORIAS` — ordered list of other expense categories (no diesel)
-- `DESPESA_CATEGORIAS` — alias for backward compat, same as above
-- `trocaOleoParsed` — parses trocaOleoParcela text field to numeric
-- `freteWhere / despWhere / abastWhere` — filter builders
-
-## History
-- v1 (wrong): `despesaCustosSql` (includes dieselRs) + `abastecimentos` → double-counted diesel
-- v2 (wrong): `despesaCustosSql` (includes dieselRs) only → missing real diesel expense
-- v3 (current, correct): `outrasDespesasSql` (no dieselRs) + `abastecimentos` → diesel counted once, correctly
+**Why:** Ensures every endpoint uses the same formula. Adding a new endpoint? Always call `getDieselAbastPerFrota` and add the result to per-frota costs.
