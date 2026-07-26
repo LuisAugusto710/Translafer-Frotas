@@ -205,9 +205,15 @@ router.get("/dashboard/mensal", async (req, res) => {
 });
 
 // ── Despesas KPI summary ───────────────────────────────────────────────────────
-// CANONICAL EXPENSE FORMULA: despesaCustosSql ONLY.
-// dieselRs is one of the 14 cost columns already included in despesaCustosSql.
-// abastecimentosTable.totalPago is NOT added here — it would double-count diesel.
+// CANONICAL EXPENSE FORMULA (from LUCRO Excel spreadsheet):
+//   Expenses = despesaCustosSql + abastecimentos.totalPago
+//   Revenue  = despesasTable.frete (daily operational revenue)
+//   Profit   = Revenue - Expenses
+//
+// Both diesel components are real costs:
+//   despesasTable.dieselRs       = per-trip estimated diesel (km × rate)
+//   abastecimentosTable.totalPago = actual fuel purchases
+// The Excel subtracts both in every period — verified for frotas 4100 and 4104 (Jun/2026).
 router.get("/dashboard/despesas-resumo", async (req, res) => {
   const ano      = req.query.ano ? Number(req.query.ano) : new Date().getFullYear();
   const frota    = req.query.frota ? String(req.query.frota) : undefined;
@@ -221,39 +227,50 @@ router.get("/dashboard/despesas-resumo", async (req, res) => {
   });
   catSelect["cTrocaOleo"] = sql<number>`coalesce(sum(${trocaOleoParsed}), 0)`;
 
-  const [[summary], [catRow]] = await Promise.all([
+  const [[summary], [catRow], [abastRow]] = await Promise.all([
     db.select({
       totalFrete:     sql<number>`coalesce(sum(${despesasTable.frete}), 0)`,
-      totalCustos:    sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
+      totalColCustos: sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
       totalRegistros: sql<number>`count(*)`,
     }).from(despesasTable).where(where),
 
     db.select(catSelect).from(despesasTable).where(where),
+
+    // abastecimentos.totalPago = actual fuel purchases — always included in expenses
+    db.select({
+      totalAbast: sql<number>`coalesce(sum(${abastecimentosTable.totalPago}), 0)`,
+      totalLitros: sql<number>`coalesce(sum(${abastecimentosTable.litros}), 0)`,
+    }).from(abastecimentosTable).where(abastWhere(dateFrom, dateTo, frota)),
   ]);
 
-  // Canonical total expenses = despesaCustosSql (includes dieselRs). No abastecimentos added.
-  const totalCustos = Number(summary.totalCustos);
-  const totalFrete  = Number(summary.totalFrete);
-  const totalLucro  = totalFrete - totalCustos;
+  const totalColCustos = Number(summary.totalColCustos);
+  const totalAbast     = Number(abastRow.totalAbast);
+  const totalCustos    = totalColCustos + totalAbast;   // canonical: columns + abastecimentos
+  const totalFrete     = Number(summary.totalFrete);
+  const totalLucro     = totalFrete - totalCustos;
 
-  // Build category breakdown from despesasTable columns only
+  // Category breakdown: despesas columns + abastecimentos as "Combustível (Abast.)"
   const categorias = [
     ...DESPESA_CATEGORIAS.map((c, i) => ({ categoria: c.label, valor: Number(catRow[`c${i}`] ?? 0) })),
     { categoria: "Troca de Óleo", valor: Number(catRow["cTrocaOleo"] ?? 0) },
+    { categoria: "Combustível (Abast.)", valor: totalAbast },
   ];
   const sortedCategorias = categorias.filter(c => c.valor > 0).sort((a, b) => b.valor - a.valor);
 
   res.json({
     totalFrete,
-    totalCustos,
+    totalColCustos,   // column expenses only (for reference)
+    totalAbast,       // abastecimentos fuel (for reference)
+    totalCustos,      // canonical total: columns + abastecimentos
     totalLucro,
+    totalLitros: Number(abastRow.totalLitros),
     totalRegistros: Number(summary.totalRegistros),
     categorias: sortedCategorias,
   });
 });
 
 // ── Despesas monthly ───────────────────────────────────────────────────────────
-// CANONICAL EXPENSE FORMULA per month: despesaCustosSql ONLY (no abastecimentos).
+// CANONICAL EXPENSE FORMULA per month: despesaCustosSql + abastecimentos.totalPago
 router.get("/dashboard/despesas-mensal", async (req, res) => {
   const ano      = req.query.ano ? Number(req.query.ano) : new Date().getFullYear();
   const frota    = req.query.frota ? String(req.query.frota) : undefined;
@@ -261,25 +278,42 @@ router.get("/dashboard/despesas-mensal", async (req, res) => {
   const dateTo   = toDateStr(req.query.dateTo)   || `${ano}-12-31`;
   const where    = despWhere(dateFrom, dateTo, frota);
 
-  const result = await db.select({
-    mes:      sql<string>`to_char(date_trunc('month', ${despesasTable.data}::date), 'YYYY-MM')`,
-    frete:    sql<number>`coalesce(sum(${despesasTable.frete}), 0)`,
-    custos:   sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
-    registros:sql<number>`count(*)`,
-  }).from(despesasTable).where(where)
-    .groupBy(sql`date_trunc('month', ${despesasTable.data}::date)`)
-    .orderBy(sql`date_trunc('month', ${despesasTable.data}::date)`);
+  const [despResult, abastResult] = await Promise.all([
+    db.select({
+      mes:       sql<string>`to_char(date_trunc('month', ${despesasTable.data}::date), 'YYYY-MM')`,
+      frete:     sql<number>`coalesce(sum(${despesasTable.frete}), 0)`,
+      colCustos: sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
+      registros: sql<number>`count(*)`,
+    }).from(despesasTable).where(where)
+      .groupBy(sql`date_trunc('month', ${despesasTable.data}::date)`)
+      .orderBy(sql`date_trunc('month', ${despesasTable.data}::date)`),
+
+    // abastecimentos per month — real fuel purchases included in total expenses
+    db.select({
+      mes:        sql<string>`to_char(date_trunc('month', ${abastecimentosTable.data}::date), 'YYYY-MM')`,
+      totalAbast: sql<number>`coalesce(sum(${abastecimentosTable.totalPago}), 0)`,
+    }).from(abastecimentosTable).where(abastWhere(dateFrom, dateTo, frota))
+      .groupBy(sql`date_trunc('month', ${abastecimentosTable.data}::date)`)
+      .orderBy(sql`date_trunc('month', ${abastecimentosTable.data}::date)`),
+  ]);
+
+  const abastMap: Record<string, number> = {};
+  abastResult.forEach(a => { abastMap[a.mes] = Number(a.totalAbast ?? 0); });
 
   const MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
-  res.json(result.map(r => {
+  res.json(despResult.map(r => {
     const monthIdx = parseInt(r.mes.split("-")[1]) - 1;
-    const frete    = Number(r.frete  ?? 0);
-    const custos   = Number(r.custos ?? 0); // canonical: despesaCustosSql only
+    const frete     = Number(r.frete     ?? 0);
+    const colCustos = Number(r.colCustos ?? 0);
+    const abast     = abastMap[r.mes]    ?? 0;
+    const custos    = colCustos + abast;   // canonical: columns + abastecimentos
     return {
       mes:      MONTHS[monthIdx] ?? r.mes,
       frete,
-      custos,
+      colCustos,  // column expenses (for reference)
+      abast,      // abastecimentos (for reference)
+      custos,     // canonical total expenses
       lucro:    frete - custos,
       registros:Number(r.registros),
     };
@@ -389,8 +423,7 @@ router.get("/dashboard/top-cidades", async (req, res) => {
 });
 
 // ── Transport company stats ────────────────────────────────────────────────────
-// Expenses use canonical formula: despesaCustosSql ONLY per frota.
-// No abastecimentos diesel added (it is already in dieselRs inside despesaCustosSql).
+// Expenses = despesaCustosSql + abastecimentos.totalPago per frota (canonical formula).
 router.get("/dashboard/por-transportadora", async (req, res) => {
   const dateFrom = toDateStr(req.query.dateFrom);
   const dateTo   = toDateStr(req.query.dateTo);
@@ -398,7 +431,7 @@ router.get("/dashboard/por-transportadora", async (req, res) => {
   const freteW   = freteWhere(dateFrom, dateTo, frota);
   const despW    = despWhere(dateFrom, dateTo, frota);
 
-  const [rows, frotaTranspPairs, despPerFrota] = await Promise.all([
+  const [rows, frotaTranspPairs, despPerFrota, abastPerFrota] = await Promise.all([
     db.select({
       transp:       fretesTable.transp,
       viagens:      sql<number>`count(*)`,
@@ -413,16 +446,28 @@ router.get("/dashboard/por-transportadora", async (req, res) => {
       frota:  fretesTable.frota,
     }).from(fretesTable).where(freteW),
 
-    // Canonical: despesaCustosSql only — dieselRs is already included
+    // Column expenses per frota
     db.select({
       frota:       despesasTable.frota,
       totalCustos: sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
     }).from(despesasTable).where(despW).groupBy(despesasTable.frota),
+
+    // Abastecimentos per frota (placa) — always included in total expenses
+    db.select({
+      placa:      abastecimentosTable.placa,
+      totalAbast: sql<number>`coalesce(sum(${abastecimentosTable.totalPago}), 0)`,
+    }).from(abastecimentosTable).where(abastWhere(dateFrom, dateTo, frota))
+      .groupBy(abastecimentosTable.placa),
   ]);
 
   const despMap: Record<string, number> = {};
   for (const d of despPerFrota) {
     despMap[d.frota ?? ""] = Number(d.totalCustos ?? 0);
+  }
+
+  const abastMap: Record<string, number> = {};
+  for (const a of abastPerFrota) {
+    abastMap[a.placa ?? ""] = Number(a.totalAbast ?? 0);
   }
 
   const transpFrotas: Record<string, Set<string>> = {};
@@ -441,8 +486,9 @@ router.get("/dashboard/por-transportadora", async (req, res) => {
     const totalPedagio  = Number(r.totalPedagio ?? 0);
     const tGeral        = totalFrete + totalPedagio;
     const key           = r.transp ?? "Sem Transportadora";
-    const totalDespesas = [...(transpFrotas[key] ?? [])].reduce(
-      (s, f) => s + (despMap[f] ?? 0), 0,
+    const frotasForKey  = [...(transpFrotas[key] ?? [])];
+    const totalDespesas = frotasForKey.reduce(
+      (s, f) => s + (despMap[f] ?? 0) + (abastMap[f] ?? 0), 0,
     );
     return {
       transp:       key,
@@ -457,9 +503,8 @@ router.get("/dashboard/por-transportadora", async (req, res) => {
 });
 
 // ── Fleet performance ──────────────────────────────────────────────────────────
-// Expenses use canonical formula: despesaCustosSql ONLY per frota.
-// dieselRs is already one of the 14 columns in despesaCustosSql.
-// No abastecimentos diesel added — that would double-count diesel.
+// Revenue  = fretesTable.frete + pedagio (CTE/invoice view per fleet)
+// Expenses = despesaCustosSql + abastecimentos.totalPago (canonical formula)
 router.get("/dashboard/fleet-performance", async (req, res) => {
   const dateFrom = toDateStr(req.query.dateFrom);
   const dateTo   = toDateStr(req.query.dateTo);
@@ -467,7 +512,7 @@ router.get("/dashboard/fleet-performance", async (req, res) => {
   const freteW   = freteWhere(dateFrom, dateTo, frota);
   const despW    = despWhere(dateFrom, dateTo, frota);
 
-  const [fretesPerFrota, despesasPerFrota] = await Promise.all([
+  const [fretesPerFrota, despesasPerFrota, abastPerFrota] = await Promise.all([
     db.select({
       frota:        fretesTable.frota,
       totalFrete:   sql<number>`sum(${fretesTable.frete})`,
@@ -476,12 +521,19 @@ router.get("/dashboard/fleet-performance", async (req, res) => {
       totalPeso:    sql<number>`coalesce(sum(${fretesTable.peso}), 0)`,
     }).from(fretesTable).where(freteW).groupBy(fretesTable.frota),
 
-    // Canonical: despesaCustosSql only — no abastecimentos diesel
+    // Column expenses per frota
     db.select({
       frota:       despesasTable.frota,
       totalCustos: sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
       totalKm:     sql<number>`coalesce(sum(${despesasTable.km}), 0)`,
     }).from(despesasTable).where(despW).groupBy(despesasTable.frota),
+
+    // Abastecimentos per frota — actual fuel purchases, always included in expenses
+    db.select({
+      placa:      abastecimentosTable.placa,
+      totalAbast: sql<number>`coalesce(sum(${abastecimentosTable.totalPago}), 0)`,
+    }).from(abastecimentosTable).where(abastWhere(dateFrom, dateTo, frota))
+      .groupBy(abastecimentosTable.placa),
   ]);
 
   const despMap: Record<string, { custos: number; km: number }> = {};
@@ -489,12 +541,19 @@ router.get("/dashboard/fleet-performance", async (req, res) => {
     despMap[d.frota ?? ""] = { custos: Number(d.totalCustos ?? 0), km: Number(d.totalKm ?? 0) };
   }
 
+  const abastMap: Record<string, number> = {};
+  for (const a of abastPerFrota) {
+    abastMap[a.placa ?? ""] = Number(a.totalAbast ?? 0);
+  }
+
   const result = fretesPerFrota.map(f => {
-    const receita = Number(f.totalFrete ?? 0) + Number(f.totalPedagio ?? 0);
-    const custos  = despMap[f.frota]?.custos ?? 0;
-    const km      = despMap[f.frota]?.km     ?? 0;
-    const viagens = Number(f.viagens);
-    const lucro   = receita - custos;
+    const receita    = Number(f.totalFrete ?? 0) + Number(f.totalPedagio ?? 0);
+    const colCustos  = despMap[f.frota]?.custos ?? 0;
+    const abast      = abastMap[f.frota ?? ""]  ?? 0;
+    const custos     = colCustos + abast;   // canonical: columns + abastecimentos
+    const km         = despMap[f.frota]?.km ?? 0;
+    const viagens    = Number(f.viagens);
+    const lucro      = receita - custos;
     return {
       frota:        f.frota,
       totalReceita: receita,

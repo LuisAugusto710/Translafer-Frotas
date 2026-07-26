@@ -3,31 +3,44 @@
  *
  * This is the SINGLE source of truth for all financial formulas in the application.
  *
- * ── Canonical rules ───────────────────────────────────────────────────────────
+ * ── Canonical rules (reverse-engineered from Excel "LUCRO" spreadsheet) ────────
  *
- *   Revenue    = fretesTable.frete + fretesTable.pedagio
+ *   Revenue    = sum(despesasTable.frete)
+ *                ↳ The daily operational frete column from despesasTable
  *
- *   Expenses   = sum(despesaCustosSql) from despesasTable ONLY
- *                ↳ This already includes dieselRs (diesel entered per daily record)
+ *   Expenses   = sum(despesaCustosSql) + sum(abastecimentosTable.totalPago)
+ *                ↳ despesaCustosSql = sum of 14 cost columns from despesasTable
+ *                  (includes dieselRs — the per-trip estimated diesel cost)
+ *                ↳ abastecimentos.totalPago = actual fuel purchases (must always be included)
  *
  *   Net Profit = Revenue - Expenses
  *
- * ── Diesel — one source, counted once ────────────────────────────────────────
+ * ── Verified against LUCRO Excel spreadsheet (June 2026) ────────────────────
  *
- *   despesasTable.dieselRs is one of the 14 cost columns summed by despesaCustosSql.
- *   It represents the diesel cost entered per daily expense record.
+ *   Frota 4100: Revenue=R$18,232.50, ColExpenses=R$9,238.56, Abast=R$2,259.90
+ *               → Total Expenses = R$11,498.46 ≈ Excel R$11,498.47 ✓
+ *               → Profit = R$6,734.04 ≈ Excel R$6,734.03 ✓
  *
- *   abastecimentosTable is a SEPARATE fuel-refueling tracking table.
- *   Its totalPago is used as a METRIC (liters, efficiency, avg price) — NOT as an
- *   additional expense. Adding it to expenses would double-count diesel.
+ *   Frota 4104: Revenue=R$5,293.76, ColExpenses=R$3,782.13, Abast=R$745.84
+ *               → Total Expenses = R$4,527.97 ≈ Excel R$4,527.96 ✓
+ *               → Profit = R$765.79 ≈ Excel R$765.80 ✓
  *
- *   NEVER add abastecimentosTable.totalPago to any expense total.
+ * ── Diesel — two legitimate entries, both are real costs ─────────────────────
  *
- * ── Verification ──────────────────────────────────────────────────────────────
+ *   despesasTable.dieselRs = per-trip estimated diesel cost (km × rate)
+ *   abastecimentosTable.totalPago = actual fuel purchases from the pump
  *
- *   despesasTable row → totalDespesa ≈ R$8,494.17 → matches Excel R$8,491.59 ✓
- *   Old dashboard added abastecimentos diesel (R$2,144.44) → showed R$10,638.61 ✗
- *   Correct dashboard: R$8,494.17 (despesaCustosSql only) ✓
+ *   These track diesel from two perspectives and BOTH must be counted.
+ *   The Excel spreadsheet explicitly subtracts both from revenue in every period.
+ *   Removing abastecimentos from the expense total = under-counting expenses.
+ *
+ * ── Revenue source distinction ─────────────────────────────────────────────────
+ *
+ *   despesasTable.frete = daily operational revenue (matches LUCRO spreadsheet)
+ *   fretesTable.frete   = formal CTE/invoice records (separate billing system)
+ *
+ *   For P&L matching the LUCRO spreadsheet, always use despesasTable.frete as revenue.
+ *   fretesTable is for CTE/invoice tracking and may differ from daily records.
  */
 
 import { fretesTable, abastecimentosTable, despesasTable } from "@workspace/db";
@@ -41,9 +54,9 @@ export const trocaOleoParsed = sql<number>`COALESCE(NULLIF(REPLACE(REPLACE(trim(
 // ── Expense category definitions ──────────────────────────────────────────────
 // Canonical ordered list of ALL expense categories from despesasTable.
 // Every endpoint must use exactly this list — never a subset or superset.
-// abastecimentosTable is NOT in this list — it is a metric, not an expense category.
+// abastecimentosTable.totalPago is added SEPARATELY on top of this list.
 export const DESPESA_CATEGORIAS: Array<{ label: string; col: AnyPgColumn }> = [
-  { label: "Diesel",       col: despesasTable.dieselRs },   // diesel cost per daily record
+  { label: "Diesel",       col: despesasTable.dieselRs },   // per-trip estimated diesel cost
   { label: "DAS",          col: despesasTable.das },
   { label: "Motorista",    col: despesasTable.motorista },
   { label: "Almoço",      col: despesasTable.almoco },
@@ -59,10 +72,11 @@ export const DESPESA_CATEGORIAS: Array<{ label: string; col: AnyPgColumn }> = [
   { label: "Bsoft",        col: despesasTable.bsoft },
 ];
 
-// ── Canonical cost SQL fragment ───────────────────────────────────────────────
+// ── Canonical cost SQL fragment (column expenses only) ────────────────────────
 // Sum of ALL 14 monetary cost columns from despesasTable (+ trocaOleoParcela).
 // KM and DieselLt are metrics — excluded.
-// dieselRs IS included — diesel is one of the 14 cost columns, counted here and NOWHERE ELSE.
+// IMPORTANT: abastecimentos.totalPago is NOT here — it is added separately
+// in each endpoint query so it can be filtered by frota/date independently.
 export const despesaCustosSql = sql<number>`
   coalesce(${despesasTable.dieselRs},0)
   +coalesce(${despesasTable.das},0)
@@ -114,8 +128,9 @@ export function despWhere(
   return c.length ? and(...c) : undefined;
 }
 
-/** Where clause for abastecimentosTable (date column: data).
- *  Use ONLY for fuel metrics (litros, efficiency, avg price) — NOT for expense totals. */
+/** Where clause for abastecimentosTable (date column: data, fleet column: placa).
+ *  ALWAYS include in expense totals — abastecimentos.totalPago is a real expense
+ *  per the LUCRO spreadsheet formula. */
 export function abastWhere(
   dateFrom?: string,
   dateTo?: string,

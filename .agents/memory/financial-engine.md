@@ -1,6 +1,6 @@
 ---
 name: Centralized Financial Engine
-description: Canonical financial calculation rules and diesel handling. Critical: abastecimentos.totalPago must NEVER be added to expenses.
+description: Canonical financial calculation rules verified against LUCRO Excel spreadsheet. Both diesel components must be counted — removing either breaks the formula.
 ---
 
 # Canonical Financial Calculation Rules
@@ -8,32 +8,49 @@ description: Canonical financial calculation rules and diesel handling. Critical
 ## Single Source of Truth
 `artifacts/api-server/src/lib/financial.ts`
 
-## Canonical Formulas
-- **Revenue**    = `fretesTable.frete + fretesTable.pedagio`
-- **Expenses**   = `sum(despesaCustosSql)` from `despesasTable` **ONLY**
+## Canonical Formulas (verified against Excel LUCRO spreadsheet)
+- **Revenue**    = `sum(despesasTable.frete)` — daily operational frete column
+- **Expenses**   = `sum(despesaCustosSql)` + `sum(abastecimentosTable.totalPago)`
 - **Net Profit** = Revenue − Expenses
 
-## Diesel — Counted Once, in despesasTable
-- `despesasTable.dieselRs` is one of the 14 cost columns summed by `despesaCustosSql`
-- **`abastecimentosTable.totalPago` is a FUEL METRIC, NOT an expense**
-- Adding `abastecimentosTable.totalPago` to any expense total = double-counting diesel
+## Revenue Source Distinction
+- `despesasTable.frete` = daily operational revenue — matches LUCRO spreadsheet's FRETE column
+- `fretesTable.frete + pedagio` = formal CTE/invoice records — a DIFFERENT dataset
 
-## Root Cause of the Historical Bug
-`/dashboard/despesas-resumo` was adding `abastecimentosTable.totalPago` ON TOP of `despesaCustosSql`, which already includes `dieselRs`.
-- DB row `totalDespesa` for frota 4100 ≈ R$8,494 → matches Excel R$8,491 ✓
-- Old dashboard: R$8,494 + R$2,144 (abastecimentos) = R$10,638 ✗
-- Correct dashboard: R$8,494 (despesaCustosSql only) ✓
+For P&L matching the LUCRO Excel, always use `despesasTable.frete` as revenue.
+`fretesTable` is for CTE/invoice tracking (fleet-performance, por-transportadora) and may differ.
 
-## What NEVER to Do
-- Never add `abastecimentosTable.totalPago` to any expense total
-- Never use `abastecimentosTable` for P&L — only for fuel metrics (liters, km/l, avg price)
+## Diesel — Two Legitimate Sources, Both Are Real Costs
+- `despesasTable.dieselRs` = per-trip estimated diesel (km × rate) — included in despesaCustosSql
+- `abastecimentosTable.totalPago` = actual fuel purchases from the pump
+
+**BOTH must be counted in expenses.** The LUCRO Excel explicitly subtracts both from revenue.
+Removing abastecimentos = under-counting expenses, artificially inflating profit.
+
+## Verified Against Excel (June 2026)
+| Frota | Revenue | Column Expenses | Abast Fuel | Total Expenses | Profit | Excel Match |
+|-------|---------|----------------|-----------|---------------|--------|-------------|
+| 4100 | R$18,232.50 | R$9,238.56 | R$2,259.90 | R$11,498.46 | R$6,734.04 | ✓ (R$6,734.03) |
+| 4104 | R$5,293.76 | R$3,782.13 | R$745.84 | R$4,527.97 | R$765.79 | ✓ (R$765.80) |
+
+## History of Wrong Fix
+A previous session removed `abastecimentosTable.totalPago` from expenses claiming it was "double-counting diesel."
+This was WRONG — the Excel spreadsheet confirms both are separate, real costs.
+The correct direction: `column_expenses + abastecimentos` = Excel implied expenses (within R$0.01).
 
 ## Exports from financial.ts
-- `despesaCustosSql` — SQL sum of all 14 cost columns (includes dieselRs)
+- `despesaCustosSql` — SQL sum of 14 cost columns from despesasTable (includes dieselRs)
 - `trocaOleoParsed` — parses `trocaOleoParcela` text to numeric
 - `DESPESA_CATEGORIAS` — canonical ordered list of expense categories
 - `freteWhere(df, dt, frota)` — filter for fretesTable
 - `despWhere(df, dt, frota)` — filter for despesasTable
-- `abastWhere(df, dt, frota)` — filter for abastecimentosTable (metrics only)
+- `abastWhere(df, dt, frota)` — filter for abastecimentosTable
 
-**Why:** Every endpoint must import from here. Adding a new dashboard section? Use `despesaCustosSql` only for expenses. `abastecimentosTable` is read-only metrics.
+## What MUST happen in every expense endpoint
+1. Query `sum(despesaCustosSql)` from despesasTable with `despWhere`
+2. Query `sum(abastecimentosTable.totalPago)` from abastecimentosTable with `abastWhere`
+3. `totalExpenses = colCustos + abast`
+4. `lucro = revenue - totalExpenses`
+
+**Why:** Skipping step 2 means the application under-counts expenses by the diesel fuel purchase total,
+inflating profit vs the LUCRO spreadsheet. This was confirmed with exact numerical verification.
