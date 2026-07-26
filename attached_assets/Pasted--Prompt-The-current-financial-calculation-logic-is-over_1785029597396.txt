@@ -1,0 +1,165 @@
+**Prompt:**
+
+The current financial calculation logic is overly complex and is producing incorrect results. I want you to simplify it completely and rebuild it using the real-world financial flow. **Do not reuse the current calculation logic.** Replace it with the simple business rules described below.
+
+## Financial Calculation Rules
+
+### 1. Gross Revenue
+
+Gross Revenue is simply the sum of all freight values within the selected period and filters.
+
+**Formula:**
+
+```text
+Gross Revenue = Sum of all Freight Values
+```
+
+No additional calculations or adjustments should be applied.
+
+---
+
+### 2. Total Expenses
+
+Total Expenses should only represent money that has actually left the company's bank account.
+
+The Diesel cost must come **only** from the **Diesel** page, because that is where the actual fuel purchase is recorded.
+
+The Diesel value stored in the **Expenses** page is only an informational field used to show how much fuel was consumed by a trip. It must **never** be included in the financial calculation of expenses.
+
+Therefore:
+
+```text
+Total Expenses =
+Total Diesel Purchases (Diesel page)
++
+All Other Expenses (Expenses page)
+```
+
+The "Other Expenses" must include every expense category **except** the diesel field.
+
+Examples:
+
+* Driver
+* Assistant
+* Toll
+* Maintenance
+* Oil Change Installment
+* DAS
+* INSS
+* Insurance
+* Office Expenses
+* Tracker
+* Bsoft
+* Any future expense category
+
+**Exclude:**
+
+* dieselRs (or any equivalent diesel field inside the Expenses table)
+
+This field is informational only and must never be counted as money spent.
+
+---
+
+### 3. Net Profit
+
+```text
+Net Profit =
+Gross Revenue
+-
+Total Expenses
+```
+
+Nothing more.
+
+No hidden adjustments.
+
+No duplicated calculations.
+
+No additional deductions.
+
+---
+
+### 4. Profit Margin
+
+```text
+Profit Margin (%) =
+(Net Profit / Gross Revenue) × 100
+```
+
+---
+
+## Diesel Business Rule
+
+This is extremely important.
+
+The Diesel page records the **actual fuel purchase**, which is the real financial expense.
+
+The Diesel field inside the Expenses page exists only to indicate how much diesel was consumed during a specific trip.
+
+That value is useful for operational analysis, but it is **not** another payment made by the company.
+
+If both values are added together, diesel is counted twice.
+
+That is exactly what is causing the inconsistency between the application and the Excel spreadsheet.
+
+The diesel value from the Expenses page must never be included in the financial totals.
+
+---
+
+## Dashboard
+
+Update every Dashboard widget to use this same calculation logic.
+
+This includes:
+
+* Revenue Card
+* Total Expenses Card
+* Net Profit Card
+* Profit Margin Card
+* Fleet Ranking
+* Transport Company Summary
+* Charts
+* Reports
+* PDF Exports
+
+Every section must use the exact same centralized financial calculation.
+
+---
+
+## Centralized Calculation
+
+Create a single financial calculation service that returns:
+
+* Gross Revenue
+* Total Diesel Purchases
+* Total Other Expenses
+* Total Expenses
+* Net Profit
+* Profit Margin
+
+Every page in the application must consume this service.
+
+No component should perform its own calculations.
+
+---
+
+## Validation
+
+After implementing the new logic, verify that:
+
+* Diesel is counted exactly once.
+* The Expenses page's diesel field is ignored in financial calculations.
+* Revenue equals the sum of all freights.
+* Expenses equal Diesel Purchases + Other Expenses.
+* Net Profit equals Revenue − Expenses.
+* Profit Margin is calculated correctly.
+* All Dashboard sections display identical values for the same period and filters.
+
+---
+
+## Important
+
+* **Keep the calculation simple and objective.**
+* **Do not recreate the previous complex logic.**
+* **Do not count diesel twice under any circumstances.**
+* **The financial engine must reflect the real cash flow of the company: money enters through freights and leaves through diesel purchases and all other non-diesel expenses.**
