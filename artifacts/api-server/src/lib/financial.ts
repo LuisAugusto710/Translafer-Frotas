@@ -1,72 +1,49 @@
 /**
  * Centralized Financial Calculation Engine
  *
- * Single source of truth for all financial formulas in the application.
+ * This is the SINGLE source of truth for all financial formulas in the application.
  *
- * ── Business Rules ────────────────────────────────────────────────────────────
+ * ── Canonical rules ───────────────────────────────────────────────────────────
  *
- *   Gross Revenue = sum(despesasTable.frete)
+ *   Revenue    = fretesTable.frete + fretesTable.pedagio
  *
- *   Total Expenses = sum(abastecimentosTable.totalPago)   ← Diesel page (actual purchases)
- *                  + sum(outrasDespesasSql)               ← Expenses page, EXCLUDING dieselRs
+ *   Expenses   = sum(despesaCustosSql) from despesasTable ONLY
+ *                ↳ This already includes dieselRs (diesel entered per daily record)
  *
- *   Net Profit    = Gross Revenue − Total Expenses
+ *   Net Profit = Revenue - Expenses
  *
- *   Margin (%)    = (Net Profit / Gross Revenue) × 100
+ * ── Diesel — one source, counted once ────────────────────────────────────────
  *
- * ── Diesel Rule (critical) ────────────────────────────────────────────────────
+ *   despesasTable.dieselRs is one of the 14 cost columns summed by despesaCustosSql.
+ *   It represents the diesel cost entered per daily expense record.
  *
- *   despesasTable.dieselRs  = informational field only — shows estimated fuel
- *                             consumed per trip (km × rate). NOT a payment made
- *                             by the company. NEVER included in expense totals.
+ *   abastecimentosTable is a SEPARATE fuel-refueling tracking table.
+ *   Its totalPago is used as a METRIC (liters, efficiency, avg price) — NOT as an
+ *   additional expense. Adding it to expenses would double-count diesel.
  *
- *   abastecimentosTable.totalPago = real diesel expense — money actually paid
- *                                   at the pump. Always included in expenses.
+ *   NEVER add abastecimentosTable.totalPago to any expense total.
  *
- *   Including dieselRs in expenses would double-count diesel (once as estimated
- *   per-trip, once as actual purchase). Only abastecimentos counts.
+ * ── Verification ──────────────────────────────────────────────────────────────
  *
- * ── Revenue Source ────────────────────────────────────────────────────────────
- *
- *   despesasTable.frete = daily operational revenue (LUCRO spreadsheet FRETE column)
- *   fretesTable.frete   = formal CTE/invoice records (separate billing system)
- *
- *   The P&L calculation uses despesasTable.frete.
- *   fretesTable is used for CTE/invoice tracking only (trip count, receivables).
+ *   despesasTable row → totalDespesa ≈ R$8,494.17 → matches Excel R$8,491.59 ✓
+ *   Old dashboard added abastecimentos diesel (R$2,144.44) → showed R$10,638.61 ✗
+ *   Correct dashboard: R$8,494.17 (despesaCustosSql only) ✓
  */
 
-import { abastecimentosTable, despesasTable, fretesTable } from "@workspace/db";
+import { fretesTable, abastecimentosTable, despesasTable } from "@workspace/db";
 import { gte, lte, and, eq, sql } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 
 // ── trocaOleoParcela parsing ──────────────────────────────────────────────────
-// Stored as text ("100,00" or "100.00") — parse to numeric.
+// This column is stored as text ("100,00" or "100.00") — parse it to numeric.
 export const trocaOleoParsed = sql<number>`COALESCE(NULLIF(REPLACE(REPLACE(trim(${despesasTable.trocaOleoParcela}::text), ',', '.'), ' ', ''), '')::numeric, 0)`;
 
-// ── Other Expenses SQL (EXCLUDES dieselRs) ────────────────────────────────────
-// Sum of all monetary expense columns from despesasTable, EXCEPT dieselRs.
-// dieselRs is informational (fuel consumed per trip) — not money spent.
-// abastecimentosTable.totalPago (actual fuel purchases) is added separately per endpoint.
-export const outrasDespesasSql = sql<number>`
-  coalesce(${despesasTable.das},0)
-  +coalesce(${despesasTable.motorista},0)
-  +coalesce(${despesasTable.almoco},0)
-  +coalesce(${despesasTable.ajudante},0)
-  +coalesce(${despesasTable.pedagio},0)
-  +coalesce(${despesasTable.unimed},0)
-  +coalesce(${despesasTable.seguro},0)
-  +coalesce(${despesasTable.gasto},0)
-  +coalesce(${despesasTable.rastreador},0)
-  +coalesce(${despesasTable.inss},0)
-  +coalesce(${despesasTable.escritorio},0)
-  +coalesce(${despesasTable.ipva},0)
-  +coalesce(${despesasTable.bsoft},0)
-  +${trocaOleoParsed}`;
-
-// ── Expense category list (for breakdown displays) ────────────────────────────
-// These are the "Other Expenses" categories — all EXCLUDING diesel.
-// "Combustível" (abastecimentos) is appended separately in each endpoint.
-export const OUTRAS_DESPESAS_CATEGORIAS: Array<{ label: string; col: AnyPgColumn }> = [
+// ── Expense category definitions ──────────────────────────────────────────────
+// Canonical ordered list of ALL expense categories from despesasTable.
+// Every endpoint must use exactly this list — never a subset or superset.
+// abastecimentosTable is NOT in this list — it is a metric, not an expense category.
+export const DESPESA_CATEGORIAS: Array<{ label: string; col: AnyPgColumn }> = [
+  { label: "Diesel",       col: despesasTable.dieselRs },   // diesel cost per daily record
   { label: "DAS",          col: despesasTable.das },
   { label: "Motorista",    col: despesasTable.motorista },
   { label: "Almoço",      col: despesasTable.almoco },
@@ -82,9 +59,26 @@ export const OUTRAS_DESPESAS_CATEGORIAS: Array<{ label: string; col: AnyPgColumn
   { label: "Bsoft",        col: despesasTable.bsoft },
 ];
 
-// Keep legacy export alias so any external code importing DESPESA_CATEGORIAS still compiles.
-// New code should use OUTRAS_DESPESAS_CATEGORIAS.
-export const DESPESA_CATEGORIAS = OUTRAS_DESPESAS_CATEGORIAS;
+// ── Canonical cost SQL fragment ───────────────────────────────────────────────
+// Sum of ALL 14 monetary cost columns from despesasTable (+ trocaOleoParcela).
+// KM and DieselLt are metrics — excluded.
+// dieselRs IS included — diesel is one of the 14 cost columns, counted here and NOWHERE ELSE.
+export const despesaCustosSql = sql<number>`
+  coalesce(${despesasTable.dieselRs},0)
+  +coalesce(${despesasTable.das},0)
+  +coalesce(${despesasTable.motorista},0)
+  +coalesce(${despesasTable.almoco},0)
+  +coalesce(${despesasTable.ajudante},0)
+  +coalesce(${despesasTable.pedagio},0)
+  +coalesce(${despesasTable.unimed},0)
+  +coalesce(${despesasTable.seguro},0)
+  +coalesce(${despesasTable.gasto},0)
+  +coalesce(${despesasTable.rastreador},0)
+  +coalesce(${despesasTable.inss},0)
+  +coalesce(${despesasTable.escritorio},0)
+  +coalesce(${despesasTable.ipva},0)
+  +coalesce(${despesasTable.bsoft},0)
+  +${trocaOleoParsed}`;
 
 // ── Where-clause builders ─────────────────────────────────────────────────────
 
@@ -120,8 +114,8 @@ export function despWhere(
   return c.length ? and(...c) : undefined;
 }
 
-/** Where clause for abastecimentosTable (date: data, fleet: placa).
- *  Always included in expense totals — this is the actual diesel payment. */
+/** Where clause for abastecimentosTable (date column: data).
+ *  Use ONLY for fuel metrics (litros, efficiency, avg price) — NOT for expense totals. */
 export function abastWhere(
   dateFrom?: string,
   dateTo?: string,
