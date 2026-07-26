@@ -3,20 +3,34 @@
  *
  * This is the SINGLE source of truth for all financial formulas in the application.
  *
- * Canonical rules:
+ * ── Canonical rules ───────────────────────────────────────────────────────────
+ *
  *   Revenue    = fretesTable.frete + fretesTable.pedagio
- *   Expenses   = sum(DESPESA_COST_COLS from despesasTable) + sum(abastecimentosTable.totalPago)
+ *
+ *   Expenses   = sum(despesaCustosSql) from despesasTable ONLY
+ *                ↳ This already includes dieselRs (diesel entered per daily record)
+ *
  *   Net Profit = Revenue - Expenses
  *
- * Diesel is tracked in two places:
- *   1. despesasTable.dieselRs  — manually-entered diesel cost per daily record
- *   2. abastecimentosTable.totalPago — detailed per-refueling fuel cost
+ * ── Diesel — one source, counted once ────────────────────────────────────────
  *
- * Both are part of total expenses everywhere in the application.
- * No endpoint should use only one and ignore the other.
+ *   despesasTable.dieselRs is one of the 14 cost columns summed by despesaCustosSql.
+ *   It represents the diesel cost entered per daily expense record.
+ *
+ *   abastecimentosTable is a SEPARATE fuel-refueling tracking table.
+ *   Its totalPago is used as a METRIC (liters, efficiency, avg price) — NOT as an
+ *   additional expense. Adding it to expenses would double-count diesel.
+ *
+ *   NEVER add abastecimentosTable.totalPago to any expense total.
+ *
+ * ── Verification ──────────────────────────────────────────────────────────────
+ *
+ *   despesasTable row → totalDespesa ≈ R$8,494.17 → matches Excel R$8,491.59 ✓
+ *   Old dashboard added abastecimentos diesel (R$2,144.44) → showed R$10,638.61 ✗
+ *   Correct dashboard: R$8,494.17 (despesaCustosSql only) ✓
  */
 
-import { db, fretesTable, abastecimentosTable, despesasTable } from "@workspace/db";
+import { fretesTable, abastecimentosTable, despesasTable } from "@workspace/db";
 import { gte, lte, and, eq, sql } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 
@@ -25,10 +39,11 @@ import type { AnyPgColumn } from "drizzle-orm/pg-core";
 export const trocaOleoParsed = sql<number>`COALESCE(NULLIF(REPLACE(REPLACE(trim(${despesasTable.trocaOleoParcela}::text), ',', '.'), ' ', ''), '')::numeric, 0)`;
 
 // ── Expense category definitions ──────────────────────────────────────────────
-// Canonical ordered list of all expense categories from despesasTable.
+// Canonical ordered list of ALL expense categories from despesasTable.
 // Every endpoint must use exactly this list — never a subset or superset.
+// abastecimentosTable is NOT in this list — it is a metric, not an expense category.
 export const DESPESA_CATEGORIAS: Array<{ label: string; col: AnyPgColumn }> = [
-  { label: "Diesel",       col: despesasTable.dieselRs },
+  { label: "Diesel",       col: despesasTable.dieselRs },   // diesel cost per daily record
   { label: "DAS",          col: despesasTable.das },
   { label: "Motorista",    col: despesasTable.motorista },
   { label: "Almoço",      col: despesasTable.almoco },
@@ -46,9 +61,8 @@ export const DESPESA_CATEGORIAS: Array<{ label: string; col: AnyPgColumn }> = [
 
 // ── Canonical cost SQL fragment ───────────────────────────────────────────────
 // Sum of ALL 14 monetary cost columns from despesasTable (+ trocaOleoParcela).
-// KM and DieselLt are metrics, NOT costs — excluded here.
-// This fragment covers only the despesasTable portion of expenses.
-// Total expenses = despesaCustosSql + abastecimentos.totalPago (see below).
+// KM and DieselLt are metrics — excluded.
+// dieselRs IS included — diesel is one of the 14 cost columns, counted here and NOWHERE ELSE.
 export const despesaCustosSql = sql<number>`
   coalesce(${despesasTable.dieselRs},0)
   +coalesce(${despesasTable.das},0)
@@ -100,7 +114,8 @@ export function despWhere(
   return c.length ? and(...c) : undefined;
 }
 
-/** Where clause for abastecimentosTable (date column: data). */
+/** Where clause for abastecimentosTable (date column: data).
+ *  Use ONLY for fuel metrics (litros, efficiency, avg price) — NOT for expense totals. */
 export function abastWhere(
   dateFrom?: string,
   dateTo?: string,
@@ -111,49 +126,4 @@ export function abastWhere(
   if (dateTo)   c.push(lte(abastecimentosTable.data, dateTo));
   if (frota)    c.push(eq(abastecimentosTable.placa, frota));
   return c.length ? and(...c) : undefined;
-}
-
-// ── Per-frota diesel from abastecimentos ──────────────────────────────────────
-/**
- * Returns a map of frota -> abastecimentos diesel cost.
- * This must be added to despesaCustosSql totals in every endpoint
- * to arrive at the canonical total expenses per frota.
- */
-export async function getDieselAbastPerFrota(
-  dateFrom?: string,
-  dateTo?: string,
-  frota?: string,
-): Promise<Record<string, number>> {
-  const conditions = [];
-  if (dateFrom) conditions.push(gte(abastecimentosTable.data, dateFrom));
-  if (dateTo)   conditions.push(lte(abastecimentosTable.data, dateTo));
-  // If a specific frota is requested, filter by placa.
-  if (frota)    conditions.push(eq(abastecimentosTable.placa, frota));
-  const where = conditions.length ? and(...conditions) : undefined;
-
-  const rows = await db.select({
-    placa:      abastecimentosTable.placa,
-    totalPago:  sql<number>`coalesce(sum(${abastecimentosTable.totalPago}), 0)`,
-  }).from(abastecimentosTable).where(where).groupBy(abastecimentosTable.placa);
-
-  const map: Record<string, number> = {};
-  for (const r of rows) {
-    map[r.placa ?? ""] = Number(r.totalPago ?? 0);
-  }
-  return map;
-}
-
-/**
- * Returns total abastecimentos diesel cost (all frotas combined).
- */
-export async function getTotalDieselAbast(
-  dateFrom?: string,
-  dateTo?: string,
-  frota?: string,
-): Promise<number> {
-  const where = abastWhere(dateFrom, dateTo, frota);
-  const [row] = await db.select({
-    total: sql<number>`coalesce(sum(${abastecimentosTable.totalPago}), 0)`,
-  }).from(abastecimentosTable).where(where);
-  return Number(row?.total ?? 0);
 }
