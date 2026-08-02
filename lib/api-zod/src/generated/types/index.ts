@@ -39,6 +39,8 @@ export * from './freteListResponse';
 export * from './freteUpdate';
 export * from './frotaRevenue';
 export * from './frotaSummary';
+export * from './getAvailableMonths200';
+export * from './getAvailableMonthsParams';
 export * from './getAvailableYears200';
 export * from './getByTransportadoraParams';
 export * from './getDashboardResumoParams';

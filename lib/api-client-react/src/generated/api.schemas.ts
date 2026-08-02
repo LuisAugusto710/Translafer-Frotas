@@ -736,6 +736,19 @@ dateTo?: string;
 
 export type GetAvailableYears200 = {
   years: number[];
+  /** Most recent year that contains records */
+  latestYear: number;
+  /** Most recent month (1-12) within latestYear that contains records */
+  latestMonth: number;
+};
+
+export type GetAvailableMonthsParams = {
+year: number;
+};
+
+export type GetAvailableMonths200 = {
+  /** 1-based month numbers that contain records */
+  months: number[];
 };
 
 export type GetRecentFretesParams = {

@@ -895,10 +895,24 @@ export const GetUpcomingReceivablesResponse = zod.array(GetUpcomingReceivablesRe
 
 
 /**
- * @summary Returns distinct years that have records in fretes, despesas or manutencoes
+ * @summary Returns distinct years that have records, plus the most recent year and month with data
  */
 export const GetAvailableYearsResponse = zod.object({
-  "years": zod.array(zod.number())
+  "years": zod.array(zod.number()),
+  "latestYear": zod.number().describe('Most recent year that contains records'),
+  "latestMonth": zod.number().describe('Most recent month (1-12) within latestYear that contains records')
+})
+
+
+/**
+ * @summary Returns months (1-12) that have at least one record in the given year
+ */
+export const GetAvailableMonthsQueryParams = zod.object({
+  "year": zod.coerce.number()
+})
+
+export const GetAvailableMonthsResponse = zod.object({
+  "months": zod.array(zod.number()).describe('1-based month numbers that contain records')
 })
 
 

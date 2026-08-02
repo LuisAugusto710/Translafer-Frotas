@@ -51,6 +51,8 @@ import type {
   FreteUpdate,
   FrotaRevenue,
   FrotaSummary,
+  GetAvailableMonths200,
+  GetAvailableMonthsParams,
   GetAvailableYears200,
   GetByTransportadoraParams,
   GetDashboardResumoParams,
@@ -2715,7 +2717,7 @@ export const getGetAvailableYearsUrl = () => {
 }
 
 /**
- * @summary Returns distinct years that have records in fretes, despesas or manutencoes
+ * @summary Returns distinct years that have records, plus the most recent year and month with data
  */
 export const getAvailableYears = async ( options?: RequestInit): Promise<GetAvailableYears200> => {
 
@@ -2762,7 +2764,7 @@ export type GetAvailableYearsQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Returns distinct years that have records in fretes, despesas or manutencoes
+ * @summary Returns distinct years that have records, plus the most recent year and month with data
  */
 
 export function useGetAvailableYears<TData = Awaited<ReturnType<typeof getAvailableYears>>, TError = ErrorType<unknown>>(
@@ -2771,6 +2773,90 @@ export function useGetAvailableYears<TData = Awaited<ReturnType<typeof getAvaila
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetAvailableYearsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAvailableMonthsUrl = (params: GetAvailableMonthsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/dashboard/available-months?${stringifiedParams}` : `/api/dashboard/available-months`
+}
+
+/**
+ * @summary Returns months (1-12) that have at least one record in the given year
+ */
+export const getAvailableMonths = async (params: GetAvailableMonthsParams, options?: RequestInit): Promise<GetAvailableMonths200> => {
+
+  return customFetch<GetAvailableMonths200>(getGetAvailableMonthsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAvailableMonthsQueryKey = (params?: GetAvailableMonthsParams,) => {
+    return [
+    `/api/dashboard/available-months`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetAvailableMonthsQueryOptions = <TData = Awaited<ReturnType<typeof getAvailableMonths>>, TError = ErrorType<unknown>>(params: GetAvailableMonthsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAvailableMonths>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAvailableMonthsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAvailableMonths>>> = ({ signal }) => getAvailableMonths(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAvailableMonths>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAvailableMonthsQueryResult = NonNullable<Awaited<ReturnType<typeof getAvailableMonths>>>
+export type GetAvailableMonthsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Returns months (1-12) that have at least one record in the given year
+ */
+
+export function useGetAvailableMonths<TData = Awaited<ReturnType<typeof getAvailableMonths>>, TError = ErrorType<unknown>>(
+ params: GetAvailableMonthsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAvailableMonths>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAvailableMonthsQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

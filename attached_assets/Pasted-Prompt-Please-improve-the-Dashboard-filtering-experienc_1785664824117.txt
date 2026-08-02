@@ -1,0 +1,191 @@
+Prompt:
+
+Please improve the Dashboard filtering experience while keeping the current design and layout. The objective is to make the filters more intelligent, intuitive, and based on the data that actually exists in the database.
+
+⸻
+
+1. Default Dashboard Period
+
+When the user opens the Dashboard, it should automatically display the most recent month that contains records in the database.
+
+Do not default to the current calendar month unless it actually contains data.
+
+For example:
+
+* If the latest records are from August 2026, automatically select:
+    * Period: Month
+    * Year: 2026
+    * Month: August
+
+If later new records are added for September, the Dashboard should automatically open showing September.
+
+⸻
+
+2. Reorder the Period Dropdown
+
+Reorganize the Period dropdown so that the options always appear in the following order:
+
+1. Month
+2. Quarter
+3. Semester
+4. Year
+5. Custom Range
+
+This order should remain consistent on both desktop and mobile.
+
+⸻
+
+3. Show Only Months That Contain Records
+
+When the selected period is Month, the Month dropdown should only display months that actually contain records for the selected year.
+
+Example:
+
+If the selected year is 2026 and the database contains records only for:
+
+* July
+* August
+* October
+
+Then the Month dropdown should display only:
+
+* July
+* August
+* October
+
+Do not display months without records.
+
+⸻
+
+4. Dynamic Month List
+
+Whenever the user changes the selected year:
+
+* Query the database.
+* Determine which months contain at least one record.
+* Populate the Month dropdown dynamically.
+* Remove months with no records.
+
+The list must update immediately without requiring a page refresh.
+
+⸻
+
+5. Automatic Month Selection
+
+If the currently selected month is not available for the newly selected year:
+
+* Automatically select the most recent month that has records within that year.
+
+Example:
+
+Current selection:
+
+* Year: 2026
+* Month: August
+
+User changes Year to 2025.
+
+If 2025 only contains records for:
+
+* March
+* April
+* December
+
+The application should automatically select:
+
+* December
+
+because it is the most recent available month.
+
+⸻
+
+6. Database Query
+
+The available months must be obtained directly from the database.
+
+Do not hardcode the twelve calendar months.
+
+The query should return distinct months that contain records after applying the selected year.
+
+⸻
+
+7. Dashboard Refresh
+
+Whenever the user changes:
+
+* Period
+* Year
+* Month
+* Fleet
+
+Refresh all Dashboard data automatically, including:
+
+* Revenue
+* Expenses
+* Net Profit
+* Profit Margin
+* Diesel
+* Number of Trips
+* Fleet Ranking
+* Transport Company Summary
+* Charts
+* Maintenance Indicators
+* Reports
+
+All filters must remain synchronized.
+
+⸻
+
+8. Fix the Transport Number Migration
+
+The transport number migration was not completed correctly.
+
+I noticed that the existing records in the production database still have incorrect or outdated values in the Transport column.
+
+I want you to perform the migration on the actual production database, not only in the application logic or local memory.
+
+Requirements
+
+* Update the Transport column of every existing freight record in the production database.
+* Start the sequence at 5355256 for the first freight dated 01/07.
+* Increment the transport number by 1 for every subsequent freight.
+* Preserve the chronological order of the records.
+* Ensure there are no duplicate transport numbers.
+* Ensure there are no gaps in the sequence.
+* Verify that the migration has been successfully committed to the production database.
+* Future freight records must continue this sequence automatically from the highest existing transport number.
+
+After the migration, verify by querying the production database that every record contains the correct transport number.
+
+⸻
+
+9. Responsive Design
+
+Maintain the current visual style.
+
+Ensure that:
+
+* Dropdowns fit properly on mobile.
+* Long option names do not overflow.
+* The filter bar adapts cleanly to smaller screens.
+* Spacing remains consistent across desktop, tablet, and mobile devices.
+
+⸻
+
+Performance
+
+* Query only the years and months that actually exist in the database.
+* Cache results when appropriate.
+* Avoid unnecessary database requests.
+* Keep Dashboard updates fast even with large datasets.
+
+⸻
+
+Important
+
+* Do not redesign the Dashboard.
+* Do not modify any financial calculations.
+* The Dashboard must always open with the most recent month that contains records.
+* The Period dropdown must follow the order: Month → Quarter → Semester → Year → Custom Range.
+* The Month dropdown must display only months that actually have records for the selected year.
+* The Transport number migration must be executed directly on the production database, and all existing records must be updated to the correct sequential values before validating that future records continue the sequence automatically.

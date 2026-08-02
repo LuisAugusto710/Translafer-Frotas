@@ -8,4 +8,8 @@
 
 export type GetAvailableYears200 = {
   years: number[];
+  /** Most recent year that contains records */
+  latestYear: number;
+  /** Most recent month (1-12) within latestYear that contains records */
+  latestMonth: number;
 };

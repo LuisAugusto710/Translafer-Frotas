@@ -608,13 +608,21 @@ router.get("/dashboard/upcoming-receivables", async (req, res) => {
 });
 
 // ── Available years ───────────────────────────────────────────────────────────
-// Returns distinct years that have at least one record in fretes, despesas, or manutencoes.
-// Used to populate the Dashboard year filter dynamically.
+// Returns distinct years + the most recent year and month with data.
+// Used to smart-default the Dashboard filter to the most recent period with records.
 router.get("/dashboard/available-years", async (req, res) => {
-  const [freYear, despYear, manutYear] = await Promise.all([
+  const [freYear, despYear, manutYear, latestRow] = await Promise.all([
     db.select({ yr: sql<number>`DISTINCT EXTRACT(YEAR FROM ${fretesTable.dataCte}::date)::int` }).from(fretesTable),
     db.select({ yr: sql<number>`DISTINCT EXTRACT(YEAR FROM ${despesasTable.data}::date)::int` }).from(despesasTable),
     db.select({ yr: sql<number>`DISTINCT EXTRACT(YEAR FROM ${manutencoesTable.dataManutencao}::date)::int` }).from(manutencoesTable),
+    // Most recent date across all three tables
+    db.select({
+      latestDate: sql<string>`GREATEST(
+        (SELECT MAX(${fretesTable.dataCte}) FROM ${fretesTable}),
+        (SELECT MAX(${despesasTable.data}::date::text) FROM ${despesasTable}),
+        (SELECT MAX(${manutencoesTable.dataManutencao}::date::text) FROM ${manutencoesTable})
+      )`,
+    }).limit(1),
   ]);
 
   const allYears = new Set<number>();
@@ -622,7 +630,50 @@ router.get("/dashboard/available-years", async (req, res) => {
     if (r.yr != null) allYears.add(Number(r.yr));
   });
   const years = [...allYears].sort((a, b) => a - b);
-  res.json({ years });
+
+  // Derive latestYear/latestMonth from the most recent date
+  const latestDateStr = latestRow[0]?.latestDate ?? null;
+  const fallbackYear = new Date().getFullYear();
+  const fallbackMonth = new Date().getMonth() + 1;
+  let latestYear = fallbackYear;
+  let latestMonth = fallbackMonth;
+  if (latestDateStr) {
+    const d = new Date(latestDateStr);
+    if (!isNaN(d.getTime())) {
+      latestYear = d.getFullYear();
+      latestMonth = d.getMonth() + 1;
+    }
+  }
+
+  res.json({ years, latestYear, latestMonth });
+});
+
+// ── Available months for a given year ─────────────────────────────────────────
+// Returns 1-based month numbers that contain at least one record in the given year.
+// Used to populate the Month dropdown with only months that have real data.
+router.get("/dashboard/available-months", async (req, res) => {
+  const year = req.query.year ? Number(req.query.year) : new Date().getFullYear();
+  const dateFrom = `${year}-01-01`;
+  const dateTo   = `${year}-12-31`;
+
+  const [freMonths, despMonths, manutMonths] = await Promise.all([
+    db.select({ mo: sql<number>`DISTINCT EXTRACT(MONTH FROM ${fretesTable.dataCte}::date)::int` })
+      .from(fretesTable)
+      .where(and(gte(fretesTable.dataCte, dateFrom), lte(fretesTable.dataCte, dateTo))),
+    db.select({ mo: sql<number>`DISTINCT EXTRACT(MONTH FROM ${despesasTable.data}::date)::int` })
+      .from(despesasTable)
+      .where(and(gte(despesasTable.data, dateFrom), lte(despesasTable.data, dateTo))),
+    db.select({ mo: sql<number>`DISTINCT EXTRACT(MONTH FROM ${manutencoesTable.dataManutencao}::date)::int` })
+      .from(manutencoesTable)
+      .where(and(gte(manutencoesTable.dataManutencao, dateFrom), lte(manutencoesTable.dataManutencao, dateTo))),
+  ]);
+
+  const allMonths = new Set<number>();
+  [...freMonths, ...despMonths, ...manutMonths].forEach(r => {
+    if (r.mo != null) allMonths.add(Number(r.mo));
+  });
+  const months = [...allMonths].sort((a, b) => a - b);
+  res.json({ months });
 });
 
 // ── Recent freight entries ─────────────────────────────────────────────────────

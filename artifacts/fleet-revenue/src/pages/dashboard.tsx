@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   AreaChart, Area, BarChart, Bar, ComposedChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -26,6 +26,7 @@ import {
   useListFrotas, getListFrotasQueryKey,
   useGetManutencaoPreventiva, getGetManutencaoPreventivaQueryKey,
   useGetAvailableYears, getGetAvailableYearsQueryKey,
+  useGetAvailableMonths, getGetAvailableMonthsQueryKey,
   type FleetPerformance,
   type ManutencaoPreventivaItem,
 } from "@workspace/api-client-react";
@@ -52,11 +53,11 @@ const MONTHS_SHORT = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out
 function computePeriodDates(
   mode: PeriodMode,
   year: number,
-  subValue: string, // month index (0-11), quarter (1-4), semester (1-2), or unused for year
+  subValue: string, // month (1-12), quarter (1-4), semester (1-2), or unused for year/custom
 ): { dateFrom: string; dateTo: string } {
   const pad = (n: number) => String(n).padStart(2, "0");
   if (mode === "month") {
-    const m = parseInt(subValue) + 1; // subValue is 0-based month index
+    const m = parseInt(subValue) || 1; // subValue is 1-based month number (1-12)
     const lastDay = new Date(year, m, 0).getDate();
     return { dateFrom: `${year}-${pad(m)}-01`, dateTo: `${year}-${pad(m)}-${pad(lastDay)}` };
   }
@@ -541,19 +542,54 @@ function PreventivaMaintSection({ items, loading }: { items: ManutencaoPreventiv
 
 export function Dashboard() {
   const currentYear = new Date().getFullYear();
-  const [ano, setAno] = useState(currentYear);
-  const [periodMode, setPeriodMode] = useState<PeriodMode>("year");
-  const [subValue, setSubValue]     = useState<string>(""); // month (0-11), quarter (1-4), semester (1-2)
+  const currentMonth = new Date().getMonth() + 1; // 1-based
+
+  // Start with current year/month as placeholders; they are replaced by API data below
+  const [ano, setAno]               = useState(currentYear);
+  const [periodMode, setPeriodMode] = useState<PeriodMode>("month");
+  const [subValue, setSubValue]     = useState<string>(String(currentMonth)); // 1-based month (1-12)
   const [customFrom, setCustomFrom] = useState("");
   const [customTo,   setCustomTo]   = useState("");
   const [frotaFilter, setFrotaFilter] = useState("__all__");
   const [period, setPeriod] = useState<"diario" | "semanal" | "mensal" | "trimestral" | "anual">("mensal");
 
+  // Tracks whether we've already applied the smart default from the API
+  const initializedFromApi = useRef(false);
+
   // Dynamic years from database
-  const { data: availableYearsData } = useGetAvailableYears({ query: { queryKey: getGetAvailableYearsQueryKey(), staleTime: 60_000 } });
-  const availableYears = availableYearsData?.years && availableYearsData.years.length > 0
+  const { data: availableYearsData } = useGetAvailableYears({
+    query: { queryKey: getGetAvailableYearsQueryKey(), staleTime: 60_000 },
+  });
+  const availableYears = availableYearsData?.years?.length
     ? availableYearsData.years
     : [currentYear];
+
+  // Smart default: once the API returns, set the most recent year+month with records
+  useEffect(() => {
+    if (availableYearsData && !initializedFromApi.current) {
+      initializedFromApi.current = true;
+      setAno(availableYearsData.latestYear ?? currentYear);
+      setSubValue(String(availableYearsData.latestMonth ?? currentMonth));
+      setPeriodMode("month");
+    }
+  }, [availableYearsData]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Dynamic months for the selected year
+  const { data: availableMonthsData } = useGetAvailableMonths(
+    { year: ano },
+    { query: { queryKey: getGetAvailableMonthsQueryKey({ year: ano }), staleTime: 60_000 } },
+  );
+  const availableMonths = availableMonthsData?.months ?? [];
+
+  // When year changes and selected month is not available, auto-select the most recent
+  useEffect(() => {
+    if (periodMode === "month" && availableMonths.length > 0) {
+      const cur = parseInt(subValue);
+      if (!availableMonths.includes(cur)) {
+        setSubValue(String(availableMonths[availableMonths.length - 1]));
+      }
+    }
+  }, [availableMonths, periodMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Compute dateFrom/dateTo based on period mode
   const { dateFrom: periodFrom, dateTo: periodTo } = periodMode !== "custom"
@@ -564,16 +600,30 @@ export function Dashboard() {
   const dateTo:   any = periodTo;
   const frotaParam = frotaFilter !== "__all__" ? frotaFilter : undefined;
 
-  // When period mode or year changes, reset subValue to sensible defaults
+  // Change period mode, resetting subValue to a sensible default for the new mode
   function handlePeriodModeChange(mode: PeriodMode) {
     setPeriodMode(mode);
-    if (mode === "month")    setSubValue(String(new Date().getMonth()));
-    if (mode === "quarter")  setSubValue(String(Math.ceil((new Date().getMonth() + 1) / 3)));
-    if (mode === "semester") setSubValue(new Date().getMonth() < 6 ? "1" : "2");
+    if (mode === "month") {
+      // Pick most recent available month, or current month as fallback
+      const best = availableMonths.length ? availableMonths[availableMonths.length - 1] : currentMonth;
+      setSubValue(String(best));
+    }
+    if (mode === "quarter")  setSubValue(String(Math.ceil(currentMonth / 3)));
+    if (mode === "semester") setSubValue(currentMonth <= 6 ? "1" : "2");
     if (mode === "year" || mode === "custom") setSubValue("");
   }
 
-  function resetDates() { setCustomFrom(""); setCustomTo(""); setPeriodMode("year"); setSubValue(""); }
+  // Handle year change: update ano and let the month auto-adjust via the effect above
+  function handleYearChange(y: number) {
+    setAno(y);
+  }
+
+  function resetDates() {
+    setCustomFrom(""); setCustomTo("");
+    setPeriodMode("month");
+    const best = availableMonths.length ? availableMonths[availableMonths.length - 1] : currentMonth;
+    setSubValue(String(best));
+  }
 
   // ── Data hooks ─────────────────────────────────────────────────────────────
   const { data: resumo,        isLoading: l1 } = useGetDashboardResumo({ dateFrom, dateTo, frota: frotaParam as any }, { query: { queryKey: getGetDashboardResumoQueryKey({ dateFrom, dateTo, frota: frotaParam as any }) } });
@@ -653,18 +703,18 @@ export function Dashboard() {
 
       {/* ── Global Filters ──────────────────────────────────────────────── */}
       <div className="px-4 sm:px-6 py-2.5 bg-white dark:bg-slate-900 border-b border-border -mx-3 sm:-mx-6">
-        <div className="flex flex-wrap items-end gap-2 sm:gap-3">
+        <div className="flex flex-wrap items-end gap-2 sm:gap-2.5">
 
-          {/* Period mode */}
+          {/* Period mode — order: Mês → Trimestre → Semestre → Ano → Personalizado */}
           <div className="flex flex-col gap-1">
             <Label className="text-xs text-muted-foreground">Período</Label>
             <Select value={periodMode} onValueChange={v => handlePeriodModeChange(v as PeriodMode)}>
-              <SelectTrigger className="w-[110px] sm:w-[120px] h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-[110px] h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="year">Ano</SelectItem>
-                <SelectItem value="semester">Semestre</SelectItem>
-                <SelectItem value="quarter">Trimestre</SelectItem>
                 <SelectItem value="month">Mês</SelectItem>
+                <SelectItem value="quarter">Trimestre</SelectItem>
+                <SelectItem value="semester">Semestre</SelectItem>
+                <SelectItem value="year">Ano</SelectItem>
                 <SelectItem value="custom">Personalizado</SelectItem>
               </SelectContent>
             </Select>
@@ -673,22 +723,23 @@ export function Dashboard() {
           {/* Year (always visible) */}
           <div className="flex flex-col gap-1">
             <Label className="text-xs text-muted-foreground">Ano</Label>
-            <Select value={ano.toString()} onValueChange={v => setAno(parseInt(v))}>
-              <SelectTrigger className="w-[76px] sm:w-[86px] h-8 text-xs"><SelectValue /></SelectTrigger>
+            <Select value={ano.toString()} onValueChange={v => handleYearChange(parseInt(v))}>
+              <SelectTrigger className="w-[74px] h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {availableYears.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Month sub-selector */}
+          {/* Month sub-selector — only shows months that have records for the selected year */}
           {periodMode === "month" && (
             <div className="flex flex-col gap-1">
               <Label className="text-xs text-muted-foreground">Mês</Label>
               <Select value={subValue} onValueChange={setSubValue}>
                 <SelectTrigger className="w-[110px] h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {MONTH_NAMES.map((m, i) => <SelectItem key={i} value={String(i)}>{m}</SelectItem>)}
+                  {(availableMonths.length > 0 ? availableMonths : Array.from({length:12},(_,i)=>i+1))
+                    .map(m => <SelectItem key={m} value={String(m)}>{MONTH_NAMES[m - 1]}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -699,7 +750,7 @@ export function Dashboard() {
             <div className="flex flex-col gap-1">
               <Label className="text-xs text-muted-foreground">Trimestre</Label>
               <Select value={subValue} onValueChange={setSubValue}>
-                <SelectTrigger className="w-[100px] h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-[104px] h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="1">T1 Jan–Mar</SelectItem>
                   <SelectItem value="2">T2 Abr–Jun</SelectItem>
@@ -715,7 +766,7 @@ export function Dashboard() {
             <div className="flex flex-col gap-1">
               <Label className="text-xs text-muted-foreground">Semestre</Label>
               <Select value={subValue} onValueChange={setSubValue}>
-                <SelectTrigger className="w-[110px] h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-[120px] h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="1">1º Sem Jan–Jun</SelectItem>
                   <SelectItem value="2">2º Sem Jul–Dez</SelectItem>
@@ -724,25 +775,17 @@ export function Dashboard() {
             </div>
           )}
 
-          {/* Custom date range (only when mode = custom) */}
+          {/* Custom date range */}
           {periodMode === "custom" && (<>
             <div className="flex flex-col gap-1">
               <Label className="text-xs text-muted-foreground">De</Label>
-              <Input
-                type="date"
-                className="h-8 w-[120px] sm:w-[136px] text-xs"
-                value={customFrom}
-                onChange={e => setCustomFrom(e.target.value)}
-              />
+              <Input type="date" className="h-8 w-[120px] sm:w-[132px] text-xs"
+                value={customFrom} onChange={e => setCustomFrom(e.target.value)} />
             </div>
             <div className="flex flex-col gap-1">
               <Label className="text-xs text-muted-foreground">Até</Label>
-              <Input
-                type="date"
-                className="h-8 w-[120px] sm:w-[136px] text-xs"
-                value={customTo}
-                onChange={e => setCustomTo(e.target.value)}
-              />
+              <Input type="date" className="h-8 w-[120px] sm:w-[132px] text-xs"
+                value={customTo} onChange={e => setCustomTo(e.target.value)} />
             </div>
           </>)}
 
@@ -750,7 +793,7 @@ export function Dashboard() {
           <div className="flex flex-col gap-1">
             <Label className="text-xs text-muted-foreground">Frota</Label>
             <Select value={frotaFilter} onValueChange={setFrotaFilter}>
-              <SelectTrigger className="w-[90px] sm:w-[106px] h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-[88px] sm:w-[100px] h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">Todas</SelectItem>
                 {(frotasList ?? []).map(f => <SelectItem key={f.frota} value={f.frota}>{f.frota}</SelectItem>)}
@@ -758,18 +801,17 @@ export function Dashboard() {
             </Select>
           </div>
 
-          {/* Reset */}
-          {(periodMode !== "year" || frotaFilter !== "__all__") && (
-            <Button variant="ghost" size="sm" className="h-8 text-xs self-end" onClick={() => { resetDates(); setFrotaFilter("__all__"); }}>
+          {/* Reset — only shown when non-default state is active */}
+          {(periodMode !== "month" || frotaFilter !== "__all__") && (
+            <Button variant="ghost" size="sm" className="h-8 text-xs self-end px-2"
+              onClick={() => { resetDates(); setFrotaFilter("__all__"); }}>
               Limpar
             </Button>
           )}
 
-          {/* Active period summary */}
+          {/* Active range badge (desktop only) */}
           <div className="ml-auto text-xs text-muted-foreground hidden sm:block self-end pb-1">
-            {periodFrom !== `${ano}-01-01` || periodTo !== `${ano}-12-31`
-              ? `${periodFrom} → ${periodTo}`
-              : `Jan–Dez ${ano}`}
+            {dateFrom} → {dateTo}
           </div>
         </div>
       </div>
