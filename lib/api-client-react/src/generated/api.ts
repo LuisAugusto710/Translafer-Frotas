@@ -51,6 +51,7 @@ import type {
   FreteUpdate,
   FrotaRevenue,
   FrotaSummary,
+  GetAvailableYears200,
   GetByTransportadoraParams,
   GetDashboardResumoParams,
   GetDespesasMensalParams,
@@ -84,6 +85,7 @@ import type {
   MensalComparativo,
   MotoristaAjudanteItem,
   NextCteResponse,
+  NextTransporteResponse,
   PeriodoRevenue,
   PlacaSummary,
   RecentFrete,
@@ -481,6 +483,83 @@ export function useGetNextCte<TData = Awaited<ReturnType<typeof getNextCte>>, TE
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetNextCteQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetNextTransporteUrl = () => {
+
+
+
+
+  return `/api/fretes/next-transporte`
+}
+
+/**
+ * @summary Get the next available sequential Transporte number (starts at 5355256)
+ */
+export const getNextTransporte = async ( options?: RequestInit): Promise<NextTransporteResponse> => {
+
+  return customFetch<NextTransporteResponse>(getGetNextTransporteUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetNextTransporteQueryKey = () => {
+    return [
+    `/api/fretes/next-transporte`
+    ] as const;
+    }
+
+
+export const getGetNextTransporteQueryOptions = <TData = Awaited<ReturnType<typeof getNextTransporte>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getNextTransporte>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetNextTransporteQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getNextTransporte>>> = ({ signal }) => getNextTransporte({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getNextTransporte>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetNextTransporteQueryResult = NonNullable<Awaited<ReturnType<typeof getNextTransporte>>>
+export type GetNextTransporteQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get the next available sequential Transporte number (starts at 5355256)
+ */
+
+export function useGetNextTransporte<TData = Awaited<ReturnType<typeof getNextTransporte>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getNextTransporte>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetNextTransporteQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -2615,6 +2694,83 @@ export function useGetUpcomingReceivables<TData = Awaited<ReturnType<typeof getU
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetUpcomingReceivablesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAvailableYearsUrl = () => {
+
+
+
+
+  return `/api/dashboard/available-years`
+}
+
+/**
+ * @summary Returns distinct years that have records in fretes, despesas or manutencoes
+ */
+export const getAvailableYears = async ( options?: RequestInit): Promise<GetAvailableYears200> => {
+
+  return customFetch<GetAvailableYears200>(getGetAvailableYearsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAvailableYearsQueryKey = () => {
+    return [
+    `/api/dashboard/available-years`
+    ] as const;
+    }
+
+
+export const getGetAvailableYearsQueryOptions = <TData = Awaited<ReturnType<typeof getAvailableYears>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAvailableYears>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAvailableYearsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAvailableYears>>> = ({ signal }) => getAvailableYears({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAvailableYears>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAvailableYearsQueryResult = NonNullable<Awaited<ReturnType<typeof getAvailableYears>>>
+export type GetAvailableYearsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Returns distinct years that have records in fretes, despesas or manutencoes
+ */
+
+export function useGetAvailableYears<TData = Awaited<ReturnType<typeof getAvailableYears>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAvailableYears>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAvailableYearsQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

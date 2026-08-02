@@ -16,7 +16,7 @@
  * No endpoint should use only one and ignore the other.
  */
 
-import { db, fretesTable, abastecimentosTable, despesasTable } from "@workspace/db";
+import { db, fretesTable, abastecimentosTable, despesasTable, manutencoesTable } from "@workspace/db";
 import { gte, lte, and, eq, sql } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 
@@ -156,4 +156,85 @@ export async function getTotalDieselAbast(
     total: sql<number>`coalesce(sum(${abastecimentosTable.totalPago}), 0)`,
   }).from(abastecimentosTable).where(where);
   return Number(row?.total ?? 0);
+}
+
+// ── Maintenance cost helpers ──────────────────────────────────────────────────
+// Maintenance costs (manutencoesTable.custo) are real expenses that must be
+// included in all financial calculations alongside despesas and abastecimentos.
+
+/** Where clause for manutencoesTable (date column: dataManutencao). */
+export function manutWhere(
+  dateFrom?: string,
+  dateTo?: string,
+  frota?: string,
+) {
+  const c = [];
+  if (dateFrom) c.push(gte(manutencoesTable.dataManutencao, dateFrom));
+  if (dateTo)   c.push(lte(manutencoesTable.dataManutencao, dateTo));
+  if (frota)    c.push(eq(manutencoesTable.frota, frota));
+  return c.length ? and(...c) : undefined;
+}
+
+/**
+ * Returns total maintenance cost across all frotas.
+ */
+export async function getTotalManutencaoCost(
+  dateFrom?: string,
+  dateTo?: string,
+  frota?: string,
+): Promise<number> {
+  const where = manutWhere(dateFrom, dateTo, frota);
+  const [row] = await db.select({
+    total: sql<number>`coalesce(sum(${manutencoesTable.custo}), 0)`,
+  }).from(manutencoesTable).where(where);
+  return Number(row?.total ?? 0);
+}
+
+/**
+ * Returns a map of frota -> maintenance cost.
+ * Must be added to per-frota expense totals in every endpoint.
+ */
+export async function getManutencaoCostPerFrota(
+  dateFrom?: string,
+  dateTo?: string,
+  frota?: string,
+): Promise<Record<string, number>> {
+  const conditions = [];
+  if (dateFrom) conditions.push(gte(manutencoesTable.dataManutencao, dateFrom));
+  if (dateTo)   conditions.push(lte(manutencoesTable.dataManutencao, dateTo));
+  if (frota)    conditions.push(eq(manutencoesTable.frota, frota));
+  const where = conditions.length ? and(...conditions) : undefined;
+
+  const rows = await db.select({
+    frota:      manutencoesTable.frota,
+    totalCusto: sql<number>`coalesce(sum(${manutencoesTable.custo}), 0)`,
+  }).from(manutencoesTable).where(where).groupBy(manutencoesTable.frota);
+
+  const map: Record<string, number> = {};
+  for (const r of rows) {
+    map[r.frota ?? ""] = Number(r.totalCusto ?? 0);
+  }
+  return map;
+}
+
+/**
+ * Returns a map of month (YYYY-MM) -> maintenance cost.
+ */
+export async function getManutencaoCostPerMonth(
+  dateFrom?: string,
+  dateTo?: string,
+  frota?: string,
+): Promise<Record<string, number>> {
+  const where = manutWhere(dateFrom, dateTo, frota);
+  const rows = await db.select({
+    mes:        sql<string>`to_char(date_trunc('month', ${manutencoesTable.dataManutencao}::date), 'YYYY-MM')`,
+    totalCusto: sql<number>`coalesce(sum(${manutencoesTable.custo}), 0)`,
+  }).from(manutencoesTable).where(where)
+    .groupBy(sql`date_trunc('month', ${manutencoesTable.dataManutencao}::date)`);
+
+  const map: Record<string, number> = {};
+  for (const r of rows) {
+    map[r.mes ?? ""] = Number(r.totalCusto ?? 0);
+  }
+  return map;
 }

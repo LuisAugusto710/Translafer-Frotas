@@ -25,6 +25,7 @@ import {
   useGetRecentFretes, getGetRecentFretesQueryKey,
   useListFrotas, getListFrotasQueryKey,
   useGetManutencaoPreventiva, getGetManutencaoPreventivaQueryKey,
+  useGetAvailableYears, getGetAvailableYearsQueryKey,
   type FleetPerformance,
   type ManutencaoPreventivaItem,
 } from "@workspace/api-client-react";
@@ -40,7 +41,41 @@ import { formatCurrency, formatNumber, formatDate } from "@/lib/utils";
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const THIS_YEAR = new Date().getFullYear();
-const YEARS = Array.from({ length: THIS_YEAR - 2021 }, (_, i) => 2022 + i);
+
+// ── Period filter types ───────────────────────────────────────────────────────
+type PeriodMode = "custom" | "month" | "quarter" | "semester" | "year";
+
+const MONTH_NAMES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const MONTHS_SHORT = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+
+/** Compute dateFrom/dateTo from a period mode + year + sub-selection */
+function computePeriodDates(
+  mode: PeriodMode,
+  year: number,
+  subValue: string, // month index (0-11), quarter (1-4), semester (1-2), or unused for year
+): { dateFrom: string; dateTo: string } {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  if (mode === "month") {
+    const m = parseInt(subValue) + 1; // subValue is 0-based month index
+    const lastDay = new Date(year, m, 0).getDate();
+    return { dateFrom: `${year}-${pad(m)}-01`, dateTo: `${year}-${pad(m)}-${pad(lastDay)}` };
+  }
+  if (mode === "quarter") {
+    const q = parseInt(subValue); // 1-4
+    const startMonth = (q - 1) * 3 + 1;
+    const endMonth   = startMonth + 2;
+    const lastDay    = new Date(year, endMonth, 0).getDate();
+    return { dateFrom: `${year}-${pad(startMonth)}-01`, dateTo: `${year}-${pad(endMonth)}-${pad(lastDay)}` };
+  }
+  if (mode === "semester") {
+    const s = parseInt(subValue); // 1 or 2
+    return s === 1
+      ? { dateFrom: `${year}-01-01`, dateTo: `${year}-06-30` }
+      : { dateFrom: `${year}-07-01`, dateTo: `${year}-12-31` };
+  }
+  // year or custom
+  return { dateFrom: `${year}-01-01`, dateTo: `${year}-12-31` };
+}
 
 const PIE_COLORS = [
   "#2563eb", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6",
@@ -507,16 +542,38 @@ function PreventivaMaintSection({ items, loading }: { items: ManutencaoPreventiv
 export function Dashboard() {
   const currentYear = new Date().getFullYear();
   const [ano, setAno] = useState(currentYear);
+  const [periodMode, setPeriodMode] = useState<PeriodMode>("year");
+  const [subValue, setSubValue]     = useState<string>(""); // month (0-11), quarter (1-4), semester (1-2)
   const [customFrom, setCustomFrom] = useState("");
-  const [customTo, setCustomTo] = useState("");
+  const [customTo,   setCustomTo]   = useState("");
   const [frotaFilter, setFrotaFilter] = useState("__all__");
   const [period, setPeriod] = useState<"diario" | "semanal" | "mensal" | "trimestral" | "anual">("mensal");
 
-  const dateFrom: any = customFrom || `${ano}-01-01`;
-  const dateTo:   any = customTo   || `${ano}-12-31`;
+  // Dynamic years from database
+  const { data: availableYearsData } = useGetAvailableYears({ query: { queryKey: getGetAvailableYearsQueryKey(), staleTime: 60_000 } });
+  const availableYears = availableYearsData?.years && availableYearsData.years.length > 0
+    ? availableYearsData.years
+    : [currentYear];
+
+  // Compute dateFrom/dateTo based on period mode
+  const { dateFrom: periodFrom, dateTo: periodTo } = periodMode !== "custom"
+    ? computePeriodDates(periodMode, ano, subValue)
+    : { dateFrom: customFrom || `${ano}-01-01`, dateTo: customTo || `${ano}-12-31` };
+
+  const dateFrom: any = periodFrom;
+  const dateTo:   any = periodTo;
   const frotaParam = frotaFilter !== "__all__" ? frotaFilter : undefined;
 
-  function resetDates() { setCustomFrom(""); setCustomTo(""); }
+  // When period mode or year changes, reset subValue to sensible defaults
+  function handlePeriodModeChange(mode: PeriodMode) {
+    setPeriodMode(mode);
+    if (mode === "month")    setSubValue(String(new Date().getMonth()));
+    if (mode === "quarter")  setSubValue(String(Math.ceil((new Date().getMonth() + 1) / 3)));
+    if (mode === "semester") setSubValue(new Date().getMonth() < 6 ? "1" : "2");
+    if (mode === "year" || mode === "custom") setSubValue("");
+  }
+
+  function resetDates() { setCustomFrom(""); setCustomTo(""); setPeriodMode("year"); setSubValue(""); }
 
   // ── Data hooks ─────────────────────────────────────────────────────────────
   const { data: resumo,        isLoading: l1 } = useGetDashboardResumo({ dateFrom, dateTo, frota: frotaParam as any }, { query: { queryKey: getGetDashboardResumoQueryKey({ dateFrom, dateTo, frota: frotaParam as any }) } });
@@ -597,56 +654,121 @@ export function Dashboard() {
       {/* ── Global Filters ──────────────────────────────────────────────── */}
       <div className="px-4 sm:px-6 py-2.5 bg-white dark:bg-slate-900 border-b border-border -mx-3 sm:-mx-6">
         <div className="flex flex-wrap items-end gap-2 sm:gap-3">
-          {/* Year */}
+
+          {/* Period mode */}
           <div className="flex flex-col gap-1">
-            <Label className="text-xs text-muted-foreground">Ano</Label>
-            <Select value={ano.toString()} onValueChange={v => { setAno(parseInt(v)); resetDates(); }}>
-              <SelectTrigger className="w-[80px] sm:w-[90px] h-8"><SelectValue /></SelectTrigger>
+            <Label className="text-xs text-muted-foreground">Período</Label>
+            <Select value={periodMode} onValueChange={v => handlePeriodModeChange(v as PeriodMode)}>
+              <SelectTrigger className="w-[110px] sm:w-[120px] h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
-                {YEARS.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
+                <SelectItem value="year">Ano</SelectItem>
+                <SelectItem value="semester">Semestre</SelectItem>
+                <SelectItem value="quarter">Trimestre</SelectItem>
+                <SelectItem value="month">Mês</SelectItem>
+                <SelectItem value="custom">Personalizado</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          {/* Custom date from */}
+
+          {/* Year (always visible) */}
           <div className="flex flex-col gap-1">
-            <Label className="text-xs text-muted-foreground">De</Label>
-            <Input
-              type="date"
-              className="h-8 w-[120px] sm:w-[140px] text-xs"
-              value={customFrom}
-              onChange={e => setCustomFrom(e.target.value)}
-            />
+            <Label className="text-xs text-muted-foreground">Ano</Label>
+            <Select value={ano.toString()} onValueChange={v => setAno(parseInt(v))}>
+              <SelectTrigger className="w-[76px] sm:w-[86px] h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {availableYears.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
-          {/* Custom date to */}
-          <div className="flex flex-col gap-1">
-            <Label className="text-xs text-muted-foreground">Até</Label>
-            <Input
-              type="date"
-              className="h-8 w-[120px] sm:w-[140px] text-xs"
-              value={customTo}
-              onChange={e => setCustomTo(e.target.value)}
-            />
-          </div>
+
+          {/* Month sub-selector */}
+          {periodMode === "month" && (
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs text-muted-foreground">Mês</Label>
+              <Select value={subValue} onValueChange={setSubValue}>
+                <SelectTrigger className="w-[110px] h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {MONTH_NAMES.map((m, i) => <SelectItem key={i} value={String(i)}>{m}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Quarter sub-selector */}
+          {periodMode === "quarter" && (
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs text-muted-foreground">Trimestre</Label>
+              <Select value={subValue} onValueChange={setSubValue}>
+                <SelectTrigger className="w-[100px] h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">T1 Jan–Mar</SelectItem>
+                  <SelectItem value="2">T2 Abr–Jun</SelectItem>
+                  <SelectItem value="3">T3 Jul–Set</SelectItem>
+                  <SelectItem value="4">T4 Out–Dez</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Semester sub-selector */}
+          {periodMode === "semester" && (
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs text-muted-foreground">Semestre</Label>
+              <Select value={subValue} onValueChange={setSubValue}>
+                <SelectTrigger className="w-[110px] h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1º Sem Jan–Jun</SelectItem>
+                  <SelectItem value="2">2º Sem Jul–Dez</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Custom date range (only when mode = custom) */}
+          {periodMode === "custom" && (<>
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs text-muted-foreground">De</Label>
+              <Input
+                type="date"
+                className="h-8 w-[120px] sm:w-[136px] text-xs"
+                value={customFrom}
+                onChange={e => setCustomFrom(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs text-muted-foreground">Até</Label>
+              <Input
+                type="date"
+                className="h-8 w-[120px] sm:w-[136px] text-xs"
+                value={customTo}
+                onChange={e => setCustomTo(e.target.value)}
+              />
+            </div>
+          </>)}
+
           {/* Frota filter */}
           <div className="flex flex-col gap-1">
             <Label className="text-xs text-muted-foreground">Frota</Label>
             <Select value={frotaFilter} onValueChange={setFrotaFilter}>
-              <SelectTrigger className="w-[95px] sm:w-[110px] h-8"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-[90px] sm:w-[106px] h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">Todas</SelectItem>
                 {(frotasList ?? []).map(f => <SelectItem key={f.frota} value={f.frota}>{f.frota}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
+
           {/* Reset */}
-          {(customFrom || customTo || frotaFilter !== "__all__") && (
-            <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { resetDates(); setFrotaFilter("__all__"); }}>
-              Limpar filtros
+          {(periodMode !== "year" || frotaFilter !== "__all__") && (
+            <Button variant="ghost" size="sm" className="h-8 text-xs self-end" onClick={() => { resetDates(); setFrotaFilter("__all__"); }}>
+              Limpar
             </Button>
           )}
-          <div className="ml-auto text-xs text-muted-foreground hidden sm:block">
-            {customFrom || customTo
-              ? `${customFrom || "—"} → ${customTo || "—"}`
+
+          {/* Active period summary */}
+          <div className="ml-auto text-xs text-muted-foreground hidden sm:block self-end pb-1">
+            {periodFrom !== `${ano}-01-01` || periodTo !== `${ano}-12-31`
+              ? `${periodFrom} → ${periodTo}`
               : `Jan–Dez ${ano}`}
           </div>
         </div>

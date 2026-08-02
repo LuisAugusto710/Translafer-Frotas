@@ -1,16 +1,20 @@
 import { Router } from "express";
-import { db, fretesTable, abastecimentosTable, despesasTable } from "@workspace/db";
+import { db, fretesTable, abastecimentosTable, despesasTable, manutencoesTable } from "@workspace/db";
 import { and, eq, isNotNull, sql } from "drizzle-orm";
 import {
   toDateStr,
   freteWhere,
   despWhere,
   abastWhere,
+  manutWhere,
   despesaCustosSql,
   trocaOleoParsed,
   DESPESA_CATEGORIAS,
   getDieselAbastPerFrota,
   getTotalDieselAbast,
+  getTotalManutencaoCost,
+  getManutencaoCostPerFrota,
+  getManutencaoCostPerMonth,
 } from "../lib/financial";
 
 const router = Router();
@@ -203,7 +207,7 @@ router.get("/dashboard/mensal", async (req, res) => {
 });
 
 // ── Despesas KPI summary ───────────────────────────────────────────────────────
-// Canonical expense formula: despesaCustosSql + abastecimentos.totalPago
+// Canonical expense formula: despesaCustosSql + abastecimentos.totalPago + manutencoes.custo
 router.get("/dashboard/despesas-resumo", async (req, res) => {
   const ano      = req.query.ano ? Number(req.query.ano) : new Date().getFullYear();
   const frota    = req.query.frota ? String(req.query.frota) : undefined;
@@ -217,7 +221,7 @@ router.get("/dashboard/despesas-resumo", async (req, res) => {
   });
   catSelect["cTrocaOleo"] = sql<number>`coalesce(sum(${trocaOleoParsed}), 0)`;
 
-  const [[summary], [catRow], totalDieselAbast] = await Promise.all([
+  const [[summary], [catRow], totalDieselAbast, totalManutencao] = await Promise.all([
     db.select({
       totalFrete:     sql<number>`coalesce(sum(${despesasTable.frete}), 0)`,
       totalCustos:    sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
@@ -228,13 +232,14 @@ router.get("/dashboard/despesas-resumo", async (req, res) => {
     db.select(catSelect).from(despesasTable).where(where),
 
     getTotalDieselAbast(dateFrom, dateTo, frota),
+    getTotalManutencaoCost(dateFrom, dateTo, frota),
   ]);
 
-  // Canonical total: despesasTable costs + abastecimentos diesel
-  const totalCustos = Number(summary.totalCustos) + totalDieselAbast;
+  // Canonical total: despesasTable costs + abastecimentos diesel + manutencoes
+  const totalCustos = Number(summary.totalCustos) + totalDieselAbast + totalManutencao;
   const totalLucro  = Number(summary.totalFrete) - totalCustos;
 
-  // Build category breakdown, merging abastecimentos diesel into Diesel category
+  // Build category breakdown, merging abastecimentos diesel + manutencao as their own categories
   const categorias = [
     ...DESPESA_CATEGORIAS.map((c, i) => ({ categoria: c.label, valor: Number(catRow[`c${i}`] ?? 0) })),
     { categoria: "Troca de Óleo", valor: Number(catRow["cTrocaOleo"] ?? 0) },
@@ -244,6 +249,9 @@ router.get("/dashboard/despesas-resumo", async (req, res) => {
     dieselEntry.valor += totalDieselAbast;
   } else if (totalDieselAbast > 0) {
     categorias.push({ categoria: "Diesel", valor: totalDieselAbast });
+  }
+  if (totalManutencao > 0) {
+    categorias.push({ categoria: "Manutenção", valor: totalManutencao });
   }
   const sortedCategorias = categorias.filter(c => c.valor > 0).sort((a, b) => b.valor - a.valor);
 
@@ -257,7 +265,7 @@ router.get("/dashboard/despesas-resumo", async (req, res) => {
 });
 
 // ── Despesas monthly ───────────────────────────────────────────────────────────
-// Canonical expense formula applied per month: despesaCustosSql + abastecimentos.totalPago
+// Canonical expense formula applied per month: despesaCustosSql + abastecimentos.totalPago + manutencoes.custo
 router.get("/dashboard/despesas-mensal", async (req, res) => {
   const ano      = req.query.ano ? Number(req.query.ano) : new Date().getFullYear();
   const frota    = req.query.frota ? String(req.query.frota) : undefined;
@@ -265,7 +273,7 @@ router.get("/dashboard/despesas-mensal", async (req, res) => {
   const dateTo   = toDateStr(req.query.dateTo)   || `${ano}-12-31`;
   const where    = despWhere(dateFrom, dateTo, frota);
 
-  const [result, dieselMensalRows] = await Promise.all([
+  const [result, dieselMensalRows, manutMensalMap] = await Promise.all([
     db.select({
       mes:      sql<string>`to_char(date_trunc('month', ${despesasTable.data}::date), 'YYYY-MM')`,
       frete:    sql<number>`coalesce(sum(${despesasTable.frete}), 0)`,
@@ -281,6 +289,8 @@ router.get("/dashboard/despesas-mensal", async (req, res) => {
       totalDiesel: sql<number>`coalesce(sum(${abastecimentosTable.totalPago}), 0)`,
     }).from(abastecimentosTable).where(abastWhere(dateFrom, dateTo, frota))
       .groupBy(sql`date_trunc('month', ${abastecimentosTable.data}::date)`),
+
+    getManutencaoCostPerMonth(dateFrom, dateTo, frota),
   ]);
 
   const dieselMenMap: Record<string, number> = {};
@@ -291,8 +301,9 @@ router.get("/dashboard/despesas-mensal", async (req, res) => {
   res.json(result.map(r => {
     const monthIdx = parseInt(r.mes.split("-")[1]) - 1;
     const diesel   = dieselMenMap[r.mes] ?? 0;
-    // Canonical: despesas costs + abastecimentos diesel
-    const custos   = Number(r.custos ?? 0) + diesel;
+    const manut    = manutMensalMap[r.mes] ?? 0;
+    // Canonical: despesas costs + abastecimentos diesel + manutencoes
+    const custos   = Number(r.custos ?? 0) + diesel + manut;
     return {
       mes:      MONTHS[monthIdx] ?? r.mes,
       frete:    Number(r.frete ?? 0),
@@ -406,8 +417,7 @@ router.get("/dashboard/top-cidades", async (req, res) => {
 });
 
 // ── Transport company stats ────────────────────────────────────────────────────
-// FIX: Now uses canonical expense formula (despesaCustosSql + abastecimentos diesel per frota)
-// Previously only used despesaCustosSql, missing abastecimentos diesel → lower expenses than summary cards.
+// Canonical expense formula: despesaCustosSql + abastecimentos diesel + manutencoes per frota
 router.get("/dashboard/por-transportadora", async (req, res) => {
   const dateFrom = toDateStr(req.query.dateFrom);
   const dateTo   = toDateStr(req.query.dateTo);
@@ -415,7 +425,7 @@ router.get("/dashboard/por-transportadora", async (req, res) => {
   const freteW   = freteWhere(dateFrom, dateTo, frota);
   const despW    = despWhere(dateFrom, dateTo, frota);
 
-  const [rows, frotaTranspPairs, despPerFrota, dieselAbastMap] = await Promise.all([
+  const [rows, frotaTranspPairs, despPerFrota, dieselAbastMap, manutMap] = await Promise.all([
     db.select({
       transp:       fretesTable.transp,
       viagens:      sql<number>`count(*)`,
@@ -435,23 +445,24 @@ router.get("/dashboard/por-transportadora", async (req, res) => {
       totalCustos: sql<number>`coalesce(sum(${despesaCustosSql}), 0)`,
     }).from(despesasTable).where(despW).groupBy(despesasTable.frota),
 
-    // FIX: fetch abastecimentos diesel per frota to add to expenses
     getDieselAbastPerFrota(dateFrom, dateTo, frota),
+    getManutencaoCostPerFrota(dateFrom, dateTo, frota),
   ]);
 
   // Build per-frota cost map using canonical formula:
-  // frota custos = despesaCustosSql + abastecimentos diesel for that frota
+  // frota custos = despesaCustosSql + abastecimentos diesel + manutencoes
   const despMap: Record<string, number> = {};
   for (const d of despPerFrota) {
-    const frotaKey = d.frota ?? "";
-    const despCosts    = Number(d.totalCustos ?? 0);
-    const dieselCosts  = dieselAbastMap[frotaKey] ?? 0;
-    despMap[frotaKey] = despCosts + dieselCosts;
+    const frotaKey    = d.frota ?? "";
+    const despCosts   = Number(d.totalCustos ?? 0);
+    const dieselCosts = dieselAbastMap[frotaKey] ?? 0;
+    const manutCosts  = manutMap[frotaKey] ?? 0;
+    despMap[frotaKey] = despCosts + dieselCosts + manutCosts;
   }
-  // Also account for frotas that have abastecimentos but no despesas records
-  for (const [frotaKey, diesel] of Object.entries(dieselAbastMap)) {
+  // Frotas with abastecimentos/manutencoes but no despesas entries
+  for (const frotaKey of new Set([...Object.keys(dieselAbastMap), ...Object.keys(manutMap)])) {
     if (!(frotaKey in despMap)) {
-      despMap[frotaKey] = diesel;
+      despMap[frotaKey] = (dieselAbastMap[frotaKey] ?? 0) + (manutMap[frotaKey] ?? 0);
     }
   }
 
@@ -486,10 +497,8 @@ router.get("/dashboard/por-transportadora", async (req, res) => {
   }));
 });
 
-// ── Fleet performance (fretes revenue + despesas costs per frota) ──────────────
-// FIX: Now uses canonical expense formula (despesaCustosSql + abastecimentos diesel per frota)
-// Previously only used despesaCustosSql from despesasTable, excluding abastecimentos diesel.
-// This caused the Fleet Ranking to show R$2,144.44 less in expenses than the Summary Cards.
+// ── Fleet performance ─────────────────────────────────────────────────────────
+// Canonical expense formula: despesaCustosSql + abastecimentos diesel + manutencoes per frota
 router.get("/dashboard/fleet-performance", async (req, res) => {
   const dateFrom = toDateStr(req.query.dateFrom);
   const dateTo   = toDateStr(req.query.dateTo);
@@ -497,7 +506,7 @@ router.get("/dashboard/fleet-performance", async (req, res) => {
   const freteW   = freteWhere(dateFrom, dateTo, frota);
   const despW    = despWhere(dateFrom, dateTo, frota);
 
-  const [fretesPerFrota, despesasPerFrota, dieselAbastMap] = await Promise.all([
+  const [fretesPerFrota, despesasPerFrota, dieselAbastMap, manutMap] = await Promise.all([
     db.select({
       frota:        fretesTable.frota,
       totalFrete:   sql<number>`sum(${fretesTable.frete})`,
@@ -512,26 +521,26 @@ router.get("/dashboard/fleet-performance", async (req, res) => {
       totalKm:     sql<number>`coalesce(sum(${despesasTable.km}), 0)`,
     }).from(despesasTable).where(despW).groupBy(despesasTable.frota),
 
-    // FIX: fetch abastecimentos diesel per frota to add to expenses
     getDieselAbastPerFrota(dateFrom, dateTo, frota),
+    getManutencaoCostPerFrota(dateFrom, dateTo, frota),
   ]);
 
-  // Build per-frota cost map using canonical formula:
-  // frota custos = despesaCustosSql + abastecimentos diesel for that frota
+  // Canonical per-frota cost: despesaCustosSql + abastecimentos diesel + manutencoes
   const despMap: Record<string, { custos: number; km: number }> = {};
   for (const d of despesasPerFrota) {
-    const frotaKey   = d.frota ?? "";
-    const despCosts  = Number(d.totalCustos ?? 0);
+    const frotaKey    = d.frota ?? "";
+    const despCosts   = Number(d.totalCustos ?? 0);
     const dieselCosts = dieselAbastMap[frotaKey] ?? 0;
+    const manutCosts  = manutMap[frotaKey] ?? 0;
     despMap[frotaKey] = {
-      custos: despCosts + dieselCosts,
+      custos: despCosts + dieselCosts + manutCosts,
       km:     Number(d.totalKm ?? 0),
     };
   }
-  // Also handle frotas that have abastecimentos but no despesas records
-  for (const [frotaKey, diesel] of Object.entries(dieselAbastMap)) {
+  // Frotas with abastecimentos/manutencoes but no despesas entries
+  for (const frotaKey of new Set([...Object.keys(dieselAbastMap), ...Object.keys(manutMap)])) {
     if (!(frotaKey in despMap)) {
-      despMap[frotaKey] = { custos: diesel, km: 0 };
+      despMap[frotaKey] = { custos: (dieselAbastMap[frotaKey] ?? 0) + (manutMap[frotaKey] ?? 0), km: 0 };
     }
   }
 
@@ -596,6 +605,24 @@ router.get("/dashboard/upcoming-receivables", async (req, res) => {
       ? Math.ceil((new Date(r.vencimento).getTime() - new Date(today).getTime()) / 86400000)
       : null,
   })));
+});
+
+// ── Available years ───────────────────────────────────────────────────────────
+// Returns distinct years that have at least one record in fretes, despesas, or manutencoes.
+// Used to populate the Dashboard year filter dynamically.
+router.get("/dashboard/available-years", async (req, res) => {
+  const [freYear, despYear, manutYear] = await Promise.all([
+    db.select({ yr: sql<number>`DISTINCT EXTRACT(YEAR FROM ${fretesTable.dataCte}::date)::int` }).from(fretesTable),
+    db.select({ yr: sql<number>`DISTINCT EXTRACT(YEAR FROM ${despesasTable.data}::date)::int` }).from(despesasTable),
+    db.select({ yr: sql<number>`DISTINCT EXTRACT(YEAR FROM ${manutencoesTable.dataManutencao}::date)::int` }).from(manutencoesTable),
+  ]);
+
+  const allYears = new Set<number>();
+  [...freYear, ...despYear, ...manutYear].forEach(r => {
+    if (r.yr != null) allYears.add(Number(r.yr));
+  });
+  const years = [...allYears].sort((a, b) => a - b);
+  res.json({ years });
 });
 
 // ── Recent freight entries ─────────────────────────────────────────────────────

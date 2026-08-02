@@ -10,6 +10,11 @@ export interface NextCteResponse {
   nextCte: number;
 }
 
+export interface NextTransporteResponse {
+  /** Next available sequential Transporte number (starts at 5355256) */
+  nextTransporte: number;
+}
+
 export interface HealthStatus {
   status: string;
 }
@@ -727,6 +732,10 @@ export type GetUpcomingReceivablesParams = {
 frota?: string;
 dateFrom?: string;
 dateTo?: string;
+};
+
+export type GetAvailableYears200 = {
+  years: number[];
 };
 
 export type GetRecentFretesParams = {

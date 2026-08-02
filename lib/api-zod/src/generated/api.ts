@@ -154,6 +154,14 @@ export const GetNextCteResponse = zod.object({
 })
 
 
+/**
+ * @summary Get the next available sequential Transporte number (starts at 5355256)
+ */
+export const GetNextTransporteResponse = zod.object({
+  "nextTransporte": zod.number().describe('Next available sequential Transporte number (starts at 5355256)')
+})
+
+
 export const GetFreteParams = zod.object({
   "id": zod.coerce.number()
 })
@@ -884,6 +892,14 @@ export const GetUpcomingReceivablesResponseItem = zod.object({
   "diasFaltando": zod.number().nullish()
 })
 export const GetUpcomingReceivablesResponse = zod.array(GetUpcomingReceivablesResponseItem)
+
+
+/**
+ * @summary Returns distinct years that have records in fretes, despesas or manutencoes
+ */
+export const GetAvailableYearsResponse = zod.object({
+  "years": zod.array(zod.number())
+})
 
 
 export const GetRecentFretesQueryParams = zod.object({

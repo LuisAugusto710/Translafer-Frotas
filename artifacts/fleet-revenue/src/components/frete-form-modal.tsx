@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MaskedDateInput } from "@/components/masked-date-input";
-import { useCreateFrete, useUpdateFrete, getListFretesQueryKey, useGetNextCte, getGetNextCteQueryKey } from "@workspace/api-client-react";
+import { useCreateFrete, useUpdateFrete, getListFretesQueryKey, useGetNextCte, getGetNextCteQueryKey, useGetNextTransporte, getGetNextTransporteQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
@@ -81,10 +81,17 @@ export function FreteFormModal({
     }
   );
 
+  // Sequential Transporte number — global counter starting at 5355256
+  const transporteManuallyEdited = useRef(false);
+  const { data: nextTransporteData } = useGetNextTransporte({
+    query: { enabled: isNew, queryKey: getGetNextTransporteQueryKey() },
+  });
+
   useEffect(() => {
     if (open) {
       setCteError(null);
       cteManuallyEdited.current = false;
+      transporteManuallyEdited.current = false;
       if (frete) {
         const tempoInfo = extractTempoFromObs(frete.obs || "");
         const tipo: PesoTipo = tempoInfo ? "tempo" : "peso";
@@ -150,6 +157,14 @@ export function FreteFormModal({
     }
   }, [isNew, nextCteData]);
 
+  // Auto-fill Transporte with the next sequential number (starts at 5355256).
+  // Only fires for new fretes and only if the user hasn't manually edited it.
+  useEffect(() => {
+    if (isNew && nextTransporteData && !transporteManuallyEdited.current) {
+      setFormData(prev => ({ ...prev, transporte: String(nextTransporteData.nextTransporte) }));
+    }
+  }, [isNew, nextTransporteData]);
+
   // Auto-fill dtaFrete and vencimento when dataCte changes (new fretes only)
   useEffect(() => {
     if (!frete && formData.dataCte) {
@@ -171,6 +186,9 @@ export function FreteFormModal({
     }
     if (name === "transp") {
       cteManuallyEdited.current = false; // Carrier changed → re-enable auto-fill
+    }
+    if (name === "transporte") {
+      transporteManuallyEdited.current = true; // User typed → stop auto-overwriting
     }
     setFormData((prev) => ({ ...prev, [name]: value }));
   };

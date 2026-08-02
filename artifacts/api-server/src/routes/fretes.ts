@@ -136,6 +136,16 @@ router.post("/fretes/bulk", async (req, res) => {
   res.status(201).json({ created: inserted.length, fretes: inserted.map(fmt) });
 });
 
+// Transporte sequence starts at 5355256 (July 1 2026). Returns MAX existing numeric
+// transporte + 1, or 5355256 if no numeric transporte has been recorded yet.
+router.get("/fretes/next-transporte", async (req, res) => {
+  const [result] = await db.select({
+    maxTransporte: sql<number>`COALESCE(MAX(CASE WHEN ${fretesTable.transporte} ~ '^[0-9]+$' THEN CAST(${fretesTable.transporte} AS BIGINT) ELSE 0 END), 0)`,
+  }).from(fretesTable);
+  const maxVal = Number(result.maxTransporte);
+  res.json({ nextTransporte: Math.max(maxVal + 1, 5355256) });
+});
+
 router.get("/fretes/next-cte", async (req, res) => {
   // Trim and normalise casing so "LAFER", "lafer", "Lafer" all resolve to the
   // same carrier sequence. ILIKE is a native Postgres case-insensitive string

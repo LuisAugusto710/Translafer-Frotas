@@ -1,0 +1,213 @@
+Prompt:
+
+Please implement the following improvements without changing the overall layout or visual identity of the application. The goal is to improve automation, ensure financial consistency, and enhance the Dashboard filtering experience.
+
+⸻
+
+1. Automatic “Transporte” Number on the Freight Page
+
+On the Freight page, I want the Transporte field to be filled automatically.
+
+Business Rule
+
+The sequence starts on July 1st with the number:
+
+5355256
+
+From that point onward, every new freight created must automatically receive the next sequential number.
+
+Example:
+
+5355256
+5355257
+5355258
+5355259
+...
+
+The user should not have to enter this value manually.
+
+⸻
+
+Database Migration
+
+Update all existing freight records in the database so that the values in the Transporte column follow the correct sequential order.
+
+Requirements:
+
+* Sort records chronologically.
+* Start the sequence at 5355256 for the first freight on 01/07.
+* Increment by 1 for each subsequent freight.
+* Preserve the chronological order.
+* Ensure no duplicate transport numbers exist.
+* Ensure no gaps exist in the sequence.
+
+After the migration, all future freight records must continue the sequence automatically.
+
+⸻
+
+2. Maintenance Expenses Must Affect Financial Results
+
+Currently, when a maintenance record is created on the Maintenance page, its cost is not included in the company’s financial calculations.
+
+This is incorrect.
+
+A maintenance expense represents real money spent and must therefore be included in the financial system.
+
+⸻
+
+Required Behavior
+
+Whenever a maintenance record is created, edited, or deleted:
+
+* Automatically update the financial calculations.
+* Include the maintenance value in Total Expenses.
+* Recalculate Net Profit.
+* Update Profit Margin.
+* Refresh all Dashboard values automatically.
+
+⸻
+
+Dashboard Integration
+
+Maintenance expenses must be included in every financial visualization that displays expenses.
+
+Examples:
+
+* Total Expenses card
+* Expense charts
+* Fleet Ranking
+* Transport Company Summary
+* Expense reports
+* Profit charts
+* PDF reports
+* Any other component that displays financial information
+
+Maintenance should behave exactly like any other expense category.
+
+⸻
+
+3. Dashboard Year Filter
+
+Improve the Year filter on the Dashboard.
+
+Instead of displaying every possible year, it should display only the years that actually have records in the database.
+
+Example:
+
+If the database contains records for:
+
+* 2024
+* 2025
+* 2026
+
+The dropdown should display only:
+
+* 2024
+* 2025
+* 2026
+
+If no records exist for 2023, it should not appear.
+
+The list must update automatically whenever new data is added.
+
+⸻
+
+4. Add a Time Period Filter
+
+Add a new dropdown next to the existing date filters on the Dashboard.
+
+This filter should allow users to quickly view common time periods.
+
+Options:
+
+* Custom Range
+* Month
+* Quarter
+* Semester
+* Year
+
+⸻
+
+Filter Behavior
+
+Month
+
+Display data for the selected month.
+
+Quarter
+
+Automatically calculate and display data for the selected quarter.
+
+Examples:
+
+* Q1 → January to March
+* Q2 → April to June
+* Q3 → July to September
+* Q4 → October to December
+
+Semester
+
+Allow:
+
+* First Semester (January–June)
+* Second Semester (July–December)
+
+Year
+
+Display the complete selected year.
+
+Custom Range
+
+Continue using the existing Start Date and End Date fields.
+
+⸻
+
+Dashboard Integration
+
+Changing the time period filter must automatically update every Dashboard component, including:
+
+* Revenue
+* Expenses
+* Net Profit
+* Profit Margin
+* Fleet Ranking
+* Transport Company Summary
+* Customer Statistics
+* Maintenance Indicators
+* Charts
+* Reports
+* Any other financial widget
+
+All filters must work together consistently.
+
+⸻
+
+Responsive Design
+
+The new filter must integrate naturally with the existing Dashboard header.
+
+Requirements:
+
+* Match the current design language.
+* Maintain proper spacing.
+* Align correctly with existing filters.
+* Be fully responsive.
+* Work well on desktop, tablet, and mobile devices.
+* Prevent text wrapping or layout breaking on smaller screens.
+
+⸻
+
+Performance
+
+* Populate the Year dropdown dynamically from the database.
+* Cache available years when appropriate.
+* Refresh automatically after new records are added.
+* Ensure Dashboard recalculations remain fast even with large datasets.
+
+⸻
+
+Important
+
+* Do not redesign the application.
+* Do not change the existing workflow.
+* Automatically generate sequential Transport numbers starting from 5355256, migrate existing records to the correct sequence, ensure Maintenance expenses are included in all financial calculations and Dashboard charts, display only years that exist in the database, and add a responsive time period filter (Month, Quarter, Semester, Year, and Custom Range) that integrates seamlessly with the existing Dashboard filters.
