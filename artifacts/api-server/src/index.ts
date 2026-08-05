@@ -165,6 +165,59 @@ async function fixTransporteDuplicatesAndCreateSequence(): Promise<void> {
   }
 }
 
+/**
+ * Migration 3: full re-sequence of ALL fretes (Jul + Aug) ordered by
+ * data_cte ASC, id ASC, starting at 5355256.
+ * Recalibrates the transporte_seq sequence to MAX+1 afterwards.
+ * Idempotent — tracked in _migrations.
+ */
+async function fullResequenceTransporte(): Promise<void> {
+  try {
+    const checkResult = await db.execute(sql`
+      SELECT COUNT(*)::int AS cnt FROM _migrations
+      WHERE name = 'transporte_full_resequence_2026_08'
+    `);
+    const cnt = Number((getRows(checkResult)[0] as Record<string, unknown>)?.cnt ?? 0);
+    if (cnt > 0) {
+      logger.info("Re-sequenciamento já aplicado — ignorando.");
+      return;
+    }
+
+    // Reassign every frete sequentially (5355256, 5355257, …) by date then id
+    await db.execute(sql`
+      WITH ranked AS (
+        SELECT id,
+               ROW_NUMBER() OVER (ORDER BY data_cte ASC, id ASC) - 1 AS rn
+        FROM fretes
+      )
+      UPDATE fretes
+      SET transporte = (5355256 + ranked.rn)::text
+      FROM ranked
+      WHERE fretes.id = ranked.id
+    `);
+
+    // Advance the sequence so the next INSERT gets MAX+1
+    await db.execute(sql`
+      SELECT setval(
+        'transporte_seq',
+        (SELECT MAX(CAST(transporte AS BIGINT))
+         FROM fretes
+         WHERE transporte ~ '^[0-9]+$'),
+        true   -- is_called=true → next nextval returns max+1
+      )
+    `);
+
+    await db.execute(sql`
+      INSERT INTO _migrations (name) VALUES ('transporte_full_resequence_2026_08')
+      ON CONFLICT DO NOTHING
+    `);
+
+    logger.info("Re-sequenciamento completo de transporte aplicado com sucesso.");
+  } catch (err) {
+    logger.error({ err }, "Erro no re-sequenciamento — continuando sem parar o servidor.");
+  }
+}
+
 async function bootstrap(): Promise<void> {
   // Ensure session storage and the shared login user exist before accepting
   // traffic, otherwise the first requests would fail to persist sessions.
@@ -172,6 +225,7 @@ async function bootstrap(): Promise<void> {
   await seedAuthUser();
   await migrateTransporteSequence();
   await fixTransporteDuplicatesAndCreateSequence();
+  await fullResequenceTransporte();
 
   app.listen(port, (err) => {
     if (err) {
