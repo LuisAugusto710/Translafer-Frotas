@@ -97,6 +97,16 @@ function normalizeFrete(body: Record<string, unknown>): Record<string, unknown> 
   };
 }
 
+/**
+ * Extract rows from Drizzle execute() regardless of driver.
+ * postgres-js returns an array; node-postgres returns { rows: [...] }.
+ */
+function getExecuteRows(result: unknown): unknown[] {
+  if (Array.isArray(result)) return result as unknown[];
+  const r = result as Record<string, unknown> | null;
+  return Array.isArray(r?.rows) ? (r!.rows as unknown[]) : [];
+}
+
 router.post("/fretes", async (req, res) => {
   const normalized = normalizeFrete(req.body);
 
@@ -119,6 +129,19 @@ router.post("/fretes", async (req, res) => {
     }
   }
 
+  // Assign transporte atomically via the PostgreSQL sequence (ignoring the
+  // frontend suggestion) so concurrent inserts never share the same number.
+  // Falls back to MAX+1 if the sequence does not exist yet (e.g. very first
+  // deployment before the migration runs — should not happen in practice).
+  try {
+    const seqResult = await db.execute(sql`SELECT nextval('transporte_seq')::text AS t`);
+    const seqRows = getExecuteRows(seqResult);
+    const nextT = String((seqRows[0] as Record<string, unknown>)?.t ?? "");
+    if (nextT) normalized.transporte = nextT;
+  } catch {
+    // Sequence not yet created — fall through and use whatever the frontend sent
+  }
+
   const [row] = await db.insert(fretesTable)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .values(normalized as any)
@@ -136,9 +159,23 @@ router.post("/fretes/bulk", async (req, res) => {
   res.status(201).json({ created: inserted.length, fretes: inserted.map(fmt) });
 });
 
-// Transporte sequence starts at 5355256 (July 1 2026). Returns MAX existing numeric
-// transporte + 1, or 5355256 if no numeric transporte has been recorded yet.
+// Transporte sequence — returns the next value the sequence will assign
+// without consuming it. Falls back to MAX+1 if sequence doesn't exist yet.
 router.get("/fretes/next-transporte", async (req, res) => {
+  try {
+    const seqResult = await db.execute(sql`
+      SELECT (last_value + CASE WHEN is_called THEN 1 ELSE 0 END) AS next_t
+      FROM transporte_seq
+    `);
+    const rows = getExecuteRows(seqResult);
+    const nextT = Number((rows[0] as Record<string, unknown>)?.next_t ?? 0);
+    if (nextT > 0) {
+      res.json({ nextTransporte: nextT });
+      return;
+    }
+  } catch {
+    // Sequence not yet created — fall through to MAX+1
+  }
   const [result] = await db.select({
     maxTransporte: sql<number>`COALESCE(MAX(CASE WHEN ${fretesTable.transporte} ~ '^[0-9]+$' THEN CAST(${fretesTable.transporte} AS BIGINT) ELSE 0 END), 0)`,
   }).from(fretesTable);

@@ -22,6 +22,16 @@ if (Number.isNaN(port) || port <= 0) {
 }
 
 /**
+ * Shared helper: extract rows from Drizzle execute() regardless of driver.
+ * postgres-js returns an array; node-postgres returns { rows: [...] }.
+ */
+function getRows(result: unknown): unknown[] {
+  if (Array.isArray(result)) return result as unknown[];
+  const r = result as Record<string, unknown> | null;
+  return Array.isArray(r?.rows) ? (r!.rows as unknown[]) : [];
+}
+
+/**
  * One-time migration: assign sequential transporte numbers starting from 5355256.
  * Ordered by data_cte ASC, then id ASC.
  * Idempotent — tracked in the _migrations table so it only runs once.
@@ -30,13 +40,6 @@ if (Number.isNaN(port) || port <= 0) {
  */
 async function migrateTransporteSequence(): Promise<void> {
   try {
-    // Helper: extract rows from Drizzle execute() regardless of driver
-    const getRows = (result: unknown): unknown[] => {
-      if (Array.isArray(result)) return result as unknown[];
-      const r = result as Record<string, unknown> | null;
-      return Array.isArray(r?.rows) ? (r!.rows as unknown[]) : [];
-    };
-
     // Create the migrations tracking table if it doesn't exist
     await db.execute(sql`
       CREATE TABLE IF NOT EXISTS _migrations (
@@ -81,12 +84,94 @@ async function migrateTransporteSequence(): Promise<void> {
   }
 }
 
+/**
+ * Migration 2: fix duplicate transporte entries introduced by race conditions
+ * and create a PostgreSQL SEQUENCE so future inserts are atomic.
+ *
+ * Safe to re-run: tracked in _migrations; sequence uses IF NOT EXISTS.
+ */
+async function fixTransporteDuplicatesAndCreateSequence(): Promise<void> {
+  try {
+    // Check if already applied
+    const checkResult = await db.execute(sql`
+      SELECT COUNT(*)::int AS cnt FROM _migrations WHERE name = 'transporte_fix_duplicates_2026_08'
+    `);
+    const cnt = Number((getRows(checkResult)[0] as Record<string, unknown>)?.cnt ?? 0);
+    if (cnt > 0) {
+      logger.info("Migração de duplicados já aplicada — ignorando.");
+      return;
+    }
+
+    // Fix every set of duplicate transporte values: keep the entry with the
+    // lowest id unchanged, reassign all others to the running MAX+1.
+    await db.execute(sql`
+      WITH dupes AS (
+        SELECT id,
+               ROW_NUMBER() OVER (PARTITION BY transporte ORDER BY id ASC) AS rn
+        FROM fretes
+        WHERE transporte ~ '^[0-9]+$'
+      ),
+      victims AS (
+        SELECT id FROM dupes WHERE rn > 1
+      ),
+      ordered_victims AS (
+        SELECT id,
+               ROW_NUMBER() OVER (ORDER BY id ASC) AS ord
+        FROM victims
+      ),
+      current_max AS (
+        SELECT COALESCE(
+          MAX(CASE WHEN transporte ~ '^[0-9]+$' THEN CAST(transporte AS BIGINT) ELSE 0 END), 5355255
+        ) AS max_t
+        FROM fretes
+        WHERE id NOT IN (SELECT id FROM victims)
+      )
+      UPDATE fretes
+      SET transporte = (current_max.max_t + ordered_victims.ord)::text
+      FROM ordered_victims, current_max
+      WHERE fretes.id = ordered_victims.id
+    `);
+
+    // Create the sequence starting right after the current maximum transporte
+    await db.execute(sql`
+      DO $$
+      DECLARE
+        max_t BIGINT;
+      BEGIN
+        SELECT COALESCE(
+          MAX(CASE WHEN transporte ~ '^[0-9]+$' THEN CAST(transporte AS BIGINT) ELSE 0 END),
+          5355255
+        ) INTO max_t FROM fretes;
+
+        IF NOT EXISTS (SELECT 1 FROM pg_sequences WHERE sequencename = 'transporte_seq') THEN
+          EXECUTE format('CREATE SEQUENCE transporte_seq START WITH %s INCREMENT BY 1', max_t + 1);
+        ELSE
+          -- Advance the sequence to at least max_t + 1 if it's behind
+          PERFORM setval('transporte_seq', GREATEST(max_t + 1, nextval('transporte_seq') - 1), false);
+        END IF;
+      END
+      $$
+    `);
+
+    // Mark as done
+    await db.execute(sql`
+      INSERT INTO _migrations (name) VALUES ('transporte_fix_duplicates_2026_08')
+      ON CONFLICT DO NOTHING
+    `);
+
+    logger.info("Migração de duplicados + sequence criada com sucesso.");
+  } catch (err) {
+    logger.error({ err }, "Erro na migração de duplicados — continuando sem parar o servidor.");
+  }
+}
+
 async function bootstrap(): Promise<void> {
   // Ensure session storage and the shared login user exist before accepting
   // traffic, otherwise the first requests would fail to persist sessions.
   await ensureSessionTable();
   await seedAuthUser();
   await migrateTransporteSequence();
+  await fixTransporteDuplicatesAndCreateSequence();
 
   app.listen(port, (err) => {
     if (err) {
