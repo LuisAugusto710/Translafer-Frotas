@@ -371,7 +371,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: [diario, semanal, mensal, trimestral, anual]
+            enum: [diario, semanal, mensal, semestral, trimestral, anual]
         - name: dateFrom
           in: query
           schema: { type: string, format: date }

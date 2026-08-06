@@ -538,6 +538,33 @@ function PreventivaMaintSection({ items, loading }: { items: ManutencaoPreventiv
   );
 }
 
+// ── Chart period type & smart-default helper ──────────────────────────────────
+
+type ChartPeriod = "diario" | "semanal" | "mensal" | "semestral" | "trimestral" | "anual";
+
+/**
+ * Derive the most meaningful chart time scale from the global dashboard period.
+ * One level more granular than the selected global filter.
+ */
+function deriveChartPeriod(
+  mode: PeriodMode,
+  customFrom: string,
+  customTo: string,
+): ChartPeriod {
+  if (mode === "year")     return "semestral";
+  if (mode === "semester") return "trimestral";
+  if (mode === "quarter")  return "mensal";
+  if (mode === "month")    return "semanal";
+  // custom: pick based on date-range length
+  if (customFrom && customTo) {
+    const days =
+      (new Date(customTo).getTime() - new Date(customFrom).getTime()) /
+      (1000 * 60 * 60 * 24);
+    return days <= 92 ? "semanal" : "mensal"; // ≤ ~3 months → weekly; else monthly
+  }
+  return "mensal";
+}
+
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 
 export function Dashboard() {
@@ -551,7 +578,11 @@ export function Dashboard() {
   const [customFrom, setCustomFrom] = useState("");
   const [customTo,   setCustomTo]   = useState("");
   const [frotaFilter, setFrotaFilter] = useState("__all__");
-  const [period, setPeriod] = useState<"diario" | "semanal" | "mensal" | "trimestral" | "anual">("mensal");
+  const [period, setPeriod] = useState<ChartPeriod>(() => deriveChartPeriod("month", "", ""));
+
+  // Tracks whether the user manually overrode the chart period scale.
+  // Resets to false whenever the global dashboard filter changes.
+  const chartPeriodOverride = useRef(false);
 
   // Tracks whether we've already applied the smart default from the API
   const initializedFromApi = useRef(false);
@@ -590,6 +621,17 @@ export function Dashboard() {
       }
     }
   }, [availableMonths, periodMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-update chart period whenever the global filter changes,
+  // unless the user has manually overridden it.
+  useEffect(() => {
+    if (!chartPeriodOverride.current) {
+      setPeriod(deriveChartPeriod(periodMode, customFrom, customTo));
+    }
+    // Any global-filter change resets the override so the NEXT filter change
+    // picks up the smart default again.
+    chartPeriodOverride.current = false;
+  }, [periodMode, ano, subValue, customFrom, customTo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Compute dateFrom/dateTo based on period mode
   const { dateFrom: periodFrom, dateTo: periodTo } = periodMode !== "custom"
@@ -835,13 +877,20 @@ export function Dashboard() {
             <CardTitle className="text-sm sm:text-base">Receita por Período</CardTitle>
             <CardDescription>Evolução da receita de fretes</CardDescription>
           </div>
-          <Select value={period} onValueChange={(v: any) => setPeriod(v)}>
-            <SelectTrigger className="w-[110px] h-8 shrink-0"><SelectValue /></SelectTrigger>
+          <Select
+            value={period}
+            onValueChange={(v: any) => {
+              chartPeriodOverride.current = true;
+              setPeriod(v);
+            }}
+          >
+            <SelectTrigger className="w-[120px] h-8 shrink-0"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="diario">Diário</SelectItem>
               <SelectItem value="semanal">Semanal</SelectItem>
               <SelectItem value="mensal">Mensal</SelectItem>
               <SelectItem value="trimestral">Trimestral</SelectItem>
+              <SelectItem value="semestral">Semestral</SelectItem>
               <SelectItem value="anual">Anual</SelectItem>
             </SelectContent>
           </Select>

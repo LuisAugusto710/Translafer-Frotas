@@ -658,6 +658,7 @@ export const GetRevenueByPeriodoPeriod = {
   diario: 'diario',
   semanal: 'semanal',
   mensal: 'mensal',
+  semestral: 'semestral',
   trimestral: 'trimestral',
   anual: 'anual',
 } as const;

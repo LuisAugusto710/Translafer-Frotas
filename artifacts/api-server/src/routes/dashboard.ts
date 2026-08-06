@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, fretesTable, abastecimentosTable, despesasTable, manutencoesTable } from "@workspace/db";
-import { and, eq, isNotNull, sql } from "drizzle-orm";
+import { and, eq, gte, isNotNull, lte, sql } from "drizzle-orm";
 import {
   toDateStr,
   freteWhere,
@@ -100,10 +100,44 @@ router.get("/dashboard/por-periodo", async (req, res) => {
   const allowed: Record<string, string> = {
     diario: "day", semanal: "week", mensal: "month", trimestral: "quarter", anual: "year",
   };
-  const trunc = allowed[period ?? ""];
-  if (!trunc) { res.status(400).json({ error: "period inválido" }); return; }
 
   const where = freteWhere(dateFrom, dateTo, frota);
+
+  // ── Semestral: PostgreSQL has no native semester truncation ────────────────
+  if (period === "semestral") {
+    const semResult = await db.select({
+      periodo:      sql<string>`
+        CASE
+          WHEN EXTRACT(MONTH FROM ${fretesTable.dataCte}::date) <= 6
+          THEN TO_CHAR(DATE_TRUNC('year',  ${fretesTable.dataCte}::date), 'YYYY-MM-DD')
+          ELSE TO_CHAR(DATE_TRUNC('year',  ${fretesTable.dataCte}::date) + INTERVAL '6 months', 'YYYY-MM-DD')
+        END
+      `,
+      totalFrete:   sql<number>`sum(${fretesTable.frete})`,
+      totalPedagio: sql<number>`sum(${fretesTable.pedagio})`,
+      totalViagens: sql<number>`count(*)`,
+    }).from(fretesTable).where(where)
+      .groupBy(sql`
+        EXTRACT(YEAR FROM ${fretesTable.dataCte}::date),
+        CASE WHEN EXTRACT(MONTH FROM ${fretesTable.dataCte}::date) <= 6 THEN 1 ELSE 2 END
+      `)
+      .orderBy(sql`
+        EXTRACT(YEAR FROM ${fretesTable.dataCte}::date),
+        CASE WHEN EXTRACT(MONTH FROM ${fretesTable.dataCte}::date) <= 6 THEN 1 ELSE 2 END
+      `);
+
+    res.json(semResult.map(r => ({
+      periodo:      r.periodo,
+      totalFrete:   Number(r.totalFrete   ?? 0),
+      totalPedagio: Number(r.totalPedagio ?? 0),
+      totalGeral:   Number(r.totalFrete   ?? 0) + Number(r.totalPedagio ?? 0),
+      totalViagens: Number(r.totalViagens),
+    })));
+    return;
+  }
+
+  const trunc = allowed[period ?? ""];
+  if (!trunc) { res.status(400).json({ error: "period inválido" }); return; }
 
   const result = await db.select({
     periodo:      sql<string>`to_char(date_trunc('${sql.raw(trunc)}', ${fretesTable.dataCte}::date), 'YYYY-MM-DD')`,
@@ -615,14 +649,14 @@ router.get("/dashboard/available-years", async (req, res) => {
     db.select({ yr: sql<number>`DISTINCT EXTRACT(YEAR FROM ${fretesTable.dataCte}::date)::int` }).from(fretesTable),
     db.select({ yr: sql<number>`DISTINCT EXTRACT(YEAR FROM ${despesasTable.data}::date)::int` }).from(despesasTable),
     db.select({ yr: sql<number>`DISTINCT EXTRACT(YEAR FROM ${manutencoesTable.dataManutencao}::date)::int` }).from(manutencoesTable),
-    // Most recent date across all three tables
+    // Most recent date across all three tables — .from() required before .limit()
     db.select({
       latestDate: sql<string>`GREATEST(
-        (SELECT MAX(${fretesTable.dataCte}) FROM ${fretesTable}),
-        (SELECT MAX(${despesasTable.data}::date::text) FROM ${despesasTable}),
-        (SELECT MAX(${manutencoesTable.dataManutencao}::date::text) FROM ${manutencoesTable})
+        (SELECT MAX(data_cte::text)          FROM fretes),
+        (SELECT MAX(data::date::text)        FROM despesas_custos),
+        (SELECT MAX(data_manutencao::date::text) FROM manutencoes)
       )`,
-    }).limit(1),
+    }).from(fretesTable).limit(1),
   ]);
 
   const allYears = new Set<number>();

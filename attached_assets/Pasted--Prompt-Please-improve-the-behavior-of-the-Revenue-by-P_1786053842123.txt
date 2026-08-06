@@ -1,0 +1,190 @@
+**Prompt:**
+
+Please improve the behavior of the **"Revenue by Period"** chart on the Dashboard. I want the chart to automatically choose the most appropriate time scale based on the **main Dashboard period filter**, while still allowing the user to manually change it afterwards.
+
+Do **not** change the layout or design of the Dashboard. This is only a change to the default behavior.
+
+---
+
+# Objective
+
+The Dashboard has a **global time filter** (Month, Quarter, Semester, Year, Custom Range).
+
+The **Revenue by Period** chart also has its own independent time scale selector.
+
+I want the chart to automatically default to **one level below** the selected global period, providing a more meaningful breakdown of the selected data.
+
+The user must still be able to manually change the chart's time scale at any time.
+
+---
+
+# Default Behavior
+
+Apply the following automatic mapping:
+
+| Global Dashboard Period | Default Chart Scale                                                                                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Year                    | Semester                                                                                                                                                |
+| Semester                | Quarter                                                                                                                                                 |
+| Quarter                 | Month                                                                                                                                                   |
+| Month                   | Week                                                                                                                                                    |
+| Custom Range            | Automatically choose the smallest logical subdivision based on the selected date range (prefer Week for ranges up to 3 months, Month for longer ranges) |
+
+---
+
+# Examples
+
+### Example 1
+
+Global Filter:
+
+* Period: Year
+* Year: 2026
+
+Automatically configure the chart as:
+
+* Revenue by **Semester**
+
+Showing:
+
+* First Semester
+* Second Semester
+
+---
+
+### Example 2
+
+Global Filter:
+
+* Period: Semester
+* Second Semester
+
+Automatically configure the chart as:
+
+* Revenue by **Quarter**
+
+Showing:
+
+* Q3
+* Q4
+
+---
+
+### Example 3
+
+Global Filter:
+
+* Period: Quarter
+* Q3
+
+Automatically configure the chart as:
+
+* Revenue by **Month**
+
+Showing:
+
+* July
+* August
+* September
+
+---
+
+### Example 4
+
+Global Filter:
+
+* Period: Month
+* August
+
+Automatically configure the chart as:
+
+* Revenue by **Week**
+
+Showing the weekly breakdown of August.
+
+---
+
+### Example 5
+
+Global Filter:
+
+* Custom Range
+
+Automatically determine the best chart scale based on the selected period.
+
+Examples:
+
+* Up to 3 months → Week
+* More than 3 months → Month
+
+---
+
+# Manual Override
+
+The user must still be able to manually change the chart scale.
+
+For example:
+
+If the Dashboard is set to **Year**, the chart should initially open in **Semester**, but the user can change it to:
+
+* Month
+* Quarter
+* Semester
+* Year
+
+The application must respect the user's selection until the global period filter changes again.
+
+---
+
+# Automatic Updates
+
+Whenever the global Dashboard filter changes, the chart should:
+
+* Recalculate the default scale.
+* Refresh the displayed data.
+* Keep the chart synchronized with the selected period.
+
+---
+
+# Data Consistency
+
+The chart must always use the same filters as the rest of the Dashboard:
+
+* Selected period
+* Date range
+* Fleet
+* Year
+* Month
+* Quarter
+* Semester
+
+The chart must never display data outside the selected Dashboard filters.
+
+---
+
+# Responsive Behavior
+
+Ensure this logic works correctly on:
+
+* Desktop
+* Tablet
+* Mobile devices
+
+The automatic scale selection must not affect responsiveness or performance.
+
+---
+
+# Performance
+
+* Avoid unnecessary recalculations.
+* Refresh the chart only when the global filters change.
+* Reuse existing filtered data whenever possible.
+* Keep chart rendering fast, even with large datasets.
+
+---
+
+## Important
+
+* **Do not redesign the Dashboard.**
+* **Do not remove the chart's manual filter options.**
+* **Only change the default behavior so that the "Revenue by Period" chart automatically uses a time scale one level more detailed than the selected global Dashboard period, while still allowing the user to manually choose any available time scale afterward.**
