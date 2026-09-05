@@ -77,7 +77,7 @@ async function migrateTransporteSequence(): Promise<void> {
       ON CONFLICT DO NOTHING
     `);
 
-    const rc = (updateResult as Record<string, unknown>)?.rowCount ?? "?";
+    const rc = ((updateResult as unknown) as Record<string, unknown>)?.rowCount ?? "?";
     logger.info({ rowCount: rc }, "Migração de transporte aplicada com sucesso.");
   } catch (err) {
     logger.error({ err }, "Erro na migração de transporte — continuando sem parar o servidor.");
