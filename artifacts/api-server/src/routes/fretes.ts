@@ -38,7 +38,12 @@ router.get("/fretes", async (req, res) => {
     const like = `%${search.trim()}%`;
     // Helper: emit all date-format variants for a date column so users can
     // search 2026-07-01, 01/07/2026, 01-07-2026, 1/7/2026, 07/2026, Jul, July
-    const dateClauses = (col: typeof fretesTable.dataCte) => [
+    const dateClauses = (
+      col:
+        | typeof fretesTable.dataCte
+        | typeof fretesTable.dtaFrete
+        | typeof fretesTable.vencimento,
+    ) => [
       sql`CAST(${col} AS TEXT)              ILIKE ${like}`,
       sql`TO_CHAR(${col}, 'DD/MM/YYYY')     ILIKE ${like}`,
       sql`TO_CHAR(${col}, 'DD-MM-YYYY')     ILIKE ${like}`,
