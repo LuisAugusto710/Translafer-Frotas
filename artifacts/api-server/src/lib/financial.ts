@@ -1,19 +1,20 @@
 /**
  * Centralized Financial Calculation Engine
  *
- * This is the SINGLE source of truth for all financial formulas in the application.
+ * This is the SINGLE source of truth for all consolidated financial formulas in the application.
  *
  * Canonical rules:
  *   Revenue    = fretesTable.frete + fretesTable.pedagio
- *   Expenses   = sum(DESPESA_COST_COLS from despesasTable) + sum(abastecimentosTable.totalPago)
+ *   Expenses   = sum(non-diesel costs from despesasTable) + sum(abastecimentosTable.totalPago)
  *   Net Profit = Revenue - Expenses
  *
  * Diesel is tracked in two places:
- *   1. despesasTable.dieselRs  — manually-entered diesel cost per daily record
+ *   1. despesasTable.dieselRs — operational/reference value on the daily expense record
  *   2. abastecimentosTable.totalPago — detailed per-refueling fuel cost
  *
- * Both are part of total expenses everywhere in the application.
- * No endpoint should use only one and ignore the other.
+ * IMPORTANT: for consolidated financial calculations, diesel is counted ONLY from
+ * abastecimentosTable.totalPago. despesasTable.dieselRs must never be added to the
+ * consolidated expense total, otherwise the same fuel cost can be counted twice.
  */
 
 import { db, fretesTable, abastecimentosTable, despesasTable, manutencoesTable } from "@workspace/db";
@@ -25,10 +26,10 @@ import type { AnyPgColumn } from "drizzle-orm/pg-core";
 export const trocaOleoParsed = sql<number>`COALESCE(NULLIF(REPLACE(REPLACE(trim(${despesasTable.trocaOleoParcela}::text), ',', '.'), ' ', ''), '')::numeric, 0)`;
 
 // ── Expense category definitions ──────────────────────────────────────────────
-// Canonical ordered list of all expense categories from despesasTable.
-// Every endpoint must use exactly this list — never a subset or superset.
+// Canonical ordered list of monetary expense categories from despesasTable used
+// in consolidated financial calculations. Diesel is intentionally excluded here
+// because consolidated diesel comes exclusively from abastecimentosTable.totalPago.
 export const DESPESA_CATEGORIAS: Array<{ label: string; col: AnyPgColumn }> = [
-  { label: "Diesel",       col: despesasTable.dieselRs },
   { label: "DAS",          col: despesasTable.das },
   { label: "Motorista",    col: despesasTable.motorista },
   { label: "Almoço",      col: despesasTable.almoco },
@@ -45,13 +46,13 @@ export const DESPESA_CATEGORIAS: Array<{ label: string; col: AnyPgColumn }> = [
 ];
 
 // ── Canonical cost SQL fragment ───────────────────────────────────────────────
-// Sum of ALL 14 monetary cost columns from despesasTable (+ trocaOleoParcela).
-// KM and DieselLt are metrics, NOT costs — excluded here.
-// This fragment covers only the despesasTable portion of expenses.
-// Total expenses = despesaCustosSql + abastecimentos.totalPago (see below).
+// Sum of monetary cost columns from despesasTable (+ trocaOleoParcela), EXCLUDING
+// dieselRs. KM and DieselLt are metrics, NOT costs. dieselRs is retained as an
+// operational/reference field, but consolidated diesel cost comes only from
+// abastecimentosTable.totalPago.
+// Total expenses = despesaCustosSql + abastecimentos.totalPago + manutencoes.custo.
 export const despesaCustosSql = sql<number>`
-  coalesce(${despesasTable.dieselRs},0)
-  +coalesce(${despesasTable.das},0)
+  coalesce(${despesasTable.das},0)
   +coalesce(${despesasTable.motorista},0)
   +coalesce(${despesasTable.almoco},0)
   +coalesce(${despesasTable.ajudante},0)
@@ -116,8 +117,7 @@ export function abastWhere(
 // ── Per-frota diesel from abastecimentos ──────────────────────────────────────
 /**
  * Returns a map of frota -> abastecimentos diesel cost.
- * This must be added to despesaCustosSql totals in every endpoint
- * to arrive at the canonical total expenses per frota.
+ * This is the canonical diesel cost source for consolidated financial totals.
  */
 export async function getDieselAbastPerFrota(
   dateFrom?: string,
