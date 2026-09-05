@@ -26,10 +26,13 @@ router.get("/employees/active", async (req, res) => {
   const { dateFrom, dateTo } = req.query as Record<string, string>;
 
   if (!dateFrom || !dateTo) {
-    return res.status(400).json({ error: "dateFrom and dateTo are required" });
+    res.status(400).json({ error: "dateFrom and dateTo are required" });
+    return;
   }
 
-  const dateFilter = (nameCol: typeof despesasTable.motoristaNome) =>
+  const dateFilter = (
+    nameCol: typeof despesasTable.motoristaNome | typeof despesasTable.ajudanteNome,
+  ) =>
     and(
       sql`coalesce(trim(${nameCol}), '') <> ''`,
       gte(despesasTable.data, dateFrom),
