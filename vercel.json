@@ -1,3 +1,8 @@
 {
-  "outputDirectory": "artifacts/fleet-revenue/dist/public"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "outputDirectory": "artifacts/fleet-revenue/dist/public",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/index" },
+    { "source": "/((?!api(?:/|$)).*)", "destination": "/index.html" }
+  ]
 }
