@@ -649,14 +649,14 @@ router.get("/dashboard/available-years", async (req, res) => {
     db.select({ yr: sql<number>`DISTINCT EXTRACT(YEAR FROM ${fretesTable.dataCte}::date)::int` }).from(fretesTable),
     db.select({ yr: sql<number>`DISTINCT EXTRACT(YEAR FROM ${despesasTable.data}::date)::int` }).from(despesasTable),
     db.select({ yr: sql<number>`DISTINCT EXTRACT(YEAR FROM ${manutencoesTable.dataManutencao}::date)::int` }).from(manutencoesTable),
-    // Most recent date across all three tables — .from() required before .limit()
+    // Aggregate dates using schema references, including when fretes is empty.
     db.select({
       latestDate: sql<string>`GREATEST(
-        (SELECT MAX(data_cte::text)          FROM fretes),
-        (SELECT MAX(data::date::text)        FROM despesas_custos),
-        (SELECT MAX(data_manutencao::date::text) FROM manutencoes)
-      )`,
-    }).from(fretesTable).limit(1),
+        MAX(${fretesTable.dataCte}),
+        (SELECT MAX(${despesasTable.data}) FROM ${despesasTable}),
+        (SELECT MAX(${manutencoesTable.dataManutencao}) FROM ${manutencoesTable})
+      )::text`,
+    }).from(fretesTable),
   ]);
 
   const allYears = new Set<number>();
