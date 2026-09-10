@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "express",
-  "buildCommand": "pnpm run build && cp dist/vercel-bundle/vercel.mjs dist/vercel-bundle/app.mjs",
-  "outputDirectory": "dist/vercel-bundle"
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "."
 }
